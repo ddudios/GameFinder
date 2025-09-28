@@ -40,7 +40,7 @@
 		B08FED0A2E87B2B200488358 /* Exceptions for "GameFinder" folder in "GameFinder" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				App/Support/Info.plist,
 			);
 			target = B08FECF72E87B2B000488358 /* GameFinder */;
 		};
@@ -195,7 +195,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 27A9369F66;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = GameFinder/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/GameFinder/App/Support/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = GameFinder;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -228,7 +228,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 27A9369F66;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = GameFinder/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/GameFinder/App/Support/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = GameFinder;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
