@@ -24,15 +24,15 @@ final class GamePadButton: UIButton {
         // 본색 선택
         let base: UIColor = {
             switch kind {
-            case .a: return GamePadGlass.a
-            case .b: return GamePadGlass.b
-            case .x: return GamePadGlass.x
-            case .y: return GamePadGlass.y
+            case .a: return PointColor.a
+            case .b: return PointColor.b
+            case .x: return PointColor.x
+            case .y: return PointColor.y
             }
         }()
 
         // 상태별 필
-        let fills = GamePadGlass.fill(base)
+        let fills = PointColor.fill(base)
         backgroundColor = fills.normal
 
         // 유리 블러 + 오버레이
@@ -42,14 +42,14 @@ final class GamePadButton: UIButton {
         let overlay = UIView(frame: bounds)
         overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         overlay.isUserInteractionEnabled = false
-        overlay.backgroundColor = (traitCollection.userInterfaceStyle == .dark) ? GamePadGlass.glassOverlayDark : GamePadGlass.glassOverlayLight
+        overlay.backgroundColor = (traitCollection.userInterfaceStyle == .dark) ? PointColor.glassOverlayDark : PointColor.glassOverlayLight
         insertSubview(overlay, aboveSubview: blur)
 
         // 테두리(유리 스트로크)
         ring.frame = bounds
         ring.cornerRadius = 16
         ring.borderWidth = 1
-        ring.borderColor = (traitCollection.userInterfaceStyle == .dark ? GamePadGlass.strokeDark : GamePadGlass.strokeLight).cgColor
+        ring.borderColor = (traitCollection.userInterfaceStyle == .dark ? PointColor.strokeDark : PointColor.strokeLight).cgColor
         layer.addSublayer(ring)
 
         // 눌림/해제 상태

@@ -7,7 +7,7 @@
 
 import UIKit
 
-enum Signature {
+enum SignatureColor {
     // 메인 포인트
     static var main: UIColor {
         UIColor { tc in

@@ -17,6 +17,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 현재 테마 선택값을 .system으로 저장
         AppColor.selected = .system
         
+        NavigationBar.configureAppearance()
+        
         return true
     }
 

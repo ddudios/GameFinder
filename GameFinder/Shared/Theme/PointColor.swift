@@ -7,11 +7,12 @@
 
 import UIKit
 
-enum GamePadGlass {
-    static let a = UIColor(red: 0/255,   green: 220/255, blue: 130/255, alpha: 1.0)
-    static let b = UIColor(red: 255/255, green: 80/255,  blue: 100/255, alpha: 1.0)
-    static let x = UIColor(red: 50/255,  green: 130/255, blue: 255/255, alpha: 1.0)
-    static let y = UIColor(red: 255/255, green: 210/255, blue: 70/255,  alpha: 1.0)
+enum PointColor {
+    static let a = UIColor(red: 218/255,  green: 24/255, blue: 44/255, alpha: 1.0) // red
+    static let b = UIColor(red: 233/255, green: 210/255,  blue: 49/255,  alpha: 1.0) // yellow
+    static let x = UIColor(red: 19/255,   green: 79/255, blue: 213/255, alpha: 1.0)  // blue
+    static let y = UIColor(red: 10/255, green: 175/255, blue: 75/255,  alpha: 1.0)  // green
+
 
     // 유리(글래스) 배경 위에 얹을 반투명 레이어 (빛번짐 느낌)
     // 라이트: 하이라이트 계열, 다크: 살짝 더 어두운 막으로 대비 확보
