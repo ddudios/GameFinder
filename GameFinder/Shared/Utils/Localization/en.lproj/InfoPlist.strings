@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.strings
+  GameFinder
+
+  Created by Suji Jang on 9/30/25.
+  
+*/
+
+CFBundleDisplayName = "Game Finder";

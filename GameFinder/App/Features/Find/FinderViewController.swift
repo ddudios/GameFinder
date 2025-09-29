@@ -22,7 +22,7 @@ final class FinderViewController: BaseViewController {
     }()
     private let searchBarTextField = {
         let textField = UITextField()
-        textField.placeholder = "게임 검색"
+        textField.placeholder = L10n.Finder.searchPlaceholder
         return textField
     }()
     
@@ -44,7 +44,7 @@ final class FinderViewController: BaseViewController {
     
     //MARK: - Layout
     private func setNavigationBar() {
-        navigationItem.title = "Game Finder"
+        navigationItem.title = L10n.Finder.navTitle
     }
     
     override func configureHierarchy() {
@@ -57,6 +57,12 @@ final class FinderViewController: BaseViewController {
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges).inset(Spacing.xs)
             make.height.equalTo(ControlHeight.regular)
             make.center.equalToSuperview()
+        }
+        
+        searchBarTextField.snp.makeConstraints { make in
+            make.horizontalEdges.equalTo(searchBarContainer.snp.horizontalEdges).inset(Spacing.m)
+            make.centerY.equalToSuperview()
+            make.height.equalToSuperview()
         }
     }
     

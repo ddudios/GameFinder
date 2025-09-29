@@ -14,9 +14,9 @@ enum TabBarItem: Int, CaseIterable {
     
     var title: String {
         switch self {
-        case .first: return "Finder"
-        case .second: return "Library"
-        case .third: return "Settings"
+        case .first: return L10n.TabBar.first
+        case .second: return L10n.TabBar.second
+        case .third: return L10n.TabBar.third
         }
     }
     
