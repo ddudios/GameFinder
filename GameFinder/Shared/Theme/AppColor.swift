@@ -14,7 +14,7 @@ public enum AppColor {
     public func palette(for trait: UITraitCollection) -> AppPalette {
         switch self {
         case .light: return AppPalette(
-            background: UIColor(white: 0.97, alpha: 1),
+            background: UIColor(red: 252/255, green: 252/255, blue: 252/255, alpha: 1),  // white
             textPrimary: UIColor(white: 0.11, alpha: 0.88),
             textSecondary: UIColor(white: 0.35, alpha: 0.62),
             separator: UIColor(white: 0.0, alpha: 0.08),

@@ -8,7 +8,8 @@
 import Foundation
 
 enum Spacing {
-//    static let xxs: CGFloat = 4
+    static let xxxs: CGFloat = 1
+    static let xxs: CGFloat = 4
     static let xs:  CGFloat = 8
 //    static let s:   CGFloat = 12
     static let m:   CGFloat = 16
@@ -20,7 +21,7 @@ enum Spacing {
 enum Radius {
 //    static let none:  CGFloat = 0
 //    static let soft:  CGFloat = 8
-//    static let card:  CGFloat = 16
+    static let card:  CGFloat = 16
     static let circle: CGFloat = 2
 }
 
@@ -35,4 +36,8 @@ enum ControlHeight {
 //    static let small: CGFloat = 32
     static let regular: CGFloat = 44
 //    static let large: CGFloat = 56
+}
+
+enum Size {
+    static let xs: CGFloat = 12
 }
