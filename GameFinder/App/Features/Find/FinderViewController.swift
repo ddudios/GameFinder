@@ -12,10 +12,18 @@ import RxCocoa
 
 // Identifiable: iOS 5.3+ 아무 기능없는 Protocol, id 프로퍼티를 쓰세요, 고유하게 판별할 수 있는 수단으로 사용하는 코드라는 것이 암묵적인 규약으로 정해짐 (커뮤니케이션 수단)
 // - id는 절대 겹치지 않게 값을 세팅해주어야겠다.
+// FindViewController.swift 맨 위 Basic 정의 교체
 struct Basic: Hashable, Identifiable {
-    let id = UUID()  // UUID: 애초에 애플이 고유한 값을 뽑아주는 구조체
+    let id = UUID()
     let name: String
-    let age: Int
+    let rating: Double?
+    let imageURL: String?
+
+    init(name: String, rating: Double? = nil, imageURL: String? = nil) {
+        self.name = name
+        self.rating = rating
+        self.imageURL = imageURL
+    }
 }
 
 // DiffableDataSource + CompositionalLayout + UICollectionViewCell/UICollectionReusableView
@@ -70,17 +78,19 @@ final class FinderViewController: BaseViewController {
     // Hashable한데 데이터가 같으면 어떻게 보일지 테스트하기
     // 더이상 인덱스로 데이터를 판단하지 않고 모델 기반으로 데이터를 판단하기 때문에, 어느 한 부분이라도 데이터가 달라야 한다
     var list = [
-        Basic(name: "Jack", age: 123),/* Basic(name: "Jack", age: 123),*/
+        Basic(name: "Jack", rating: 123),/* Basic(name: "Jack", age: 123),*/
         // error: Thread 1: "Fatal: supplied item identifiers are not unique. Duplicate identifiers: {(\n    SeSac7HardwareDatabase.Basic(name: \"Jack\", age: 123)\n)}"
         // 데이터가 완전히 똑같으니까 데이터를 구분할 수 없음, 그래야 데이터를 고유하게 나누어줄 수 있음
         // Hashable한 내용으로 정의되어 있기 때문에 더 이상 indexPath를 통해서 코드를 작성하지 않아도 된다
         // diffable로 사용한다는 것은 인덱스 기준으로 데이터를 조회하지 않는 것을 의미한다
         // 그래서 만약에 diffable로 작성 중에 itemIdentifier 등을 사용하는 위치에서 list[indexPath.row] 등으로 접근한다면 애플이 만들어 놓은 기술의 대전제가 틀리는 것이라서 코드의 의도 여부를 떠나서 잘 모르고 사용하고 있구나
-        Basic(name: "Den", age: 50),
-        Basic(name: "Bran", age: 12),
-        Basic(name: "Finn", age: 23),
-        Basic(name: "Hue", age: 3)
+        Basic(name: "Den", rating: 50),
+        Basic(name: "Bran", rating: 12),
+        Basic(name: "Finn", rating: 23),
+        Basic(name: "Hue", rating: 3)
     ]
+    
+    private let disposeBag = DisposeBag()
     
     //MARK: - Lifecycle
     override func viewDidLoad() {
@@ -97,7 +107,37 @@ final class FinderViewController: BaseViewController {
     
     //MARK: - Helpers
     private func bind() {
-        
+        NetworkObservable
+            .request(router: RawgRouter.game(id: "326243"), as: GameDetailDTO.self)
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let dto):
+                    let game = dto.toDomain()
+                    let item = Basic(
+                        name: game.title,
+                        rating: game.rating,
+                        imageURL: game.backgroundImageURL
+                    )
+
+                    var snapshot = self.dataSource.snapshot()
+
+                    if snapshot.sectionIdentifiers.contains(.popularGames) == false {
+                        snapshot.appendSections([.popularGames])
+                    }
+                    
+                    let olds = snapshot.itemIdentifiers(inSection: .popularGames)
+                    snapshot.deleteItems(olds)
+                    snapshot.appendItems([item], toSection: .popularGames)
+
+                    self.dataSource.apply(snapshot, animatingDifferences: true)
+
+                case .failure(let err):
+                    print("error:", err)
+                }
+            })
+            .disposed(by: disposeBag)
     }
     
     //MARK: - Layout
@@ -108,8 +148,10 @@ final class FinderViewController: BaseViewController {
     // registration 초기화
     private func configureCellRegistration() {
         print(#function)        // Featured 셀 등록
-        featuredRegistration = UICollectionView.CellRegistration<FeaturedGameCell, Basic> { cell, indexPath, itemIdentifier in
-            cell.configure(with: itemIdentifier)
+        featuredRegistration = UICollectionView.CellRegistration<FeaturedGameCell, Basic> { cell, _, item in
+            cell.setImage(urlString: item.imageURL)
+            print(item.imageURL)
+            cell.configure(with: item)
         }
         
         // cellForItemAt 셀 디자인 데이터 처리하는 코드
@@ -170,16 +212,16 @@ final class FinderViewController: BaseViewController {
         snapshot.appendSections(Section.allCases)
         
         snapshot.appendItems(list, toSection: .upcomingGames)  // 어떤 섹션에 어떤 데이터를 넣을지
-        snapshot.appendItems([Basic(name: "새싹이", age: 10)], toSection: .freeGames)
-        snapshot.appendItems([Basic(name: "sd", age: 234), Basic(name: "새싹이", age: 10)], toSection: .popularGames)
+        snapshot.appendItems([Basic(name: "새싹이", rating: 10)], toSection: .freeGames)
+        snapshot.appendItems([Basic(name: "sd", rating: 234), Basic(name: "새싹이", rating: 10)], toSection: .popularGames)
         
         // popular 데이터 추가
         snapshot.appendItems([
-            Basic(name: "Elden Ring", age: 95),
-            Basic(name: "God of War", age: 94),
-            Basic(name: "Horizon", age: 88),
-            Basic(name: "Ghost of Tsushima", age: 90),
-            Basic(name: "The Last of Us", age: 93)
+            Basic(name: "Elden Ring", rating: 95),
+            Basic(name: "God of War", rating: 94),
+            Basic(name: "Horizon", rating: 88),
+            Basic(name: "Ghost of Tsushima", rating: 90),
+            Basic(name: "The Last of Us", rating: 93)
         ], toSection: .popularGames)
         
         //        collectionView.reloadData() 대신에

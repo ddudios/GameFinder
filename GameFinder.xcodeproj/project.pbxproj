@@ -146,7 +146,6 @@
 				Base,
 				ko,
 				ja,
-				bg,
 			);
 			mainGroup = B08FECEF2E87B2B000488358;
 			minimizedProjectReferenceProxies = 1;
@@ -191,6 +190,8 @@
 /* Begin XCBuildConfiguration section */
 		B08FED0C2E87B2B200488358 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = B08FECFA2E87B2B000488358 /* GameFinder */;
+			baseConfigurationReferenceRelativePath = App/Config/Base.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -224,6 +225,8 @@
 		};
 		B08FED0D2E87B2B200488358 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = B08FECFA2E87B2B000488358 /* GameFinder */;
+			baseConfigurationReferenceRelativePath = App/Config/Base.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

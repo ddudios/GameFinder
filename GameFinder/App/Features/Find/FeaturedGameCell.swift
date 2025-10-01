@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import Kingfisher
 
 final class FeaturedGameCell: BaseCollectionViewCell {
     
@@ -54,6 +55,20 @@ final class FeaturedGameCell: BaseCollectionViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.kf.cancelDownloadTask()
+        imageView.image = nil
+    }
+
+    func setImage(urlString: String?) {
+        guard let s = urlString, let url = URL(string: s) else {
+            imageView.image = nil
+            return
+        }
+        imageView.kf.setImage(with: url)
     }
     
     override func configureHierarchy() {
