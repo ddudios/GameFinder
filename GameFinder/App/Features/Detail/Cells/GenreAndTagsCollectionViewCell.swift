@@ -61,23 +61,7 @@ final class GenreAndTagsCollectionViewCell: BaseCollectionViewCell {
 
         tagsCollectionView.snp.makeConstraints { make in
             make.top.equalTo(genreLabel.snp.bottom).offset(8)
-            make.leading.trailing.equalToSuperview()
-            make.bottom.equalToSuperview()
-            make.height.equalTo(36).priority(.high)
-        }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        // 태그가 없을 때 높이를 0으로 만들어 공간 제거
-        if tagsCollectionView.isHidden {
-            tagsCollectionView.snp.updateConstraints { make in
-                make.height.equalTo(0).priority(.required)
-            }
-        } else {
-            tagsCollectionView.snp.updateConstraints { make in
-                make.height.equalTo(36).priority(.high)
-            }
+            make.leading.trailing.bottom.equalToSuperview()
         }
     }
 
@@ -88,8 +72,20 @@ final class GenreAndTagsCollectionViewCell: BaseCollectionViewCell {
         self.tags = tags
         tagsCollectionView.reloadData()
 
-        // 태그가 없으면 태그 컬렉션뷰 숨김
-        tagsCollectionView.isHidden = tags.isEmpty
+        // 태그가 없으면 태그 컬렉션뷰의 높이를 0으로 설정
+        if tags.isEmpty {
+            tagsCollectionView.snp.remakeConstraints { make in
+                make.top.equalTo(genreLabel.snp.bottom)
+                make.leading.trailing.bottom.equalToSuperview()
+                make.height.equalTo(0)
+            }
+        } else {
+            tagsCollectionView.snp.remakeConstraints { make in
+                make.top.equalTo(genreLabel.snp.bottom).offset(8)
+                make.leading.trailing.bottom.equalToSuperview()
+                make.height.equalTo(36)
+            }
+        }
 
         // 장르와 태그가 모두 없으면 전체 숨김
         contentView.isHidden = genres.isEmpty && tags.isEmpty
@@ -100,8 +96,14 @@ final class GenreAndTagsCollectionViewCell: BaseCollectionViewCell {
         genreLabel.text = nil
         tags.removeAll()
         tagsCollectionView.reloadData()
-        tagsCollectionView.isHidden = false
         contentView.isHidden = false
+
+        // Constraint 초기화
+        tagsCollectionView.snp.remakeConstraints { make in
+            make.top.equalTo(genreLabel.snp.bottom).offset(8)
+            make.leading.trailing.bottom.equalToSuperview()
+            make.height.equalTo(36)
+        }
     }
 }
 

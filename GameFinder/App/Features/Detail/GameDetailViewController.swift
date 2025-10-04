@@ -112,9 +112,12 @@ final class GameDetailViewController: BaseViewController {
             make.top.equalTo(view.safeAreaLayoutGuide).offset(screenshotHeight - 40)
             make.centerX.equalToSuperview()
         }
+    }
 
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
         // pageControl을 최상위로 표시
-        pageControl.layer.zPosition = 1000
+        view.bringSubviewToFront(pageControl)
     }
 
     private func setupCollectionView() {
