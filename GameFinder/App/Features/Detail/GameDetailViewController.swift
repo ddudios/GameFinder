@@ -109,8 +109,8 @@ final class GameDetailViewController: BaseViewController {
 
         pageControl.snp.makeConstraints { make in
             let screenshotHeight = UIScreen.main.bounds.width * 9 / 16
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(screenshotHeight - 40)
-            make.centerX.equalToSuperview()
+            make.top.equalTo(collectionView.snp.top).offset(screenshotHeight - 40)
+            make.centerX.equalTo(collectionView)
         }
     }
 
@@ -118,6 +118,23 @@ final class GameDetailViewController: BaseViewController {
         super.viewDidLayoutSubviews()
         // pageControl을 최상위로 표시
         view.bringSubviewToFront(pageControl)
+
+        // 스크롤 오프셋에 따라 pageControl 위치 업데이트
+        updatePageControlPosition()
+    }
+
+    private func updatePageControlPosition() {
+        let screenshotHeight = UIScreen.main.bounds.width * 9 / 16
+        let scrollOffset = collectionView.contentOffset.y
+
+        // 아래로 조금이라도 스크롤하면 pageControl 숨김
+        UIView.performWithoutAnimation {
+            if scrollOffset > 0 {
+                pageControl.isHidden = true
+            } else {
+                pageControl.isHidden = false
+            }
+        }
     }
 
     private func setupCollectionView() {
@@ -574,4 +591,8 @@ final class GameDetailViewController: BaseViewController {
 }
 
 // MARK: - UICollectionViewDelegate
-extension GameDetailViewController: UICollectionViewDelegate {}
+extension GameDetailViewController: UICollectionViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        updatePageControlPosition()
+    }
+}
