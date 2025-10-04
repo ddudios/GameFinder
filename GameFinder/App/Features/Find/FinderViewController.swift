@@ -56,6 +56,7 @@ final class FinderViewController: BaseViewController {
      cell registration [0, 1]
      */// Featured 셀 registration 추가
     private var popularRegistration: UICollectionView.CellRegistration<PopularCollectionViewCell, Game>!
+    private var upcomingRegistration: UICollectionView.CellRegistration<PopularCollectionViewCell, Game>!
 
     // 헤더 registration
     private var headerRegistration: UICollectionView.SupplementaryRegistration<SectionHeaderView>!
@@ -235,6 +236,10 @@ final class FinderViewController: BaseViewController {
             cell.configure(with: game)
         }
 
+        upcomingRegistration = UICollectionView.CellRegistration<PopularCollectionViewCell, Game> { cell, indexPath, game in
+            cell.configure(with: game, isUpcoming: true)
+        }
+
         // 헤더 registration
         headerRegistration = UICollectionView.SupplementaryRegistration<SectionHeaderView>(
             elementKind: UICollectionView.elementKindSectionHeader
@@ -264,8 +269,9 @@ final class FinderViewController: BaseViewController {
                     item: itemIdentifier
                 )
             } else {
+                // upcomingGames
                 return collectionView.dequeueConfiguredReusableCell(
-                    using: self.popularRegistration,
+                    using: self.upcomingRegistration,
                     for: indexPath,
                     item: itemIdentifier
                 )
@@ -334,6 +340,7 @@ extension FinderViewController {
                         heightDimension: .fractionalHeight(1)
                     )
                 )
+                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4)  // 셀과 셀 사이 간격
 
                 // 그룹 사이즈 (셀 크기)
                 let groupSize = NSCollectionLayoutSize(
@@ -461,21 +468,31 @@ extension FinderViewController {
                 return section
                 
             } else if sectionType == .upcomingGames {
-                let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/3), heightDimension: .fractionalHeight(1.0)))
-                item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)  // 셀과 셀 사이 간격
+                let item = NSCollectionLayoutItem(
+                    layoutSize: NSCollectionLayoutSize(
+                        widthDimension: .fractionalWidth(1),
+                        heightDimension: .fractionalHeight(1)
+                    )
+                )
+                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)  // 셀과 셀 사이 간격
 
-                // NSCollectionLayoutSize타입이 필요하다고해서 생성
-                // 가상의 사각형 바구니 크기
-                //        let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(330), heightDimension: .absolute(80))
-                // .fractionalWidth: 비율 기반 사이즈 조절 (디바이스 전체 너비 기준)
-                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(150))
+                // 스크린샷과 동일한 비율: 가로 0.85, 세로는 가로의 4/3배
+                let groupSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(0.7),
+                    heightDimension: .fractionalWidth(0.7 * 4/3)
+                )
 
-                // NSCollectionLayoutGroup타입이 필요하다고해서 생성
-                // 가상의 사각형 바구니 안에 셀을 그려라
-                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+                let group = NSCollectionLayoutGroup.horizontal(
+                    layoutSize: groupSize,
+                    subitems: [item]
+                )
 
-                // NSCollectionLayoutSection타입이 필요하다고해서 생성
                 let section = NSCollectionLayoutSection(group: group)
+                section.orthogonalScrollingBehavior = .groupPagingCentered
+                section.interGroupSpacing = 20
+                section.contentInsets = NSDirectionalEdgeInsets(
+                    top: 24, leading: 0, bottom: 40, trailing: 0
+                )
 
                 // 섹션 헤더 추가
                 let headerSize = NSCollectionLayoutSize(
@@ -489,7 +506,62 @@ extension FinderViewController {
                 )
                 section.boundarySupplementaryItems = [header]
 
+                // 스크롤 시 셀 transform, z-index, 텍스트 가시성 업데이트
+                section.visibleItemsInvalidationHandler = { [weak collectionView] visibleItems, scrollOffset, layoutEnvironment in
+                    guard let collectionView = collectionView else { return }
+
+                    let containerWidth = layoutEnvironment.container.contentSize.width
+                    let centerX = scrollOffset.x + containerWidth / 2
+
+                    var closestDistance: CGFloat = .infinity
+                    var closestCell: PopularCollectionViewCell?
+
+                    // 먼저 가장 가운데 셀을 찾기
+                    visibleItems.forEach { item in
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? PopularCollectionViewCell else { return }
+
+                        let itemCenterX = item.frame.midX
+                        let distanceFromCenter = abs(itemCenterX - centerX)
+
+                        if distanceFromCenter < closestDistance {
+                            closestDistance = distanceFromCenter
+                            closestCell = cell
+                        }
+                    }
+
+                    // 모든 셀에 transform, z-index, 텍스트 가시성 적용
+                    visibleItems.forEach { item in
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? PopularCollectionViewCell else { return }
+
+                        let itemCenterX = item.frame.midX
+                        let distanceFromCenter = abs(itemCenterX - centerX)
+
+                        // 중앙에 가까울수록 높은 z-index (왼쪽 셀에 가려지지 않도록)
+                        cell.layer.zPosition = 1000 - distanceFromCenter
+
+                        // 가운데 셀일수록 scale이 1.0에 가까움
+                        let normalizedDistance = min(distanceFromCenter / containerWidth, 1.0)
+                        let scale = 1.12 - (normalizedDistance * 0.22) // 1.12 → 0.9
+
+                        let isCenterCell = (cell === closestCell)
+
+                        // 양 옆 셀은 어둡게 처리
+                        let dimAlpha: CGFloat = isCenterCell ? 0.0 : 0.4
+
+                        // contentContainer에만 transform 적용
+                        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseOut, .allowUserInteraction]) {
+                            cell.contentContainer.transform = CGAffineTransform(scaleX: scale, y: scale)
+                            cell.imageView.alpha = 1.0 - dimAlpha
+
+                            // 가운데 셀만 텍스트 보이기, 나머지는 완전히 숨김
+                            cell.floatingTitleLabel.alpha = isCenterCell ? 1.0 : 0.0
+                            cell.subtitleLabel.alpha = isCenterCell ? 1.0 : 0.0
+                            cell.badgeView.alpha = isCenterCell ? 1.0 : 0.0
+                        }
+                    }
+                }
                 return section
+                
             } else {
                 let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/3), heightDimension: .fractionalHeight(1.0)))
                 item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)  // 셀과 셀 사이 간격

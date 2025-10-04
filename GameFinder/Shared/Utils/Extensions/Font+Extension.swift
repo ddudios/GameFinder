@@ -41,12 +41,12 @@ extension UIFont {
     /// SectionHeader
     struct Chosun {
         private init() { }
-        static let bold18 = CustomFont.chosun.of(size: 18, weight: .bold)
         static let regular16 = CustomFont.chosun.of(size: 16)
     }
     
     /// Number
     enum NanumBarunGothic {
+        static let bold16 = CustomFont.nanumBarunGothic.of(size: 16, weight: .bold)
         static let bold12 = CustomFont.nanumBarunGothic.of(size: 12, weight: .bold)
     }
     

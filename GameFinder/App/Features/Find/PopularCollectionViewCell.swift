@@ -50,6 +50,25 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
 
     let badgeView = BadgeView()
 
+    // 출시일 뷰 (upcoming games용)
+    private let releaseDateBadge = {
+        let view = UIView()
+        view.backgroundColor = UIColor.black
+        view.layer.cornerRadius = 16
+        view.clipsToBounds = true
+        view.isHidden = true
+        return view
+    }()
+
+    private let releaseDateTextLabel = {
+        let label = UILabel()
+        label.font = .Chosun.regular16
+        label.textColor = .white
+        label.numberOfLines = 1
+        label.textAlignment = .center
+        return label
+    }()
+
     // 타이틀 컨테이너 (셀 경계를 넘어가도록)
     private let titleContainer = {
         let view = UIView()
@@ -107,6 +126,9 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         subtitleLabel.text = nil
         subtitleLabel.alpha = 0.0
         badgeView.alpha = 0.0
+        badgeView.isHidden = false
+        releaseDateBadge.isHidden = true
+        releaseDateTextLabel.text = nil
         contentContainer.transform = .identity
         contentContainer.alpha = 1.0
         loadingIndicator.stopAnimating()
@@ -127,6 +149,10 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
 
         // 배지는 이미지 위에
         imageContainerView.addSubview(badgeView)
+
+        // 출시일 뷰는 contentContainer 위에 (imageContainer 경계 위로 벗어나게)
+        contentContainer.addSubview(releaseDateBadge)
+        releaseDateBadge.addSubview(releaseDateTextLabel)
     }
     
     override func configureLayout() {
@@ -142,10 +168,9 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         // titleContainer의 z-order를 최상위로 설정
         titleContainer.layer.zPosition = 100
 
-        // imageContainer는 4:3 비율 유지
+        // imageContainer는 contentContainer 전체를 차지 (groupSize와 동일)
         imageContainerView.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(imageContainerView.snp.width).multipliedBy(3.0 / 4.0)
+            make.edges.equalToSuperview()
         }
 
         imageView.snp.makeConstraints { make in
@@ -154,6 +179,17 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
 
         badgeView.snp.makeConstraints { make in
             make.top.leading.equalToSuperview().inset(16)
+        }
+
+        releaseDateBadge.snp.makeConstraints { make in
+            make.centerY.equalTo(imageContainerView.snp.top)
+            make.centerX.equalTo(imageContainerView)
+        }
+        releaseDateBadge.layer.zPosition = 200
+
+        releaseDateTextLabel.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(12)
+            make.top.bottom.equalToSuperview().inset(8)
         }
 
         loadingIndicator.snp.makeConstraints { make in
@@ -197,15 +233,37 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
     }
 
     // MARK: - Configuration
-    func configure(with game: Game) {
+    func configure(with game: Game, isUpcoming: Bool = false) {
         floatingTitleLabel.text = game.name
 
         // 부제목 (장르)
         let genreNames = game.genres.map { $0.name }
         subtitleLabel.text = genreNames.prefix(2).joined(separator: " • ")
 
-        // BadgeView에 별점 표시
-        badgeView.configure(rating: game.rating)
+        if isUpcoming {
+            // Upcoming 섹션: 배지 숨김, 출시일 표시
+            badgeView.isHidden = true
+            releaseDateBadge.isHidden = false
+            if let released = game.released {
+                // "2025-10-16" 형태를 "16 OCT 2025" 형태로 변환
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+
+                if let date = dateFormatter.date(from: released) {
+                    let outputFormatter = DateFormatter()
+                    outputFormatter.dateFormat = "dd MMM yyyy"
+                    outputFormatter.locale = Locale(identifier: "en_US")
+                    releaseDateTextLabel.text = outputFormatter.string(from: date).uppercased()
+                } else {
+                    releaseDateTextLabel.text = released
+                }
+            }
+        } else {
+            // Popular 섹션: 별점 배지 표시, 출시일 숨김
+            badgeView.isHidden = false
+            badgeView.configure(rating: game.rating)
+            releaseDateBadge.isHidden = true
+        }
 
         // VoiceOver 접근성
         isAccessibilityElement = true
