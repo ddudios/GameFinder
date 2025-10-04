@@ -10,6 +10,7 @@ import UIKit
 enum CustomFont: String {
     case chosun = "ChosunGu"
     case nanumBarunGothic = "NanumBarunGothicOTF"
+    case IlsangItalic = "87MMILSANG-Oblique"
     
     enum Weight: String {
         case ultraLight = "UltraLight"
@@ -25,7 +26,7 @@ enum CustomFont: String {
         return UIFont(name: fontName, size: size) ?? UIFont.systemFont(ofSize: 40, weight: .bold)
     }
     
-    func debugPrintInstalledFonts() {
+    static func debugPrintInstalledFonts() {
         UIFont.familyNames.sorted().forEach { family in
             let names = UIFont.fontNames(forFamilyName: family)
             if !names.isEmpty {
@@ -47,6 +48,11 @@ extension UIFont {
     /// Number
     enum NanumBarunGothic {
         static let bold12 = CustomFont.nanumBarunGothic.of(size: 12, weight: .bold)
+    }
+    
+    /// Italic
+    enum IlsangItalic {
+        static let regular12 = CustomFont.IlsangItalic.of(size: 12)
     }
     
     struct Heading {

@@ -9,23 +9,16 @@ import UIKit
 import SnapKit
 import RxSwift
 
-final class FinderCollectionViewCell: BaseCollectionViewCell {
+final class FreeCollectionViewCell: BaseCollectionViewCell {
     
-    let classImageView = {
+    let imageView = {
         let imageView = UIImageView()
-        imageView.backgroundColor = .black
+        imageView.backgroundColor = .systemGray
         imageView.contentMode = .scaleAspectFill
-        imageView.layer.cornerRadius = Radius.card
+        imageView.layer.cornerRadius = Radius.soft
         imageView.isUserInteractionEnabled = true
         imageView.clipsToBounds = true
         return imageView
-    }()
-    
-    let likeButton = {
-        let button = UIButton()
-        button.setImage(UIImage(named: "likeButton_fill"), for: .normal)
-        button.backgroundColor = .clear
-        return button
     }()
     
     private let titleLabel = TitleLabel(text: "Grand Theft Auto V: Story Mode")
@@ -86,39 +79,32 @@ final class FinderCollectionViewCell: BaseCollectionViewCell {
     }
     
     override func configureHierarchy() {
-        contentView.addSubview(classImageView)
-        classImageView.addSubview(likeButton)
+        contentView.addSubview(imageView)
         contentView.addSubview(titleLabel)
         contentView.addSubview(descriptionLabel)
         contentView.addSubview(priceStackView)
     }
     
     override func configureLayout() {
-        classImageView.snp.makeConstraints { make in
+        imageView.snp.makeConstraints { make in
             make.top.equalTo(contentView.snp.top).offset(Spacing.m)
             make.horizontalEdges.equalTo(contentView.snp.horizontalEdges).inset(Spacing.m)
             make.height.equalTo(180)
         }
         
-        likeButton.snp.makeConstraints { make in
-            make.size.equalTo(50)
-            make.top.equalTo(classImageView.snp.top)
-            make.trailing.equalTo(classImageView.snp.trailing)
-        }
-        
         titleLabel.snp.makeConstraints { make in
-            make.top.equalTo(classImageView.snp.bottom).offset(Spacing.m)
-            make.leading.equalTo(classImageView.snp.leading)
+            make.top.equalTo(imageView.snp.bottom).offset(Spacing.m)
+            make.leading.equalTo(imageView.snp.leading)
         }
         
         descriptionLabel.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(Spacing.m)
-            make.horizontalEdges.equalTo(classImageView.snp.horizontalEdges)
+            make.horizontalEdges.equalTo(imageView.snp.horizontalEdges)
         }
         
         priceStackView.snp.makeConstraints { make in
             make.top.equalTo(descriptionLabel.snp.bottom).offset(Spacing.m)
-            make.leading.equalTo(classImageView.snp.leading)
+            make.leading.equalTo(imageView.snp.leading)
         }
     }
 }

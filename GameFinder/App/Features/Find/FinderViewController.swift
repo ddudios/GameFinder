@@ -15,8 +15,19 @@ final class FinderViewController: BaseViewController {
     
     enum Section: CaseIterable {
         case popularGames
-        case upcomingGames
         case freeGames
+        case upcomingGames
+
+        var headerTitle: String {
+            switch self {
+            case .popularGames:
+                return "TOP PLAYED GAMES"
+            case .freeGames:
+                return "TOP FREE GAMES"
+            case .upcomingGames:
+                return "COMING SOON"
+            }
+        }
     }
     
     private lazy var collectionView: UICollectionView = {
@@ -32,7 +43,7 @@ final class FinderViewController: BaseViewController {
     // error: Type 'Basic' does not conform to protocol 'Hashable' -> 해결: Basic에 Hashable 프로토콜 채택
     // cell을 꾸미는 로직은 registration프로퍼티로만
     // <어떤 셀 사용, 어떤 데이터 타입 사용>
-    private var registration: UICollectionView.CellRegistration<FinderCollectionViewCell, Game>!
+    private var freeRegistration: UICollectionView.CellRegistration<FreeCollectionViewCell, Game>!
     // SystemCell이름: UICollectionViewListCell
     // 각 Cell에 들어가는 데이터 타입: String
     // 무조건 들어가는 게 확정 !
@@ -44,7 +55,10 @@ final class FinderViewController: BaseViewController {
      cellForItemAt [0, 1]
      cell registration [0, 1]
      */// Featured 셀 registration 추가
-    private var featuredRegistration: UICollectionView.CellRegistration<FeaturedGameCell, Game>!
+    private var popularRegistration: UICollectionView.CellRegistration<PopularCollectionViewCell, Game>!
+
+    // 헤더 registration
+    private var headerRegistration: UICollectionView.SupplementaryRegistration<SectionHeaderView>!
     
     private let viewModel = FinderViewModel()
     private let disposeBag = DisposeBag()
@@ -58,6 +72,8 @@ final class FinderViewController: BaseViewController {
         bind()
         configureCellRegistration()
         updateSnapshot()
+        
+//        CustomFont.debugPrintInstalledFonts()
     }
 
     override func viewDidLayoutSubviews() {
@@ -71,7 +87,7 @@ final class FinderViewController: BaseViewController {
 
     private func applyInitialCenterCellEffects() {
         // 첫 번째 셀에 가운데 셀 효과 즉시 적용
-        guard let firstCell = collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? FeaturedGameCell else {
+        guard let firstCell = collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? PopularCollectionViewCell else {
             return
         }
 
@@ -91,10 +107,10 @@ final class FinderViewController: BaseViewController {
         let centerX = collectionView.contentOffset.x + containerWidth / 2
 
         var closestDistance: CGFloat = .infinity
-        var closestCell: FeaturedGameCell?
+        var closestCell: PopularCollectionViewCell?
 
         collectionView.visibleCells.forEach { cell in
-            guard let featuredCell = cell as? FeaturedGameCell,
+            guard let featuredCell = cell as? PopularCollectionViewCell,
                   let indexPath = collectionView.indexPath(for: cell),
                   indexPath.section == 0 else { return }
 
@@ -109,7 +125,7 @@ final class FinderViewController: BaseViewController {
 
         // 가운데 셀의 텍스트와 배지만 표시
         collectionView.visibleCells.forEach { cell in
-            guard let featuredCell = cell as? FeaturedGameCell else { return }
+            guard let featuredCell = cell as? PopularCollectionViewCell else { return }
             let isCenterCell = (featuredCell === closestCell)
             featuredCell.floatingTitleLabel.alpha = isCenterCell ? 1.0 : 0.0
             featuredCell.subtitleLabel.alpha = isCenterCell ? 1.0 : 0.0
@@ -211,25 +227,33 @@ final class FinderViewController: BaseViewController {
     // registration 초기화
     private func configureCellRegistration() {
         // cellForItemAt 셀 디자인 데이터 처리하는 코드
-        featuredRegistration = UICollectionView.CellRegistration<FeaturedGameCell, Game> { cell, indexPath, game in
+        popularRegistration = UICollectionView.CellRegistration<PopularCollectionViewCell, Game> { cell, indexPath, game in
             cell.configure(with: game)
         }
-        
-        registration = UICollectionView.CellRegistration<FinderCollectionViewCell, Game> { cell, indexPath, itemIdentifier in
+
+        freeRegistration = UICollectionView.CellRegistration<FreeCollectionViewCell, Game> { cell, indexPath, itemIdentifier in
             print("cell registration", indexPath)
             // 위의 registeration을 가져와서 let cell = collectionView.dequeueConfiguredReusableCell(using: registration, for: indexPath, item: "고래밥")의 indexPath, item을 매개변수indexPath, itemIdentifier로 전달받아서 실행됨
-            
+
             cell.priceLabel.text = itemIdentifier.name
-            
+
             var content = UIListContentConfiguration.valueCell()//subtitleCell()  // systemCell
             content.text = itemIdentifier.name//self.list[indexPath.item].name  // 작동은 하지만 cellRegistration이 만들어진 애플의 의도를 모르는 것
             content.textProperties.color = .brown
             content.secondaryText = "\(itemIdentifier.id)"
             cell.contentConfiguration = content
-            
+
             var background = UIBackgroundConfiguration.listGroupedCell()
             background.backgroundColor = .lightGray  // 셀의 배경색
             cell.backgroundConfiguration = background
+        }
+
+        // 헤더 registration
+        headerRegistration = UICollectionView.SupplementaryRegistration<SectionHeaderView>(
+            elementKind: UICollectionView.elementKindSectionHeader
+        ) { supplementaryView, elementKind, indexPath in
+            let section = Section.allCases[indexPath.section]
+            supplementaryView.configure(with: section.headerTitle)
         }
         
         // UICollectionViewDataSource Protocol: 셀 갯수, 셀 재사용 명세
@@ -239,16 +263,16 @@ final class FinderViewController: BaseViewController {
             collectionView: collectionView
         ) { collectionView, indexPath, itemIdentifier in
             return collectionView.dequeueConfiguredReusableCell(
-                using: self.featuredRegistration,
+                using: self.popularRegistration,
                 for: indexPath,
                 item: itemIdentifier
             )
-            
+
             // Section에 따라 다른 셀 반환
 //            let sectionType = Section.allCases[indexPath.section]
-//            
+//
 //            if sectionType == .popularGames {
-//                
+//
 //                return collectionView.dequeueConfiguredReusableCell(
 //                    using: self.featuredRegistration,
 //                    for: indexPath,
@@ -261,6 +285,14 @@ final class FinderViewController: BaseViewController {
 //                    item: itemIdentifier
 //                )
 //            }
+        }
+
+        // 헤더 설정
+        dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
+            return collectionView.dequeueConfiguredReusableSupplementary(
+                using: self.headerRegistration,
+                for: indexPath
+            )
         }
     }
     
@@ -321,7 +353,7 @@ extension FinderViewController {
                 // 그룹 사이즈 (셀 크기)
                 let groupSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(0.75),
-                    heightDimension: .absolute(300)
+                    heightDimension: .fractionalWidth(0.75 * 3/4)
                 )
 
                 let group = NSCollectionLayoutGroup.horizontal(
@@ -333,8 +365,20 @@ extension FinderViewController {
                 section.orthogonalScrollingBehavior = .groupPagingCentered
                 section.interGroupSpacing = 20
                 section.contentInsets = NSDirectionalEdgeInsets(
-                    top: 20, leading: 0, bottom: 80, trailing: 0
+                    top: 8, leading: 0, bottom: 16, trailing: 0
                 )
+
+                // 섹션 헤더 추가
+                let headerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(50)
+                )
+                let header = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: headerSize,
+                    elementKind: UICollectionView.elementKindSectionHeader,
+                    alignment: .top
+                )
+                section.boundarySupplementaryItems = [header]
 
                 // 스크롤 시 셀 transform, z-index, 텍스트 가시성 업데이트
                 section.visibleItemsInvalidationHandler = { [weak collectionView] visibleItems, scrollOffset, layoutEnvironment in
@@ -344,11 +388,11 @@ extension FinderViewController {
                     let centerX = scrollOffset.x + containerWidth / 2
 
                     var closestDistance: CGFloat = .infinity
-                    var closestCell: FeaturedGameCell?
+                    var closestCell: PopularCollectionViewCell?
 
                     // 먼저 가장 가운데 셀을 찾기
                     visibleItems.forEach { item in
-                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? FeaturedGameCell else { return }
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? PopularCollectionViewCell else { return }
 
                         let itemCenterX = item.frame.midX
                         let distanceFromCenter = abs(itemCenterX - centerX)
@@ -361,7 +405,7 @@ extension FinderViewController {
 
                     // 모든 셀에 transform, z-index, 텍스트 가시성 적용
                     visibleItems.forEach { item in
-                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? FeaturedGameCell else { return }
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? PopularCollectionViewCell else { return }
 
                         let itemCenterX = item.frame.midX
                         let distanceFromCenter = abs(itemCenterX - centerX)
@@ -390,50 +434,104 @@ extension FinderViewController {
                         }
                     }
                 }
-
                 return section
 
-            } else if index == 1 {
+            } else if sectionType == .freeGames {
                 let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1/4)))
                 item.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)  // 셀과 셀 사이 간격
-                
+
                 // outerGroup 기준 크기
                 let innerGroupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
-                
+
                 let innerGroup = NSCollectionLayoutGroup.vertical(layoutSize: innerGroupSize, subitems: [item])
-                
+
                 // NSCollectionLayoutSize타입이 필요하다고해서 생성
                 // 가상의 사각형 바구니 크기
                 // .fractionalWidth: 비율 기반 사이즈 조절 (디바이스 전체 너비 기준)
                 let outerGroupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.8), heightDimension: .absolute(400))
-                
+
                 // NSCollectionLayoutGroup타입이 필요하다고해서 생성
                 // 가상의 사각형 바구니 안에 셀을 그려라
                 let outerGroup = NSCollectionLayoutGroup.horizontal(layoutSize: outerGroupSize, subitems: [innerGroup])
-                
+
                 // NSCollectionLayoutSection타입이 필요하다고해서 생성
                 let section = NSCollectionLayoutSection(group: outerGroup)
                 //        section.orthogonalScrollingBehavior = .continuous  // 수평 스크롤: 컬렉션뷰 안에 하나의 섹션이 있고 하나의 섹션 안에서 그룹으로 만들 수 있는데, 그 그룹이 옆으로 붙어있음
                 section.orthogonalScrollingBehavior = .groupPaging  // 수평 스크롤 + 가속도 설정(그룹 기준 페이징 왼쪽 정렬)
-                
+
+                // 섹션 헤더 추가
+                let headerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(50)
+                )
+                let header = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: headerSize,
+                    elementKind: UICollectionView.elementKindSectionHeader,
+                    alignment: .top
+                )
+                section.boundarySupplementaryItems = [header]
+
                 return section
-            } else {
+                
+            } else if sectionType == .upcomingGames {
                 let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/3), heightDimension: .fractionalHeight(1.0)))
                 item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)  // 셀과 셀 사이 간격
-                
+
                 // NSCollectionLayoutSize타입이 필요하다고해서 생성
                 // 가상의 사각형 바구니 크기
                 //        let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(330), heightDimension: .absolute(80))
                 // .fractionalWidth: 비율 기반 사이즈 조절 (디바이스 전체 너비 기준)
                 let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(150))
-                
+
                 // NSCollectionLayoutGroup타입이 필요하다고해서 생성
                 // 가상의 사각형 바구니 안에 셀을 그려라
                 let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-                
+
                 // NSCollectionLayoutSection타입이 필요하다고해서 생성
                 let section = NSCollectionLayoutSection(group: group)
-                
+
+                // 섹션 헤더 추가
+                let headerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(50)
+                )
+                let header = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: headerSize,
+                    elementKind: UICollectionView.elementKindSectionHeader,
+                    alignment: .top
+                )
+                section.boundarySupplementaryItems = [header]
+
+                return section
+            } else {
+                let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/3), heightDimension: .fractionalHeight(1.0)))
+                item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)  // 셀과 셀 사이 간격
+
+                // NSCollectionLayoutSize타입이 필요하다고해서 생성
+                // 가상의 사각형 바구니 크기
+                //        let groupSize = NSCollectionLayoutSize(widthDimension: .absolute(330), heightDimension: .absolute(80))
+                // .fractionalWidth: 비율 기반 사이즈 조절 (디바이스 전체 너비 기준)
+                let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(150))
+
+                // NSCollectionLayoutGroup타입이 필요하다고해서 생성
+                // 가상의 사각형 바구니 안에 셀을 그려라
+                let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+
+                // NSCollectionLayoutSection타입이 필요하다고해서 생성
+                let section = NSCollectionLayoutSection(group: group)
+
+                // 섹션 헤더 추가
+                let headerSize = NSCollectionLayoutSize(
+                    widthDimension: .fractionalWidth(1.0),
+                    heightDimension: .absolute(50)
+                )
+                let header = NSCollectionLayoutBoundarySupplementaryItem(
+                    layoutSize: headerSize,
+                    elementKind: UICollectionView.elementKindSectionHeader,
+                    alignment: .top
+                )
+                section.boundarySupplementaryItems = [header]
+
                 return section
             }
         }

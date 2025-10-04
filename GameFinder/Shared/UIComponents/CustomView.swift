@@ -77,30 +77,25 @@ final class BadgeView: UIView {
     }
 }
 
-final class FeaturedHeaderView: UICollectionReusableView {
-    static let kind = "FeaturedHeaderView"
+final class SectionHeaderView: UICollectionReusableView {
     private let label = UILabel()
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
-        label.text = "DAILY CHALLENGE\nFOR EVERYONE"
         label.textAlignment = .center
-        label.textColor = UIColor.secondaryLabel
+        label.textColor = .systemGray
         label.numberOfLines = 2
-        label.font = .systemFont(ofSize: 13, weight: .medium)
+        label.font = .Chosun.regular16
+        
         addSubview(label)
-        label.snp.makeConstraints { $0.edges.equalToSuperview() }
+        label.snp.makeConstraints {
+            $0.horizontalEdges.equalToSuperview().inset(100)
+            $0.centerY.equalToSuperview()
+        }
     }
     required init?(coder: NSCoder) { fatalError() }
-}
 
-final class FeaturedPageControlView: UICollectionReusableView {
-    static let kind = "FeaturedPageControlView"
-    let pageControl = UIPageControl()
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        pageControl.hidesForSinglePage = true
-        addSubview(pageControl)
-        pageControl.snp.makeConstraints { $0.center.equalToSuperview() }
+    func configure(with text: String) {
+        label.text = text
     }
-    required init?(coder: NSCoder) { fatalError() }
 }

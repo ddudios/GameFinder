@@ -20,8 +20,8 @@ enum Spacing {
 
 enum Radius {
 //    static let none:  CGFloat = 0
-//    static let soft:  CGFloat = 8
-    static let card:  CGFloat = 16
+    static let soft:  CGFloat = 8
+//    static let card:  CGFloat = 16
     static let circle: CGFloat = 2
 }
 

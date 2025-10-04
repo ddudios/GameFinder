@@ -9,7 +9,7 @@ import UIKit
 import SnapKit
 import Kingfisher
 
-final class FeaturedGameCell: BaseCollectionViewCell {
+final class PopularCollectionViewCell: BaseCollectionViewCell {
 
     // MARK: - UI Components
     // 모든 컨텐츠를 담는 컨테이너 (transform은 여기에만 적용)
@@ -73,7 +73,7 @@ final class FeaturedGameCell: BaseCollectionViewCell {
 
     let subtitleLabel = {
         let label = UILabel()
-        label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+        label.font = .IlsangItalic.regular12
         label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor.white.withAlphaComponent(1.0) // 완전 불투명
         label.numberOfLines = 1

@@ -8,6 +8,7 @@
 	<string>$(RAWG_Client_Key)</string>
 	<key>UIAppFonts</key>
 	<array>
+		<string>87MMILSANG-Oblique.otf</string>
 		<string>NanumBarunGothicLight.otf</string>
 		<string>NanumBarunGothicBold.otf</string>
 		<string>NanumBarunGothicUltraLight.otf</string>
