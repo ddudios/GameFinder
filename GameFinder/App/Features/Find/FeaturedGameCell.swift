@@ -130,7 +130,6 @@ final class FeaturedGameCell: BaseCollectionViewCell {
     }
     
     override func configureLayout() {
-        // contentView clipsToBounds = false로 설정하여 타이틀이 경계 밖으로 나갈 수 있게
         contentView.clipsToBounds = false
         contentView.backgroundColor = .clear
         backgroundColor = .clear

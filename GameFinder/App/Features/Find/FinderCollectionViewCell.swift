@@ -11,10 +11,6 @@ import RxSwift
 
 final class FinderCollectionViewCell: BaseCollectionViewCell {
     
-//    private var palette: AppPalette {
-//        AppColor.selected.palette(for: traitCollection)
-//    }
-    
     let classImageView = {
         let imageView = UIImageView()
         imageView.backgroundColor = .black

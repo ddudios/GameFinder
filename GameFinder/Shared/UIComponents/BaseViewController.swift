@@ -21,4 +21,8 @@ class BaseViewController: UIViewController {
     func configureView() {
         view.backgroundColor = .black
     }
+    
+    deinit {
+        print("deinit: \(String(describing: type(of: self)))")
+    }
 }

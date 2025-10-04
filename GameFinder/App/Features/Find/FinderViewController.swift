@@ -135,8 +135,6 @@ final class FinderViewController: BaseViewController {
             .subscribe(with: self) { owner, games in
                 print("popularGames 받음: \(games.count)개")
                 owner.updateSection(.popularGames, with: games)
-            } onDisposed: { owner in
-                print("popularGames 구독 해제")
             }
             .disposed(by: disposeBag)
 
@@ -146,8 +144,6 @@ final class FinderViewController: BaseViewController {
             .subscribe(with: self) { owner, games in
                 print("freeGames 받음: \(games.count)개")
                 owner.updateSection(.freeGames, with: games)
-            } onDisposed: { owner in
-                print("freeGames 구독 해제")
             }
             .disposed(by: disposeBag)
 
@@ -157,8 +153,6 @@ final class FinderViewController: BaseViewController {
             .subscribe(with: self) { owner, games in
                 print("upcomingGames 받음: \(games.count)개")
                 owner.updateSection(.upcomingGames, with: games)
-            } onDisposed: { owner in
-                print("upcomingGames 구독 해제")
             }
             .disposed(by: disposeBag)
         
