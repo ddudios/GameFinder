@@ -74,7 +74,7 @@ final class FinderViewController: BaseViewController {
         configureCellRegistration()
         updateSnapshot()
         
-//        CustomFont.debugPrintInstalledFonts()
+        CustomFont.debugPrintInstalledFonts()
     }
 
     override func viewDidLayoutSubviews() {
@@ -279,15 +279,33 @@ final class FinderViewController: BaseViewController {
         }
 
         // 헤더 설정
-        dataSource.supplementaryViewProvider = { collectionView, kind, indexPath in
-            return collectionView.dequeueConfiguredReusableSupplementary(
+        dataSource.supplementaryViewProvider = { [weak self] collectionView, kind, indexPath in
+            guard let self = self else { return nil }
+
+            let header = collectionView.dequeueConfiguredReusableSupplementary(
                 using: self.headerRegistration,
                 for: indexPath
             )
+
+            if let headerView = header as? SectionHeaderView {
+                let section = Section.allCases[indexPath.section]
+                headerView.onTap = { [weak self] in
+                    guard let self else { return }
+                    self.navigateToHeaderDetail(section: section)
+                }
+            }
+
+            return header
         }
     }
-    
-    
+
+    // MARK: - Navigation
+    private func navigateToHeaderDetail(section: Section) {
+        let viewModel = HeaderDetailViewModel(sectionType: section)
+        let detailVC = HeaderDetailViewController(viewModel: viewModel)
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+
     override func configureHierarchy() {
         view.addSubview(collectionView)
     }

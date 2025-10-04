@@ -78,7 +78,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
 
     let floatingTitleLabel = {
         let label = UILabel()
-        label.font = UIFont.preferredFont(forTextStyle: .title1)
+        label.font = .Heading.heavy24
         label.adjustsFontForContentSizeCategory = true
         label.textColor = UIColor.white.withAlphaComponent(1.0) // 완전 불투명
         label.numberOfLines = 2

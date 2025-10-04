@@ -23,7 +23,7 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
 
     private let titleLabel = {
         let label = UILabel()
-        label.font = .Heading.bold18
+        label.font = .Title.bold16
         label.textColor = .label
         label.numberOfLines = 1
         return label

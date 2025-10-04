@@ -57,13 +57,12 @@ extension UIFont {
     
     struct Heading {
         private init() { }
-        static let bold18 = UIFont.systemFont(ofSize: 18, weight: .bold)
-        static let bold16 = UIFont.systemFont(ofSize: 16, weight: .bold)
+        static let heavy24 = UIFont.systemFont(ofSize: 24, weight: .heavy)
     }
     
     struct Title {
         private init() { }
-        static let semibold14 = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        static let bold16 = UIFont.systemFont(ofSize: 16, weight: .bold)
     }
     
     struct Body {

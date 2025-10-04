@@ -79,23 +79,45 @@ final class BadgeView: UIView {
 
 final class SectionHeaderView: UICollectionReusableView {
     private let label = UILabel()
-    
+    private let chevronImageView = UIImageView()
+    var onTap: (() -> Void)?
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         label.textAlignment = .center
         label.textColor = .systemGray
-        label.numberOfLines = 2
+        label.numberOfLines = 1
         label.font = .Chosun.regular16
-        
+
+        chevronImageView.image = UIImage(systemName: "chevron.right")
+        chevronImageView.tintColor = .systemGray
+        chevronImageView.contentMode = .scaleAspectFit
+
         addSubview(label)
+        addSubview(chevronImageView)
+
         label.snp.makeConstraints {
-            $0.horizontalEdges.equalToSuperview().inset(100)
-            $0.centerY.equalToSuperview()
+            $0.center.equalToSuperview()
         }
+
+        chevronImageView.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(20)
+            $0.centerY.equalToSuperview()
+            $0.size.equalTo(20)
+        }
+
+        // 탭 제스처 추가
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        addGestureRecognizer(tapGesture)
+        isUserInteractionEnabled = true
     }
     required init?(coder: NSCoder) { fatalError() }
 
     func configure(with text: String) {
         label.text = text
+    }
+
+    @objc private func handleTap() {
+        onTap?()
     }
 }

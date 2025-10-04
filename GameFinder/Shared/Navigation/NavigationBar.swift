@@ -16,7 +16,7 @@ final class NavigationBar {
         appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
         
         let buttonAppearance = UIBarButtonItemAppearance(style: .plain)
-        buttonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.label]
+        buttonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
         buttonAppearance.highlighted.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
         appearance.buttonAppearance = buttonAppearance
         

@@ -11,7 +11,7 @@ extension BaseViewController {
     func setNavigationLeftTitle(_ title: String) {
         let label = UILabel()
         label.text = title
-        label.font = UIFont.Heading.bold18
+        label.font = .Title.bold16
         label.textColor = .label
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: label)
     }
