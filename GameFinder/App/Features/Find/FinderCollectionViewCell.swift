@@ -11,9 +11,9 @@ import RxSwift
 
 final class FinderCollectionViewCell: BaseCollectionViewCell {
     
-    private var palette: AppPalette {
-        AppColor.selected.palette(for: traitCollection)
-    }
+//    private var palette: AppPalette {
+//        AppColor.selected.palette(for: traitCollection)
+//    }
     
     let classImageView = {
         let imageView = UIImageView()
@@ -84,20 +84,6 @@ final class FinderCollectionViewCell: BaseCollectionViewCell {
         disposeBag = DisposeBag()
     }
     
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if previousTraitCollection?.hasDifferentColorAppearance(comparedTo: traitCollection) == true {
-            applyPalette()
-        }
-    }
-
-    private func applyPalette() {
-        let p = palette
-        descriptionLabel.textColor = p.textSecondary
-        rateLabel.textColor = p.textPrimary
-        priceLabel.textColor = p.textPrimary
-    }
-    
     func setData(title: String, categoryTitle: String, description: String) {
         titleLabel.text = title
         descriptionLabel.text = description
@@ -138,10 +124,5 @@ final class FinderCollectionViewCell: BaseCollectionViewCell {
             make.top.equalTo(descriptionLabel.snp.bottom).offset(Spacing.m)
             make.leading.equalTo(classImageView.snp.leading)
         }
-    }
-    
-    override func configureView() {
-        super.configureView()
-        applyPalette()
     }
 }

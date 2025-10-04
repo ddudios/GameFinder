@@ -23,6 +23,6 @@ class BaseCollectionViewCell: UICollectionViewCell {
     func configureHierarchy() { }
     func configureLayout() { }
     func configureView() {
-        contentView.backgroundColor = AppColor.selected.palette(for: traitCollection).background
+        contentView.backgroundColor = .clear
     }
 }

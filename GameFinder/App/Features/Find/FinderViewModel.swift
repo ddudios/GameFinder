@@ -71,21 +71,10 @@ final class FinderViewModel: RxViewModelProtocol {
                 case .success(let gameListDTO):
                     let games = gameListDTO.results.map { Game(from: $0) }
                     freeGames.accept(games)
-                    print("✅ 무료 게임 로드 완료: \(games.count)개")
                     
                 case .failure(let networkError):
                     errorAlertMessage.onNext(networkError.errorDescription ?? "무료 게임 로드 실패")
-                    print("❌ 무료 게임 로드 실패: \(networkError)")
                 }
-                
-            } onError: { owner, error in
-                print("❌ onError: 무료 게임 -", error)
-                
-            } onCompleted: { owner in
-                print("✅ onCompleted: 무료 게임")
-                
-            } onDisposed: { owner in
-                print("🗑️ onDisposed: 무료 게임")
             }
             .disposed(by: disposeBag)
         
@@ -114,21 +103,11 @@ final class FinderViewModel: RxViewModelProtocol {
                 case .success(let gameListDTO):
                     let games = gameListDTO.results.map { Game(from: $0) }
                     upcomingGames.accept(games)
-                    print("✅ 출시 예정 게임 로드 완료: \(games.count)개")
                     
                 case .failure(let networkError):
                     errorAlertMessage.onNext(networkError.errorDescription ?? "출시 예정 게임 로드 실패")
-                    print("❌ 출시 예정 게임 로드 실패: \(networkError)")
+                    print("출시 예정 게임 로드 실패: \(networkError)")
                 }
-                
-            } onError: { owner, error in
-                print("❌ onError: 출시 예정 게임 -", error)
-                
-            } onCompleted: { owner in
-                print("✅ onCompleted: 출시 예정 게임")
-                
-            } onDisposed: { owner in
-                print("🗑️ onDisposed: 출시 예정 게임")
             }
             .disposed(by: disposeBag)
         

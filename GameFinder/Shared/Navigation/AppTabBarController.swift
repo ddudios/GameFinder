@@ -61,7 +61,7 @@ final class AppTabBarController: UITabBarController {
     private func configureTabBarAppearance() {
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
-        tabBarAppearance.backgroundColor = .clear
+        tabBarAppearance.backgroundColor = .systemBackground
         
         tabBarAppearance.stackedLayoutAppearance.selected.iconColor = UIColor.label
         tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.label]

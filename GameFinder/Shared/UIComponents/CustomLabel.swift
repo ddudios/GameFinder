@@ -20,7 +20,7 @@ final class TitleLabel: UILabel {
         super.init(frame: .zero)
         self.text = text
         font = .Highlight.heavy15
-        textColor = AppColor.selected.palette(for: traitCollection).textPrimary
+        textColor = .label
     }
 }
 
@@ -37,6 +37,6 @@ final class SubtitleLabel: UILabel {
         super.init(frame: .zero)
         self.text = text
         font = .Prominent.semibold14
-        textColor = AppColor.selected.palette(for: traitCollection).textSecondary
+        textColor = .secondaryLabel
     }
 }

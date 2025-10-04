@@ -39,17 +39,23 @@ final class BadgeView: UIView {
     }
     
     private func setupUI() {
-        // 배경 블러
+        // 배경 블러 (반투명)
         let blurEffect = UIBlurEffect(style: .systemThinMaterialDark)
         let blurView = UIVisualEffectView(effect: blurEffect)
         blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        blurView.alpha = 0.8 // 반투명 블러
         insertSubview(blurView, at: 0)
-        
+
+        // 블러 뷰에 frame 설정
+        blurView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
         let stackView = UIStackView(arrangedSubviews: [icon, textLabel])
         stackView.axis = .horizontal
         stackView.spacing = Spacing.xxxs
         stackView.alignment = .center
-        
+
         addSubview(stackView)
         icon.snp.makeConstraints { make in
             make.size.equalTo(Size.xs)
@@ -57,13 +63,17 @@ final class BadgeView: UIView {
         stackView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(8)
         }
-        
-        backgroundColor = UIColor.black.withAlphaComponent(0.7)
+
+        backgroundColor = UIColor.black.withAlphaComponent(0.5) // 더 투명하게
         clipsToBounds = true
     }
     
     func configure(text: String) {
         textLabel.text = text
+    }
+
+    func configure(rating: Double) {
+        textLabel.text = String(format: "%.1f", rating)
     }
 }
 

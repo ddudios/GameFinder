@@ -19,25 +19,13 @@ final class FinderViewController: BaseViewController {
         case freeGames
     }
     
-    private let searchBarContainer = {
-        let view = UIView()
-        view.backgroundColor = .white
-        view.layer.borderWidth = Border.thin
-        view.clipsToBounds = true
-        return view
-    }()
-    private let searchBarTextField = {
-        let textField = UITextField()
-        textField.placeholder = L10n.Finder.searchPlaceholder
-        return textField
-    }()
-    private lazy var collectionView = {
-        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: FinderViewController.createLayout())
+    private lazy var collectionView: UICollectionView = {
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
         collectionView.delegate = self
-        collectionView.backgroundColor = .clear
+        collectionView.backgroundColor = .black
+        collectionView.clipsToBounds = false
         return collectionView
     }()
-    
     
     // <섹션을 구분해주는 데이터 타입, 셀의 데이터 타입>
     private var dataSource: UICollectionViewDiffableDataSource<Section, Game>!
@@ -61,23 +49,77 @@ final class FinderViewController: BaseViewController {
     private let viewModel = FinderViewModel()
     private let disposeBag = DisposeBag()
     private let viewWillAppear = PublishRelay<Void>()
+    private var hasInitializedCenterCell = false
     
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        collectionView.collectionViewLayout = FinderViewController.createLayout(collectionView: collectionView)
         bind()
         configureCellRegistration()
         updateSnapshot()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // 첫 화면 레이아웃 후 첫 번째 셀의 텍스트와 효과를 즉시 적용
+        if !hasInitializedCenterCell && collectionView.visibleCells.count > 0 {
+            applyInitialCenterCellEffects()
+            hasInitializedCenterCell = true
+        }
+    }
+
+    private func applyInitialCenterCellEffects() {
+        // 첫 번째 셀에 가운데 셀 효과 즉시 적용
+        guard let firstCell = collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? FeaturedGameCell else {
+            return
+        }
+
+        // 확대 효과
+        firstCell.contentContainer.transform = CGAffineTransform(scaleX: 1.12, y: 1.12)
+        firstCell.layer.zPosition = 1000
+
+        // 텍스트와 배지 표시
+        firstCell.floatingTitleLabel.alpha = 1.0
+        firstCell.subtitleLabel.alpha = 1.0
+        firstCell.badgeView.alpha = 1.0
+        firstCell.imageView.alpha = 1.0
+    }
+
+    private func updateCenterCellVisibility() {
+        let containerWidth = collectionView.bounds.width
+        let centerX = collectionView.contentOffset.x + containerWidth / 2
+
+        var closestDistance: CGFloat = .infinity
+        var closestCell: FeaturedGameCell?
+
+        collectionView.visibleCells.forEach { cell in
+            guard let featuredCell = cell as? FeaturedGameCell,
+                  let indexPath = collectionView.indexPath(for: cell),
+                  indexPath.section == 0 else { return }
+
+            let cellCenterX = cell.frame.midX
+            let distanceFromCenter = abs(cellCenterX - centerX)
+
+            if distanceFromCenter < closestDistance {
+                closestDistance = distanceFromCenter
+                closestCell = featuredCell
+            }
+        }
+
+        // 가운데 셀의 텍스트와 배지만 표시
+        collectionView.visibleCells.forEach { cell in
+            guard let featuredCell = cell as? FeaturedGameCell else { return }
+            let isCenterCell = (featuredCell === closestCell)
+            featuredCell.floatingTitleLabel.alpha = isCenterCell ? 1.0 : 0.0
+            featuredCell.subtitleLabel.alpha = isCenterCell ? 1.0 : 0.0
+            featuredCell.badgeView.alpha = isCenterCell ? 1.0 : 0.0
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         viewWillAppear.accept(())
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        searchBarContainer.layer.cornerRadius = searchBarContainer.bounds.height / Radius.circle
     }
     
     //MARK: - Bind
@@ -143,26 +185,26 @@ final class FinderViewController: BaseViewController {
     }
     
     private func updateSection(_ section: Section, with games: [Game]) {
-        
+
         guard !games.isEmpty else {
             print("\(section) 섹션: 게임 데이터가 비어있음")
             return
         }
-        
+
         var snapshot = dataSource.snapshot()
-        
+
         // 섹션이 없으면 추가
         if !snapshot.sectionIdentifiers.contains(section) {
             snapshot.appendSections([section])
         }
-        
+
         // 기존 아이템 제거
         let oldItems = snapshot.itemIdentifiers(inSection: section)
         snapshot.deleteItems(oldItems)
-        
+
         // 새 아이템 추가: 어떤 섹션에 어떤 데이터를 넣을지
         snapshot.appendItems(games, toSection: section)
-        
+
         // collectionView.reloadData() 대신에 이전 이후를 비교해서 달라진 부분만 업데이트
         dataSource.apply(snapshot, animatingDifferences: true)
     }
@@ -230,27 +272,12 @@ final class FinderViewController: BaseViewController {
     
     
     override func configureHierarchy() {
-        view.addSubview(searchBarContainer)
-        searchBarContainer.addSubview(searchBarTextField)
-        
         view.addSubview(collectionView)
     }
     
     override func configureLayout() {
-        searchBarContainer.snp.makeConstraints { make in
-            make.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges).inset(Spacing.m)
-            make.height.equalTo(ControlHeight.regular)
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(Spacing.m)
-        }
-        
-        searchBarTextField.snp.makeConstraints { make in
-            make.horizontalEdges.equalTo(searchBarContainer.snp.horizontalEdges).inset(Spacing.m)
-            make.centerY.equalToSuperview()
-            make.height.equalToSuperview()
-        }
-        
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(searchBarContainer.snp.bottom).offset(Spacing.m)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(Spacing.m)
             make.bottom.equalTo(view.safeAreaLayoutGuide)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges).inset(Spacing.xxs)
         }
@@ -258,13 +285,8 @@ final class FinderViewController: BaseViewController {
     
     override func configureView() {
         super.configureView()
+        view.backgroundColor = .black
         configureNavigationBar()
-        
-        let palette = AppColor.selected.palette(for: traitCollection)
-        searchBarContainer.layer.borderColor = palette.glassBorder.cgColor
-        
-        let blur = BlurView(style: .systemThinMaterialLight)
-        blur.attach(to: searchBarContainer)
     }
     
 }
@@ -272,7 +294,7 @@ final class FinderViewController: BaseViewController {
 //MARK: - UICollectionViewDelegate
 extension FinderViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        
+
         guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         // dataSource: 모든 섹션과 셀에 대한 정보를 이 프로퍼티가 가지고 있음 (append, apply 모두 dataSource가 알고 있음)
         // 이 메서드를 통해서 선택한 셀에 대한 정보를 꺼내옴 (해당 indexPath를 )
@@ -283,44 +305,100 @@ extension FinderViewController: UICollectionViewDelegate {
          Optional(SeSac7HardwareDatabase.Basic(key: 386461, id: C9234C87-F44B-46E0-A35B-3FCC129DB2F4, name: "sd", age: 234))
          */
     }
+
 }
 
 
 extension FinderViewController {
-    private static func createLayout() -> UICollectionViewLayout {
-        let layout = UICollectionViewCompositionalLayout { index, _ in
-            
+    private static func createLayout(collectionView: UICollectionView) -> UICollectionViewLayout {
+        let layout = UICollectionViewCompositionalLayout { index, layoutEnvironment in
+
             let sectionType = Section.allCases[index]
-            
+
             if sectionType == .popularGames {
+                // 캐러셀 셀 아이템
                 let item = NSCollectionLayoutItem(
                     layoutSize: NSCollectionLayoutSize(
                         widthDimension: .fractionalWidth(1),
                         heightDimension: .fractionalHeight(1)
                     )
                 )
-                item.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)  // 셀과 셀 사이 간격
-                
+
+                // 그룹 사이즈 (셀 크기)
                 let groupSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(0.8),
-                    heightDimension: .absolute(400)
+                    widthDimension: .fractionalWidth(0.75),
+                    heightDimension: .absolute(300)
                 )
-                
+
                 let group = NSCollectionLayoutGroup.horizontal(
                     layoutSize: groupSize,
                     subitems: [item]
                 )
-                
-                
+
                 let section = NSCollectionLayoutSection(group: group)
-                section.orthogonalScrollingBehavior = .groupPagingCentered  // 수평 스크롤 + 그룹 기준으로 가운데 정렬(항상 중앙에 멈춤) (가운데 확대하면 그럴싸한 UI 가능)
-                section.interGroupSpacing = 16
+                section.orthogonalScrollingBehavior = .groupPagingCentered
+                section.interGroupSpacing = 20
                 section.contentInsets = NSDirectionalEdgeInsets(
-                    top: 20, leading: 24, bottom: 20, trailing: 24
+                    top: 20, leading: 0, bottom: 80, trailing: 0
                 )
-                
+
+                // 스크롤 시 셀 transform, z-index, 텍스트 가시성 업데이트
+                section.visibleItemsInvalidationHandler = { [weak collectionView] visibleItems, scrollOffset, layoutEnvironment in
+                    guard let collectionView = collectionView else { return }
+
+                    let containerWidth = layoutEnvironment.container.contentSize.width
+                    let centerX = scrollOffset.x + containerWidth / 2
+
+                    var closestDistance: CGFloat = .infinity
+                    var closestCell: FeaturedGameCell?
+
+                    // 먼저 가장 가운데 셀을 찾기
+                    visibleItems.forEach { item in
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? FeaturedGameCell else { return }
+
+                        let itemCenterX = item.frame.midX
+                        let distanceFromCenter = abs(itemCenterX - centerX)
+
+                        if distanceFromCenter < closestDistance {
+                            closestDistance = distanceFromCenter
+                            closestCell = cell
+                        }
+                    }
+
+                    // 모든 셀에 transform, z-index, 텍스트 가시성 적용
+                    visibleItems.forEach { item in
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? FeaturedGameCell else { return }
+
+                        let itemCenterX = item.frame.midX
+                        let distanceFromCenter = abs(itemCenterX - centerX)
+
+                        // 중앙에 가까울수록 높은 z-index (왼쪽 셀에 가려지지 않도록)
+                        cell.layer.zPosition = 1000 - distanceFromCenter
+
+                        // 가운데 셀일수록 scale이 1.0에 가까움
+                        let normalizedDistance = min(distanceFromCenter / containerWidth, 1.0)
+                        let scale = 1.12 - (normalizedDistance * 0.22) // 1.12 → 0.9
+
+                        let isCenterCell = (cell === closestCell)
+
+                        // 양 옆 셀은 어둡게 처리
+                        let dimAlpha: CGFloat = isCenterCell ? 0.0 : 0.4
+
+                        // contentContainer에만 transform 적용
+                        UIView.animate(withDuration: 0.3, delay: 0, options: [.curveEaseOut, .allowUserInteraction]) {
+                            cell.contentContainer.transform = CGAffineTransform(scaleX: scale, y: scale)
+                            cell.imageView.alpha = 1.0 - dimAlpha
+
+                            // 가운데 셀만 텍스트 보이기, 나머지는 완전히 숨김
+                            cell.floatingTitleLabel.alpha = isCenterCell ? 1.0 : 0.0
+                            cell.subtitleLabel.alpha = isCenterCell ? 1.0 : 0.0
+                            cell.badgeView.alpha = isCenterCell ? 1.0 : 0.0
+                        }
+                    }
+                }
+
                 return section
-                
+
             } else if index == 1 {
                 let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1/4)))
                 item.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)  // 셀과 셀 사이 간격
