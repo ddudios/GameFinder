@@ -48,6 +48,8 @@ extension UIFont {
     enum NanumBarunGothic {
         static let bold16 = CustomFont.nanumBarunGothic.of(size: 16, weight: .bold)
         static let bold12 = CustomFont.nanumBarunGothic.of(size: 12, weight: .bold)
+        
+        static let regular12 = CustomFont.nanumBarunGothic.of(size: 12)
     }
     
     /// Italic
@@ -63,10 +65,14 @@ extension UIFont {
     struct Title {
         private init() { }
         static let bold16 = UIFont.systemFont(ofSize: 16, weight: .bold)
+        static let bold14 = UIFont.systemFont(ofSize: 14, weight: .bold)
     }
     
     struct Body {
         private init() { }
+        static let regular14 = UIFont.systemFont(ofSize: 14, weight: .regular)
+        
+        static let bold12 = UIFont.systemFont(ofSize: 12, weight: .bold)
         static let regular12 = UIFont.systemFont(ofSize: 12, weight: .regular)
     }
     

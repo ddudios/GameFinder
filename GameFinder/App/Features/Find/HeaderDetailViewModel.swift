@@ -21,7 +21,7 @@ final class HeaderDetailViewModel: RxViewModelProtocol {
     }
 
     private let disposeBag = DisposeBag()
-    private let sectionType: FinderViewController.Section
+    let sectionType: FinderViewController.Section
     private var currentPage = 1
     private var isLoading = false
 

@@ -125,7 +125,6 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         floatingTitleLabel.alpha = 0.0
         subtitleLabel.text = nil
         subtitleLabel.alpha = 0.0
-        badgeView.alpha = 0.0
         badgeView.isHidden = false
         releaseDateBadge.isHidden = true
         releaseDateTextLabel.text = nil
@@ -147,7 +146,6 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         titleContainer.addSubview(floatingTitleLabel)
         titleContainer.addSubview(subtitleLabel)
 
-        // 배지는 이미지 위에
         imageContainerView.addSubview(badgeView)
 
         // 출시일 뷰는 contentContainer 위에 (imageContainer 경계 위로 벗어나게)

@@ -19,8 +19,8 @@ final class BadgeView: UIView {
     }()
     private let textLabel = {
         let label = UILabel()
-        label.font = .NanumBarunGothic.bold12
-        label.textColor = .white
+        label.font = .NanumBarunGothic.regular12
+        label.textColor = .label
         return label
     }()
     
@@ -39,21 +39,19 @@ final class BadgeView: UIView {
     }
     
     private func setupUI() {
-        // 배경 블러 (반투명)
         let blurEffect = UIBlurEffect(style: .systemThinMaterialDark)
         let blurView = UIVisualEffectView(effect: blurEffect)
         blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        blurView.alpha = 0.8 // 반투명 블러
+        blurView.alpha = 0.7
         insertSubview(blurView, at: 0)
 
-        // 블러 뷰에 frame 설정
         blurView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
 
         let stackView = UIStackView(arrangedSubviews: [icon, textLabel])
         stackView.axis = .horizontal
-        stackView.spacing = Spacing.xxxs
+        stackView.spacing = Spacing.xxs
         stackView.alignment = .center
 
         addSubview(stackView)
@@ -64,7 +62,7 @@ final class BadgeView: UIView {
             make.edges.equalToSuperview().inset(8)
         }
 
-        backgroundColor = UIColor.black.withAlphaComponent(0.5) // 더 투명하게
+        backgroundColor = UIColor.black.withAlphaComponent(0.5)
         clipsToBounds = true
     }
     
@@ -85,7 +83,7 @@ final class SectionHeaderView: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         label.textAlignment = .center
-        label.textColor = .systemGray
+        label.textColor = .white
         label.numberOfLines = 1
         label.font = .Chosun.regular16
 

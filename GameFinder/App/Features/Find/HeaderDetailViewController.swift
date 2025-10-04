@@ -12,7 +12,7 @@ import RxCocoa
 import Kingfisher
 
 enum DetailItem: Hashable {
-    case header(String)
+    case header(title: String, releaseDate: String?)
     case game(Game)
 }
 
@@ -38,14 +38,14 @@ final class HeaderDetailViewController: BaseViewController {
             UIColor.clear.cgColor,
             UIColor.black.cgColor
         ]
-        layer.locations = [0.5, 1.0]
+        layer.locations = [0.3, 1.0]
         return layer
     }()
 
     private lazy var collectionView: UICollectionView = {
         let layout = createLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        collectionView.backgroundColor = UIColor.black.withAlphaComponent(0.6)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
         return collectionView
@@ -77,6 +77,7 @@ final class HeaderDetailViewController: BaseViewController {
 
     private func setupNavigationBar() {
         navigationController?.navigationBar.tintColor = .secondaryLabel
+        navigationItem.backButtonTitle = "Game Finder"
     }
 
     // MARK: - Setup
@@ -89,7 +90,7 @@ final class HeaderDetailViewController: BaseViewController {
     override func configureLayout() {
         let screenWidth = view.frame.width
         let backgroundHeight = screenWidth * 3 / 4  // 4:3 비율
-        let collectionStartPoint = backgroundHeight * 1 / 2  // 배경 이미지 1/2 지점
+        let collectionStartPoint = backgroundHeight * 1 / 4  // 배경 이미지 1/4 지점
 
         backgroundImageView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
@@ -102,7 +103,7 @@ final class HeaderDetailViewController: BaseViewController {
             make.leading.trailing.bottom.equalToSuperview()
         }
 
-        // 컬렉션뷰 contentInset을 배경 이미지 1/2 지점부터 시작하도록 설정
+        // 컬렉션뷰 contentInset을 배경 이미지 1/4 지점부터 시작하도록 설정
         collectionView.contentInset = UIEdgeInsets(top: collectionStartPoint, left: 0, bottom: 0, right: 0)
     }
 
@@ -113,7 +114,6 @@ final class HeaderDetailViewController: BaseViewController {
 
     override func configureView() {
         super.configureView()
-        view.backgroundColor = .black
     }
 
     // MARK: - CollectionView Setup
@@ -129,7 +129,7 @@ final class HeaderDetailViewController: BaseViewController {
     }
 
     private func createLayout() -> UICollectionViewLayout {
-        let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, layoutEnvironment in
+        let layout = UICollectionViewCompositionalLayout { sectionIndex, layoutEnvironment in
             let itemSize = NSCollectionLayoutSize(
                 widthDimension: .fractionalWidth(1.0),
                 heightDimension: .estimated(100)
@@ -197,7 +197,8 @@ final class HeaderDetailViewController: BaseViewController {
         snapshot.appendSections([0])
 
         // 첫 번째 아이템: 헤더
-        var items: [DetailItem] = [.header(viewModel.sectionTitle)]
+        let releaseDate = (viewModel.sectionType == .upcomingGames) ? games.first?.released : nil
+        var items: [DetailItem] = [.header(title: viewModel.sectionTitle, releaseDate: releaseDate)]
 
         // 나머지 아이템: 게임들
         items.append(contentsOf: games.map { .game($0) })
@@ -211,14 +212,14 @@ final class HeaderDetailViewController: BaseViewController {
             collectionView: collectionView
         ) { collectionView, indexPath, item in
             switch item {
-            case .header(let title):
+            case .header(let title, let releaseDate):
                 guard let cell = collectionView.dequeueReusableCell(
                     withReuseIdentifier: HeaderTitleCollectionViewCell.identifier,
                     for: indexPath
                 ) as? HeaderTitleCollectionViewCell else {
                     return UICollectionViewCell()
                 }
-                cell.configure(with: title)
+                cell.configure(with: title, releaseDate: releaseDate)
                 return cell
 
             case .game(let game):
@@ -228,7 +229,8 @@ final class HeaderDetailViewController: BaseViewController {
                 ) as? GameListCollectionViewCell else {
                     return UICollectionViewCell()
                 }
-                cell.configure(with: game)
+                let isUpcoming = self.viewModel.sectionType == .upcomingGames
+                cell.configure(with: game, isUpcoming: isUpcoming)
                 return cell
             }
         }
@@ -262,11 +264,18 @@ extension HeaderDetailViewController: UICollectionViewDelegate {
         // 첫 번째 셀(헤더)은 탭 불가
         guard indexPath.item > 0,
               let item = dataSource.itemIdentifier(for: indexPath),
-              case .game(let game) = item else {
+              case .game(let game) = item,
+              let cell = collectionView.cellForItem(at: indexPath) else {
             return
         }
 
-        // 게임 상세 화면으로 이동 (추후 구현)
-        print("Selected game: \(game.name)")
+        presentGameDetail(gameId: game.id, sourceCell: cell)
+    }
+
+    // MARK: - Navigation
+    private func presentGameDetail(gameId: Int, sourceCell: UICollectionViewCell? = nil) {
+        let viewModel = GameDetailViewModel(gameId: gameId)
+        let detailVC = GameDetailViewController(viewModel: viewModel)
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 }

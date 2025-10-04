@@ -10,10 +10,11 @@ import Alamofire
 
 enum RawgRouter: URLRequestConvertible {
     case game(id: String)                          // 상세 조회: /games/{id}
-    
+    case screenshots(id: String)                   // 스크린샷: /games/{id}/screenshots
+
     case popular(page: Int = 1, pageSize: Int = 10)
     case freeToPlay(page: Int = 1, pageSize: Int = 10)
-    
+
     case search(query: String, page: Int = 1)      // 검색: /games?search=
     case upcoming(start: String, end: String,
                   page: Int = 1, pageSize: Int = 20) // 기간 내 출시: /games?dates=YYYY-MM-DD,YYYY-MM-DD
@@ -34,6 +35,8 @@ enum RawgRouter: URLRequestConvertible {
         switch self {
         case let .game(id):
             return "/games/\(id)"
+        case let .screenshots(id):
+            return "/games/\(id)/screenshots"
         case .popular, .freeToPlay, .search, .upcoming:
             return "/games"
         }
@@ -42,7 +45,7 @@ enum RawgRouter: URLRequestConvertible {
     // MARK: - Query Parameters
     private var parameters: [String: Any] {
         switch self {
-        case .game:
+        case .game, .screenshots:
             return [:]
             
         case let .popular(page, pageSize):

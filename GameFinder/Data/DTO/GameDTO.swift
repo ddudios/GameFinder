@@ -71,16 +71,26 @@ struct GameDetailDTO: Decodable {
     let released: String?               // 출시일 (yyyy-MM-dd)
     let backgroundImage: String?        // 메인 배경 이미지 URL
     let backgroundImageAdditional: String? // 추가 배경 이미지 URL
-    let rating: Double                  // 평점 (0.0 ~ 5.0)
-    let ratingsCount: Int               // 평점 참여자 수
+    let rating: Double?                 // 평점 (0.0 ~ 5.0)
+    let ratingsCount: Int?              // 평점 참여자 수
     let metacritic: Int?                // 메타크리틱 점수 (0 ~ 100)
-    let playtime: Int                   // 평균 플레이 타임 (시간)
+    let playtime: Int?                  // 평균 플레이 타임 (시간)
     let platforms: [PlatformInfo]?      // 지원 플랫폼 목록
     let genres: [Genre]?                // 장르 목록
     let developers: [Developer]?        // 개발사 목록
     let publishers: [Publisher]?        // 퍼블리셔 목록
     let tags: [Tag]?                    // 태그 목록 (특징 키워드)
     let esrbRating: ESRBRating?         // ESRB 연령 등급
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, description, released, rating, metacritic, playtime, platforms, genres, developers, publishers, tags
+        case nameOriginal = "name_original"
+        case descriptionRaw = "description_raw"
+        case backgroundImage = "background_image"
+        case backgroundImageAdditional = "background_image_additional"
+        case ratingsCount = "ratings_count"
+        case esrbRating = "esrb_rating"
+    }
 }
 
 // MARK: - Developer (개발사)

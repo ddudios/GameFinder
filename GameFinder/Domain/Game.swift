@@ -52,6 +52,56 @@ struct GameScreenshot: Hashable {
     let image: String
 }
 
+// MARK: - GameDetail (Domain Model for Detail View)
+struct GameDetail {
+    let id: Int
+    let name: String
+    let nameOriginal: String?
+    let description: String?
+    let descriptionRaw: String?
+    let released: String?
+    let backgroundImage: String?
+    let backgroundImageAdditional: String?
+    let rating: Double?
+    let ratingsCount: Int?
+    let metacritic: Int?
+    let playtime: Int?
+    let platforms: [GamePlatform]
+    let genres: [GameGenre]
+    let developers: [GameDeveloper]
+    let publishers: [GamePublisher]
+    let tags: [GameTag]
+    let esrbRating: GameESRBRating?
+}
+
+// MARK: - GameDeveloper
+struct GameDeveloper: Hashable {
+    let id: Int
+    let name: String
+    let slug: String
+}
+
+// MARK: - GamePublisher
+struct GamePublisher: Hashable {
+    let id: Int
+    let name: String
+    let slug: String
+}
+
+// MARK: - GameTag
+struct GameTag: Hashable {
+    let id: Int
+    let name: String
+    let slug: String
+}
+
+// MARK: - GameESRBRating
+struct GameESRBRating: Hashable {
+    let id: Int
+    let name: String
+    let slug: String
+}
+
 // MARK: - Response → Domain 변환
 extension Game {
     init(from response: GameDTO) {
@@ -62,7 +112,7 @@ extension Game {
         self.rating = response.rating
         self.ratingsCount = response.ratingsCount
         self.metacritic = response.metacritic
-        
+
         // Platform 변환
         self.platforms = response.platforms?.map { platformInfo in
             GamePlatform(
@@ -71,7 +121,7 @@ extension Game {
                 slug: platformInfo.platform.slug
             )
         } ?? []
-        
+
         // Genre 변환
         self.genres = response.genres?.map { genre in
             GameGenre(
@@ -80,7 +130,7 @@ extension Game {
                 slug: genre.slug
             )
         } ?? []
-        
+
         // Screenshot 변환
         self.screenshots = response.shortScreenshots?.map { screenshot in
             GameScreenshot(
@@ -88,5 +138,76 @@ extension Game {
                 image: screenshot.image
             )
         } ?? []
+    }
+}
+
+extension GameDetail {
+    init(from response: GameDetailDTO) {
+        self.id = response.id
+        self.name = response.name
+        self.nameOriginal = response.nameOriginal
+        self.description = response.description
+        self.descriptionRaw = response.descriptionRaw
+        self.released = response.released
+        self.backgroundImage = response.backgroundImage
+        self.backgroundImageAdditional = response.backgroundImageAdditional
+        self.rating = response.rating
+        self.ratingsCount = response.ratingsCount
+        self.metacritic = response.metacritic
+        self.playtime = response.playtime
+
+        // Platform 변환
+        self.platforms = response.platforms?.map { platformInfo in
+            GamePlatform(
+                id: platformInfo.platform.id,
+                name: platformInfo.platform.name,
+                slug: platformInfo.platform.slug
+            )
+        } ?? []
+
+        // Genre 변환
+        self.genres = response.genres?.map { genre in
+            GameGenre(
+                id: genre.id,
+                name: genre.name,
+                slug: genre.slug
+            )
+        } ?? []
+
+        // Developer 변환
+        self.developers = response.developers?.map { developer in
+            GameDeveloper(
+                id: developer.id,
+                name: developer.name,
+                slug: developer.slug
+            )
+        } ?? []
+
+        // Publisher 변환
+        self.publishers = response.publishers?.map { publisher in
+            GamePublisher(
+                id: publisher.id,
+                name: publisher.name,
+                slug: publisher.slug
+            )
+        } ?? []
+
+        // Tag 변환
+        self.tags = response.tags?.map { tag in
+            GameTag(
+                id: tag.id,
+                name: tag.name,
+                slug: tag.slug
+            )
+        } ?? []
+
+        // ESRB Rating 변환
+        self.esrbRating = response.esrbRating.map { esrb in
+            GameESRBRating(
+                id: esrb.id,
+                name: esrb.name,
+                slug: esrb.slug
+            )
+        }
     }
 }

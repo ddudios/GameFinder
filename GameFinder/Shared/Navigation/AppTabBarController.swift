@@ -63,8 +63,8 @@ final class AppTabBarController: UITabBarController {
         tabBarAppearance.configureWithOpaqueBackground()
         tabBarAppearance.backgroundColor = .systemBackground
         
-        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = UIColor.label
-        tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.label]
+        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = UIColor.systemOrange
+        tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.systemOrange]
         
         tabBarAppearance.stackedLayoutAppearance.normal.iconColor = .quaternaryLabel
         tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.quaternaryLabel]

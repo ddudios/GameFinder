@@ -33,7 +33,7 @@ final class FinderViewController: BaseViewController {
     private lazy var collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
         collectionView.delegate = self
-        collectionView.backgroundColor = .black
+        collectionView.backgroundColor = .clear
         collectionView.clipsToBounds = false
         return collectionView
     }()
@@ -74,7 +74,7 @@ final class FinderViewController: BaseViewController {
         configureCellRegistration()
         updateSnapshot()
         
-        CustomFont.debugPrintInstalledFonts()
+//        CustomFont.debugPrintInstalledFonts()
     }
 
     override func viewDidLayoutSubviews() {
@@ -306,13 +306,19 @@ final class FinderViewController: BaseViewController {
         navigationController?.pushViewController(detailVC, animated: true)
     }
 
+    private func presentGameDetail(gameId: Int, sourceCell: UICollectionViewCell? = nil) {
+        let viewModel = GameDetailViewModel(gameId: gameId)
+        let detailVC = GameDetailViewController(viewModel: viewModel)
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+
     override func configureHierarchy() {
         view.addSubview(collectionView)
     }
     
     override func configureLayout() {
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(Spacing.m)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
             make.bottom.equalTo(view.safeAreaLayoutGuide)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges).inset(Spacing.xxs)
         }
@@ -320,7 +326,6 @@ final class FinderViewController: BaseViewController {
     
     override func configureView() {
         super.configureView()
-        view.backgroundColor = .black
         configureNavigationBar()
     }
     
@@ -329,18 +334,10 @@ final class FinderViewController: BaseViewController {
 //MARK: - UICollectionViewDelegate
 extension FinderViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-
-        guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
-        // dataSource: 모든 섹션과 셀에 대한 정보를 이 프로퍼티가 가지고 있음 (append, apply 모두 dataSource가 알고 있음)
-        // 이 메서드를 통해서 선택한 셀에 대한 정보를 꺼내옴 (해당 indexPath를 )
-        print(item)
-        /**
-         [1, 0]
-         Basic(key: 688503, id: D5FE4DA8-A810-4576-9EAA-4A6779D42A33, name: "Jack", age: 123)
-         Optional(SeSac7HardwareDatabase.Basic(key: 386461, id: C9234C87-F44B-46E0-A35B-3FCC129DB2F4, name: "sd", age: 234))
-         */
+        guard let game = dataSource.itemIdentifier(for: indexPath),
+              let cell = collectionView.cellForItem(at: indexPath) else { return }
+        presentGameDetail(gameId: game.id, sourceCell: cell)
     }
-
 }
 
 
@@ -358,7 +355,7 @@ extension FinderViewController {
                         heightDimension: .fractionalHeight(1)
                     )
                 )
-                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 4, bottom: 0, trailing: 4)  // 셀과 셀 사이 간격
+                item.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 4, bottom: 0, trailing: 4)  // 셀과 셀 사이 간격
 
                 // 그룹 사이즈 (셀 크기)
                 let groupSize = NSCollectionLayoutSize(
@@ -374,14 +371,15 @@ extension FinderViewController {
                 let section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .groupPagingCentered
                 section.interGroupSpacing = 20
-                section.contentInsets = NSDirectionalEdgeInsets(
-                    top: 8, leading: 0, bottom: 16, trailing: 0
-                )
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0,
+                                                                leading: 0,
+                                                                bottom: 50,
+                                                                trailing: 0)
 
                 // 섹션 헤더 추가
                 let headerSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .absolute(50)
+                    heightDimension: .absolute(44)
                 )
                 let header = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: headerSize,
@@ -455,7 +453,6 @@ extension FinderViewController {
                     )
                 )
 
-                // 그룹: 세로로 3개 셀
                 let groupSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(0.9),
                     heightDimension: .absolute(300)
@@ -467,14 +464,15 @@ extension FinderViewController {
 
                 let section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .groupPaging
-                section.contentInsets = NSDirectionalEdgeInsets(
-                    top: 8, leading: 0, bottom: 16, trailing: 0
-                )
-
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0,
+                                                                leading: 0,
+                                                                bottom: 16,
+                                                                trailing: 0)
+ 
                 // 섹션 헤더 추가
                 let headerSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .absolute(50)
+                    heightDimension: .absolute(25)
                 )
                 let header = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: headerSize,
@@ -508,14 +506,15 @@ extension FinderViewController {
                 let section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .groupPagingCentered
                 section.interGroupSpacing = 20
-                section.contentInsets = NSDirectionalEdgeInsets(
-                    top: 24, leading: 0, bottom: 40, trailing: 0
-                )
+                section.contentInsets = NSDirectionalEdgeInsets(top: 22,
+                                                                leading: 0,
+                                                                bottom: 44,
+                                                                trailing: 0)
 
                 // 섹션 헤더 추가
                 let headerSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .absolute(50)
+                    heightDimension: .absolute(44)
                 )
                 let header = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: headerSize,
@@ -582,7 +581,7 @@ extension FinderViewController {
                 
             } else {
                 let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(widthDimension: .fractionalWidth(1/3), heightDimension: .fractionalHeight(1.0)))
-                item.contentInsets = NSDirectionalEdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)  // 셀과 셀 사이 간격
+                item.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)  // 셀과 셀 사이 간격
 
                 // NSCollectionLayoutSize타입이 필요하다고해서 생성
                 // 가상의 사각형 바구니 크기
@@ -600,7 +599,7 @@ extension FinderViewController {
                 // 섹션 헤더 추가
                 let headerSize = NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1.0),
-                    heightDimension: .absolute(50)
+                    heightDimension: .absolute(44)
                 )
                 let header = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: headerSize,

@@ -47,7 +47,7 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
 
     private let ratingLabel = {
         let label = UILabel()
-        label.font = .IlsangItalic.regular12
+        label.font = .NanumBarunGothic.regular12
         label.textColor = .secondaryLabel
         label.numberOfLines = 1
         return label

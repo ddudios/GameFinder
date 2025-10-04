@@ -30,7 +30,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
 
     private let genreLabel = {
         let label = UILabel()
-        label.font = .Body.regular12
+        label.font = .IlsangItalic.regular12
         label.textColor = .systemGray
         label.numberOfLines = 1
         return label
@@ -51,6 +51,45 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         return imageView
     }()
 
+    private let releaseBadgeView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.Signiture.withAlphaComponent(0.8)
+        view.layer.cornerRadius = 12
+        return view
+    }()
+
+    private let releaseBadgeLabel = {
+        let label = UILabel()
+        label.font = .Body.bold12
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
+    }()
+
+    private let calendarImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "calendar")
+        imageView.tintColor = .systemGray
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+
+    private let releaseDateLabel = {
+        let label = UILabel()
+        label.font = .Body.regular12
+        label.textColor = .systemGray
+        return label
+    }()
+
+    private lazy var releaseStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [releaseBadgeView, calendarImageView, releaseDateLabel])
+        stackView.axis = .horizontal
+        stackView.spacing = 4
+        stackView.alignment = .center
+        stackView.isHidden = true
+        return stackView
+    }()
+
     private let separatorView = {
         let view = UIView()
         view.backgroundColor = UIColor.white.withAlphaComponent(0.2)
@@ -63,6 +102,8 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         contentView.addSubview(genreLabel)
         contentView.addSubview(starImageView)
         contentView.addSubview(ratingLabel)
+        contentView.addSubview(releaseStackView)
+        releaseBadgeView.addSubview(releaseBadgeLabel)
         contentView.addSubview(separatorView)
     }
 
@@ -96,6 +137,24 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
             make.centerY.equalTo(starImageView)
         }
 
+        releaseStackView.snp.makeConstraints { make in
+            make.leading.equalTo(titleLabel)
+            make.bottom.equalToSuperview().inset(16)
+        }
+
+        releaseBadgeView.snp.makeConstraints { make in
+            make.height.equalTo(24)
+        }
+
+        releaseBadgeLabel.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(12)
+            make.centerY.equalToSuperview()
+        }
+
+        calendarImageView.snp.makeConstraints { make in
+            make.size.equalTo(14)
+        }
+
         separatorView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.equalToSuperview()
@@ -108,13 +167,59 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         backgroundColor = .clear
     }
 
-    func configure(with game: Game) {
+    func configure(with game: Game, isUpcoming: Bool = false) {
         titleLabel.text = game.name
 
         let genreNames = game.genres.map { $0.name }
         genreLabel.text = genreNames.prefix(2).joined(separator: " • ")
 
-        ratingLabel.text = String(format: "%.1f", game.rating)
+        if isUpcoming {
+            // COMING SOON 섹션: 출시일 표시
+            starImageView.isHidden = true
+            ratingLabel.isHidden = true
+            releaseStackView.isHidden = false
+
+            if let releaseDate = game.released {
+                releaseDateLabel.text = releaseDate
+
+                // 오늘/내일 체크
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd"
+
+                if let date = dateFormatter.date(from: releaseDate) {
+                    let calendar = Calendar.current
+                    let today = calendar.startOfDay(for: Date())
+                    let releaseDay = calendar.startOfDay(for: date)
+
+                    if let dayDifference = calendar.dateComponents([.day], from: today, to: releaseDay).day {
+                        if dayDifference == 0 {
+                            releaseBadgeLabel.text = "오늘"
+                            releaseBadgeView.isHidden = false
+                        } else if dayDifference == 1 {
+                            releaseBadgeLabel.text = "내일"
+                            releaseBadgeView.isHidden = false
+                        } else {
+                            releaseBadgeView.isHidden = true
+                        }
+                    } else {
+                        releaseBadgeView.isHidden = true
+                    }
+                } else {
+                    releaseBadgeView.isHidden = true
+                }
+            } else {
+                releaseStackView.isHidden = true
+                releaseBadgeView.isHidden = true
+            }
+        } else {
+            // 일반 섹션: 평점 표시
+            starImageView.isHidden = false
+            ratingLabel.isHidden = false
+            ratingLabel.text = String(format: "%.1f", game.rating)
+
+            releaseStackView.isHidden = true
+            releaseBadgeView.isHidden = true
+        }
 
         if let backgroundImageString = game.backgroundImage,
            let imageURL = URL(string: backgroundImageString) {
@@ -135,5 +240,10 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         titleLabel.text = nil
         genreLabel.text = nil
         ratingLabel.text = nil
+        releaseDateLabel.text = nil
+        releaseBadgeView.isHidden = true
+        releaseStackView.isHidden = true
+        starImageView.isHidden = false
+        ratingLabel.isHidden = false
     }
 }
