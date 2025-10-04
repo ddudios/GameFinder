@@ -15,8 +15,6 @@
 		<string>ChosunGu.TTF</string>
 		<string>NanumBarunGothic.otf</string>
 	</array>
-	<key>UIUserInterfaceStyle</key>
-	<string>Dark</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

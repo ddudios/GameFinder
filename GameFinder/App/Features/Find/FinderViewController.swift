@@ -14,18 +14,18 @@ import RxCocoa
 final class FinderViewController: BaseViewController {
     
     enum Section: CaseIterable {
-        case popularGames
-        case freeGames
         case upcomingGames
+        case freeGames
+        case popularGames
 
         var headerTitle: String {
             switch self {
-            case .popularGames:
-                return "TOP PLAYED GAMES"
-            case .freeGames:
-                return "TOP FREE GAMES"
             case .upcomingGames:
                 return "COMING SOON"
+            case .freeGames:
+                return "TOP FREE GAMES"
+            case .popularGames:
+                return "TOP PLAYED GAMES"
             }
         }
     }
@@ -65,15 +65,21 @@ final class FinderViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     private let viewWillAppear = PublishRelay<Void>()
     private var hasInitializedCenterCell = false
+
+    // Auto scroll for upcomingGames
+    private var autoScrollTimer: Timer?
+    private var currentUpcomingIndex = 0
+    private var isAutoScrolling = false
+    private var lastUpcomingScrollOffset: CGFloat = 0
     
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        collectionView.collectionViewLayout = FinderViewController.createLayout(collectionView: collectionView)
+        collectionView.collectionViewLayout = createLayout(collectionView: collectionView)
         bind()
         configureCellRegistration()
         updateSnapshot()
-        
+
 //        CustomFont.debugPrintInstalledFonts()
     }
 
@@ -138,6 +144,15 @@ final class FinderViewController: BaseViewController {
         super.viewWillAppear(animated)
         viewWillAppear.accept(())
     }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        stopAutoScroll()
+    }
+
+    deinit {
+        stopAutoScroll()
+    }
     
     //MARK: - Bind
     private func bind() {
@@ -170,6 +185,8 @@ final class FinderViewController: BaseViewController {
             .subscribe(with: self) { owner, games in
                 print("upcomingGames 받음: \(games.count)개")
                 owner.updateSection(.upcomingGames, with: games)
+                // 데이터 로드 후 자동 스크롤 시작
+                owner.startAutoScroll()
             }
             .disposed(by: disposeBag)
         
@@ -223,6 +240,7 @@ final class FinderViewController: BaseViewController {
     //MARK: - Layout
     private func configureNavigationBar() {
         navigationItem.title = L10n.Finder.navTitle
+        navigationItem.backButtonTitle = "Game Finder"
     }
     
     // registration 초기화
@@ -245,7 +263,8 @@ final class FinderViewController: BaseViewController {
             elementKind: UICollectionView.elementKindSectionHeader
         ) { supplementaryView, elementKind, indexPath in
             let section = Section.allCases[indexPath.section]
-            supplementaryView.configure(with: section.headerTitle)
+            let alignment: NSTextAlignment = section == .upcomingGames ? .center : .left
+            supplementaryView.configure(with: section.headerTitle, alignment: alignment)
         }
         
         // UICollectionViewDataSource Protocol: 셀 갯수, 셀 재사용 명세
@@ -318,7 +337,7 @@ final class FinderViewController: BaseViewController {
     
     override func configureLayout() {
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(4)
             make.bottom.equalTo(view.safeAreaLayoutGuide)
             make.horizontalEdges.equalTo(view.safeAreaLayoutGuide.snp.horizontalEdges).inset(Spacing.xxs)
         }
@@ -328,7 +347,54 @@ final class FinderViewController: BaseViewController {
         super.configureView()
         configureNavigationBar()
     }
-    
+
+    // MARK: - Auto Scroll
+    private func startAutoScroll() {
+        stopAutoScroll()
+
+        // dataSource가 nil인 경우 early return
+        guard dataSource != nil else { return }
+
+        // upcomingGames 섹션의 아이템 수 확인
+        let snapshot = dataSource.snapshot()
+        let upcomingGamesCount = snapshot.itemIdentifiers(inSection: .upcomingGames).count
+
+        guard upcomingGamesCount > 1 else { return }
+
+        autoScrollTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            self?.scrollToNextUpcomingGame()
+        }
+    }
+
+    private func stopAutoScroll() {
+        autoScrollTimer?.invalidate()
+        autoScrollTimer = nil
+    }
+
+    private func scrollToNextUpcomingGame() {
+        let snapshot = dataSource.snapshot()
+        let upcomingGamesCount = snapshot.itemIdentifiers(inSection: .upcomingGames).count
+
+        guard upcomingGamesCount > 0 else { return }
+
+        // 다음 인덱스 계산
+        currentUpcomingIndex += 1
+        if currentUpcomingIndex >= upcomingGamesCount {
+            currentUpcomingIndex = 0
+        }
+
+        // upcomingGames 섹션은 0번 섹션
+        let indexPath = IndexPath(item: currentUpcomingIndex, section: 0)
+
+        isAutoScrolling = true
+        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+
+        // 애니메이션 완료 후 플래그 리셋 (0.5초 후)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.isAutoScrolling = false
+        }
+    }
+
 }
 
 //MARK: - UICollectionViewDelegate
@@ -342,25 +408,24 @@ extension FinderViewController: UICollectionViewDelegate {
 
 
 extension FinderViewController {
-    private static func createLayout(collectionView: UICollectionView) -> UICollectionViewLayout {
+    private func createLayout(collectionView: UICollectionView) -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { index, layoutEnvironment in
 
             let sectionType = Section.allCases[index]
 
-            if sectionType == .popularGames {
-                // 캐러셀 셀 아이템
+            if sectionType == .upcomingGames {
                 let item = NSCollectionLayoutItem(
                     layoutSize: NSCollectionLayoutSize(
                         widthDimension: .fractionalWidth(1),
                         heightDimension: .fractionalHeight(1)
                     )
                 )
-                item.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 4, bottom: 0, trailing: 4)  // 셀과 셀 사이 간격
+                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)  // 셀과 셀 사이 간격
 
-                // 그룹 사이즈 (셀 크기)
+                // 스크린샷과 동일한 비율: 가로 0.85, 세로는 가로의 4/3배
                 let groupSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(0.75),
-                    heightDimension: .fractionalWidth(0.75 * 3/4)
+                    widthDimension: .fractionalWidth(0.7),
+                    heightDimension: .fractionalWidth(0.7 * 4/3)
                 )
 
                 let group = NSCollectionLayoutGroup.horizontal(
@@ -371,9 +436,9 @@ extension FinderViewController {
                 let section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .groupPagingCentered
                 section.interGroupSpacing = 20
-                section.contentInsets = NSDirectionalEdgeInsets(top: 0,
+                section.contentInsets = NSDirectionalEdgeInsets(top: 20,
                                                                 leading: 0,
-                                                                bottom: 50,
+                                                                bottom: 56,
                                                                 trailing: 0)
 
                 // 섹션 헤더 추가
@@ -389,9 +454,8 @@ extension FinderViewController {
                 section.boundarySupplementaryItems = [header]
 
                 // 스크롤 시 셀 transform, z-index, 텍스트 가시성 업데이트
-                section.visibleItemsInvalidationHandler = { [weak collectionView] visibleItems, scrollOffset, layoutEnvironment in
-                    guard let collectionView = collectionView else { return }
-
+                section.visibleItemsInvalidationHandler = { visibleItems, scrollOffset, layoutEnvironment in
+                    
                     let containerWidth = layoutEnvironment.container.contentSize.width
                     let centerX = scrollOffset.x + containerWidth / 2
 
@@ -483,19 +547,20 @@ extension FinderViewController {
 
                 return section
                 
-            } else if sectionType == .upcomingGames {
+            } else if sectionType == .popularGames {
+                // 캐러셀 셀 아이템
                 let item = NSCollectionLayoutItem(
                     layoutSize: NSCollectionLayoutSize(
                         widthDimension: .fractionalWidth(1),
                         heightDimension: .fractionalHeight(1)
                     )
                 )
-                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)  // 셀과 셀 사이 간격
+                item.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 4, bottom: 0, trailing: 4)  // 셀과 셀 사이 간격
 
-                // 스크린샷과 동일한 비율: 가로 0.85, 세로는 가로의 4/3배
+                // 그룹 사이즈 (셀 크기)
                 let groupSize = NSCollectionLayoutSize(
-                    widthDimension: .fractionalWidth(0.7),
-                    heightDimension: .fractionalWidth(0.7 * 4/3)
+                    widthDimension: .fractionalWidth(0.75),
+                    heightDimension: .fractionalWidth(0.75 * 3/4)
                 )
 
                 let group = NSCollectionLayoutGroup.horizontal(
@@ -506,9 +571,9 @@ extension FinderViewController {
                 let section = NSCollectionLayoutSection(group: group)
                 section.orthogonalScrollingBehavior = .groupPagingCentered
                 section.interGroupSpacing = 20
-                section.contentInsets = NSDirectionalEdgeInsets(top: 22,
+                section.contentInsets = NSDirectionalEdgeInsets(top: 0,
                                                                 leading: 0,
-                                                                bottom: 44,
+                                                                bottom: 50,
                                                                 trailing: 0)
 
                 // 섹션 헤더 추가

@@ -40,7 +40,7 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
     private let starImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = .systemOrange
+        imageView.tintColor = .Signiture
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -71,10 +71,16 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
 
     var disposeBag = DisposeBag()
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        iconImageView.updateSkeletonFrame()
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
         iconImageView.kf.cancelDownloadTask()
         iconImageView.image = nil
+        iconImageView.hideSkeleton()
         titleLabel.text = nil
         genreLabel.text = nil
         ratingLabel.text = nil
@@ -94,15 +100,21 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
         // 이미지 로딩
         if let backgroundImageString = game.backgroundImage,
            let imageURL = URL(string: backgroundImageString) {
+            iconImageView.showSkeleton()
             iconImageView.kf.setImage(
                 with: imageURL,
+                placeholder: UIImage(named: "noImage"),
                 options: [
                     .transition(.fade(0.2)),
                     .cacheOriginalImage
-                ]
+                ],
+                completionHandler: { [weak self] _ in
+                    self?.iconImageView.hideSkeleton()
+                }
             )
         } else {
-            iconImageView.backgroundColor = .systemGray5
+            iconImageView.image = UIImage(named: "noImage")
+            iconImageView.hideSkeleton()
         }
     }
 

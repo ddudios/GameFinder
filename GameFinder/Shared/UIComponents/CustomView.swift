@@ -14,7 +14,7 @@ final class BadgeView: UIView {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = .systemOrange
+        imageView.tintColor = .Signiture
         return imageView
     }()
     private let textLabel = {
@@ -62,7 +62,7 @@ final class BadgeView: UIView {
             make.edges.equalToSuperview().inset(8)
         }
 
-        backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        backgroundColor = UIColor.systemBackground.withAlphaComponent(0.5)
         clipsToBounds = true
     }
     
@@ -82,25 +82,18 @@ final class SectionHeaderView: UICollectionReusableView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        label.textAlignment = .center
-        label.textColor = .white
+        label.textColor = .label
         label.numberOfLines = 1
         label.font = .Chosun.regular16
 
         chevronImageView.image = UIImage(systemName: "chevron.right")
-        chevronImageView.tintColor = .systemGray
+        chevronImageView.tintColor = .secondaryLabel
         chevronImageView.contentMode = .scaleAspectFit
 
         addSubview(label)
         addSubview(chevronImageView)
 
-        label.snp.makeConstraints {
-            $0.center.equalToSuperview()
-        }
-
         chevronImageView.snp.makeConstraints {
-            $0.trailing.equalToSuperview().inset(20)
-            $0.centerY.equalToSuperview()
             $0.size.equalTo(20)
         }
 
@@ -111,8 +104,37 @@ final class SectionHeaderView: UICollectionReusableView {
     }
     required init?(coder: NSCoder) { fatalError() }
 
-    func configure(with text: String) {
+    func configure(with text: String, alignment: NSTextAlignment = .center) {
         label.text = text
+
+        // 기존 제약조건 제거
+        label.snp.removeConstraints()
+        chevronImageView.snp.removeConstraints()
+
+        chevronImageView.snp.makeConstraints {
+            $0.size.equalTo(20)
+            $0.centerY.equalToSuperview()
+        }
+
+        if alignment == .center {
+            // center 정렬: label을 중앙에, chevron을 label 오른쪽에
+            label.snp.makeConstraints {
+                $0.centerX.equalToSuperview()
+                $0.centerY.equalToSuperview()
+            }
+            chevronImageView.snp.makeConstraints {
+                $0.leading.equalTo(label.snp.trailing).offset(8)
+            }
+        } else {
+            // left 정렬: label을 왼쪽에, chevron을 label 오른쪽에
+            label.snp.makeConstraints {
+                $0.leading.equalToSuperview().inset(20)
+                $0.centerY.equalToSuperview()
+            }
+            chevronImageView.snp.makeConstraints {
+                $0.leading.equalTo(label.snp.trailing).offset(8)
+            }
+        }
     }
 
     @objc private func handleTap() {

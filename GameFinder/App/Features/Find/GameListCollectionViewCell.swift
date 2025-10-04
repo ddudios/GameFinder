@@ -23,7 +23,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     private let titleLabel = {
         let label = UILabel()
         label.font = .Title.bold16
-        label.textColor = .white
+        label.textColor = .label
         label.numberOfLines = 1
         return label
     }()
@@ -31,7 +31,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     private let genreLabel = {
         let label = UILabel()
         label.font = .IlsangItalic.regular12
-        label.textColor = .systemGray
+        label.textColor = .secondaryLabel
         label.numberOfLines = 1
         return label
     }()
@@ -39,21 +39,21 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     private let ratingLabel = {
         let label = UILabel()
         label.font = .NanumBarunGothic.bold12
-        label.textColor = .white
+        label.textColor = .label
         return label
     }()
 
     private let starImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = .systemOrange
+        imageView.tintColor = .Signiture
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
 
     private let releaseBadgeView = {
         let view = UIView()
-        view.backgroundColor = UIColor.Signiture.withAlphaComponent(0.8)
+        view.backgroundColor = UIColor.Signiture
         view.layer.cornerRadius = 12
         return view
     }()
@@ -61,7 +61,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     private let releaseBadgeLabel = {
         let label = UILabel()
         label.font = .Body.bold12
-        label.textColor = .white
+        label.textColor = .label
         label.textAlignment = .center
         return label
     }()
@@ -69,7 +69,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     private let calendarImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "calendar")
-        imageView.tintColor = .systemGray
+        imageView.tintColor = .secondaryLabel
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -77,7 +77,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     private let releaseDateLabel = {
         let label = UILabel()
         label.font = .Body.regular12
-        label.textColor = .systemGray
+        label.textColor = .secondaryLabel
         return label
     }()
 
@@ -92,7 +92,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
 
     private let separatorView = {
         let view = UIView()
-        view.backgroundColor = UIColor.white.withAlphaComponent(0.2)
+        view.backgroundColor = UIColor.label.withAlphaComponent(0.2)
         return view
     }()
 
@@ -223,20 +223,34 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
 
         if let backgroundImageString = game.backgroundImage,
            let imageURL = URL(string: backgroundImageString) {
+            iconImageView.showSkeleton()
             iconImageView.kf.setImage(
                 with: imageURL,
+                placeholder: UIImage(named: "noImage"),
                 options: [
                     .transition(.fade(0.2)),
                     .cacheOriginalImage
-                ]
+                ],
+                completionHandler: { [weak self] _ in
+                    self?.iconImageView.hideSkeleton()
+                }
             )
+        } else {
+            iconImageView.image = UIImage(named: "noImage")
+            iconImageView.hideSkeleton()
         }
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        iconImageView.updateSkeletonFrame()
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
         iconImageView.kf.cancelDownloadTask()
         iconImageView.image = nil
+        iconImageView.hideSkeleton()
         titleLabel.text = nil
         genreLabel.text = nil
         ratingLabel.text = nil

@@ -36,7 +36,7 @@ final class HeaderDetailViewController: BaseViewController {
         let layer = CAGradientLayer()
         layer.colors = [
             UIColor.clear.cgColor,
-            UIColor.black.cgColor
+            UIColor.systemBackground.cgColor
         ]
         layer.locations = [0.3, 1.0]
         return layer
@@ -45,7 +45,7 @@ final class HeaderDetailViewController: BaseViewController {
     private lazy var collectionView: UICollectionView = {
         let layout = createLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        collectionView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
         return collectionView
@@ -77,7 +77,7 @@ final class HeaderDetailViewController: BaseViewController {
 
     private func setupNavigationBar() {
         navigationController?.navigationBar.tintColor = .secondaryLabel
-        navigationItem.backButtonTitle = "Game Finder"
+        navigationItem.backButtonDisplayMode = .minimal
     }
 
     // MARK: - Setup
@@ -109,7 +109,10 @@ final class HeaderDetailViewController: BaseViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
         gradientLayer.frame = backgroundImageView.bounds
+        CATransaction.commit()
     }
 
     override func configureView() {
@@ -173,12 +176,14 @@ final class HeaderDetailViewController: BaseViewController {
             .drive(with: self) { owner, games in
                 owner.updateDataSource(with: games)
 
-                // 첫 번째 게임의 배경 이미지 설정 (초기 로드 시에만)
-                if owner.backgroundImageView.image == nil,
-                   let firstGame = games.first,
-                   let backgroundImageString = firstGame.backgroundImage,
+                // 1번 인덱스 게임의 배경 이미지 설정
+                if games.count > 1,
+                   let backgroundImageString = games[0].backgroundImage,
+                   !backgroundImageString.isEmpty,
                    let imageURL = URL(string: backgroundImageString) {
-                    owner.backgroundImageView.kf.setImage(with: imageURL)
+                    owner.backgroundImageView.kf.setImage(with: imageURL, placeholder: UIImage(named: "noImage"))
+                } else {
+                    owner.backgroundImageView.image = UIImage(named: "noImage")
                 }
             }
             .disposed(by: disposeBag)

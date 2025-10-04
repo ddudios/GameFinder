@@ -13,7 +13,7 @@ final class ReleaseAndRatingCollectionViewCell: BaseCollectionViewCell {
     private let calendarImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "calendar")
-        imageView.tintColor = .secondaryLabel
+        imageView.tintColor = .label
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -21,14 +21,14 @@ final class ReleaseAndRatingCollectionViewCell: BaseCollectionViewCell {
     private let releaseDateLabel = {
         let label = UILabel()
         label.font = .Body.regular14
-        label.textColor = .secondaryLabel
+        label.textColor = .label
         return label
     }()
 
     private let separatorLabel = {
         let label = UILabel()
         label.font = .Body.regular14
-        label.textColor = .secondaryLabel
+        label.textColor = .label
         label.text = "|"
         return label
     }()
@@ -36,7 +36,7 @@ final class ReleaseAndRatingCollectionViewCell: BaseCollectionViewCell {
     private let starImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = .secondaryLabel
+        imageView.tintColor = .label
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -44,14 +44,14 @@ final class ReleaseAndRatingCollectionViewCell: BaseCollectionViewCell {
     private let ratingLabel = {
         let label = UILabel()
         label.font = .Body.regular14
-        label.textColor = .secondaryLabel
+        label.textColor = .label
         return label
     }()
 
     private let ratingsCountLabel = {
         let label = UILabel()
         label.font = .Body.regular14
-        label.textColor = .secondaryLabel
+        label.textColor = .label
         return label
     }()
 

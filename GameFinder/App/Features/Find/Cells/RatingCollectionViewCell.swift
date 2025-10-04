@@ -21,7 +21,7 @@ final class RatingCollectionViewCell: BaseCollectionViewCell {
     private let starImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = .systemOrange
+        imageView.tintColor = .Signiture
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()

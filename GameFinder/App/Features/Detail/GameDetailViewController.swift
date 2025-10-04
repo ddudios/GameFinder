@@ -54,8 +54,8 @@ final class GameDetailViewController: BaseViewController {
 
     private let pageControl = {
         let pageControl = UIPageControl()
-        pageControl.currentPageIndicatorTintColor = .white
-        pageControl.pageIndicatorTintColor = .white.withAlphaComponent(0.4)
+        pageControl.currentPageIndicatorTintColor = .label
+        pageControl.pageIndicatorTintColor = .label.withAlphaComponent(0.4)
         pageControl.hidesForSinglePage = true
         pageControl.isUserInteractionEnabled = false
         if #available(iOS 14.0, *) {
@@ -124,7 +124,6 @@ final class GameDetailViewController: BaseViewController {
     }
 
     private func updatePageControlPosition() {
-        let screenshotHeight = UIScreen.main.bounds.width * 9 / 16
         let scrollOffset = collectionView.contentOffset.y
 
         // 아래로 조금이라도 스크롤하면 pageControl 숨김
@@ -423,9 +422,9 @@ final class GameDetailViewController: BaseViewController {
     private func updateDataSource(with gameDetail: GameDetail, screenshots: [Screenshot]) {
         var snapshot = NSDiffableDataSourceSnapshot<GameDetailSection, GameDetailItem>()
 
-        // Screenshots section - 스크린샷이 있을 때만 추가
+        // Screenshots section - 스크린샷이 있을 때는 그대로, 없을 때는 빈 이미지 표시
+        snapshot.appendSections([.screenshots])
         if !screenshots.isEmpty {
-            snapshot.appendSections([.screenshots])
             let screenshotItems = screenshots.map { GameDetailItem.screenshot($0.image) }
             snapshot.appendItems(screenshotItems, toSection: .screenshots)
 
@@ -435,6 +434,8 @@ final class GameDetailViewController: BaseViewController {
             pageControl.currentPage = 0
             pageControl.isHidden = false
         } else {
+            // 스크린샷이 없을 때 빈 이미지 표시
+            snapshot.appendItems([.screenshot("")], toSection: .screenshots)
             pageControl.isHidden = true
         }
 

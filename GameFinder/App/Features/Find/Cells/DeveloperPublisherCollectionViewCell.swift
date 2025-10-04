@@ -12,7 +12,7 @@ final class DeveloperPublisherCollectionViewCell: BaseCollectionViewCell {
 
     private let containerView = {
         let view = UIView()
-        view.backgroundColor = .systemGray6
+        view.backgroundColor = .quaternaryLabel
         view.layer.cornerRadius = 12
         return view
     }()

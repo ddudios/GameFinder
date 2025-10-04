@@ -40,7 +40,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         // 하단 그라디에이션만 (상단은 완전 투명)
         layer.colors = [
             UIColor.clear.cgColor,
-            UIColor.black.withAlphaComponent(0.6).cgColor
+            UIColor.systemBackground.withAlphaComponent(0.6).cgColor
         ]
         layer.locations = [0.6, 1.0]
         layer.startPoint = CGPoint(x: 0.5, y: 0.0) // 상단 중앙
@@ -53,7 +53,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
     // 출시일 뷰 (upcoming games용)
     private let releaseDateBadge = {
         let view = UIView()
-        view.backgroundColor = UIColor.black
+        view.backgroundColor = UIColor.systemBackground
         view.layer.cornerRadius = 16
         view.clipsToBounds = true
         view.isHidden = true
@@ -63,7 +63,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
     private let releaseDateTextLabel = {
         let label = UILabel()
         label.font = .Chosun.regular16
-        label.textColor = .white
+        label.textColor = .label
         label.numberOfLines = 1
         label.textAlignment = .center
         return label
@@ -80,9 +80,9 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         let label = UILabel()
         label.font = .Heading.heavy24
         label.adjustsFontForContentSizeCategory = true
-        label.textColor = UIColor.white.withAlphaComponent(1.0) // 완전 불투명
+        label.textColor = UIColor.label
         label.numberOfLines = 2
-        label.layer.shadowColor = UIColor.black.cgColor
+        label.layer.shadowColor = UIColor.systemBackground.cgColor
         label.layer.shadowOpacity = 0.8
         label.layer.shadowOffset = CGSize(width: 0, height: 2)
         label.layer.shadowRadius = 4
@@ -94,7 +94,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         let label = UILabel()
         label.font = .IlsangItalic.regular12
         label.adjustsFontForContentSizeCategory = true
-        label.textColor = UIColor.white.withAlphaComponent(1.0) // 완전 불투명
+        label.textColor = UIColor.label
         label.numberOfLines = 1
         label.alpha = 0 // 초기값 숨김 (visibility용)
         return label
@@ -103,7 +103,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
     private let loadingIndicator = {
         let indicator = UIActivityIndicatorView(style: .medium)
         indicator.hidesWhenStopped = true
-        indicator.color = .white
+        indicator.color = .label
         return indicator
     }()
     
@@ -121,6 +121,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         imageView.kf.cancelDownloadTask()
         imageView.image = nil
         imageView.alpha = 1.0
+        imageView.hideSkeleton()
         floatingTitleLabel.text = nil
         floatingTitleLabel.alpha = 0.0
         subtitleLabel.text = nil
@@ -211,7 +212,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         }
 
         // 그림자
-        imageContainerView.layer.shadowColor = UIColor.black.cgColor
+        imageContainerView.layer.shadowColor = UIColor.systemBackground.cgColor
         imageContainerView.layer.shadowOpacity = 0.3
         imageContainerView.layer.shadowOffset = CGSize(width: 0, height: 8)
         imageContainerView.layer.shadowRadius = 16
@@ -228,6 +229,9 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         CATransaction.setDisableActions(true)
         gradientLayer.frame = imageView.bounds
         CATransaction.commit()
+
+        // 스켈레톤 프레임 업데이트
+        imageView.updateSkeletonFrame()
     }
 
     // MARK: - Configuration
@@ -275,19 +279,23 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         guard let backgroundImageString = game.backgroundImage,
               let imageURL = URL(string: backgroundImageString) else {
             print("이미지 URL 없음: \(game.name)")
-            imageView.backgroundColor = .systemGray5
+            imageView.image = UIImage(named: "noImage")
+            imageView.hideSkeleton()
             return
         }
         loadingIndicator.startAnimating()
+        imageView.showSkeleton()
 
         imageView.kf.setImage(
             with: imageURL,
+            placeholder: UIImage(named: "noImage"),
             options: [
                 .transition(.fade(0.2)),
                 .cacheOriginalImage
             ],
             completionHandler: { [weak self] result in
                 self?.loadingIndicator.stopAnimating()
+                self?.imageView.hideSkeleton()
                 // 이미지 로드 완료 후 그라디에이션 레이어 프레임 업데이트
                 self?.setNeedsLayout()
                 self?.layoutIfNeeded()
