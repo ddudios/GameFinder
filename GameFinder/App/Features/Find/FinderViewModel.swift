@@ -60,7 +60,7 @@ final class FinderViewModel: RxViewModelProtocol {
         input.viewWillAppear
             .flatMap { _ in
                 NetworkObservable.request(
-                    router: RawgRouter.freeToPlay(page: 1, pageSize: 10),
+                    router: RawgRouter.freeToPlay(page: 1, pageSize: 15),
                     as: GameListDTO.self
                 )
             }
