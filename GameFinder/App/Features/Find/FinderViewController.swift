@@ -280,6 +280,13 @@ final class FinderViewController: BaseViewController {
                     FavoriteManager.shared.toggleFavorite(game)
                 }
             }
+            cell.onNotificationButtonTapped = { [weak self] gameId in
+                guard let self = self else { return }
+                let snapshot = self.dataSource.snapshot()
+                if let game = snapshot.itemIdentifiers.first(where: { $0.id == gameId }) {
+                    NotificationManager.shared.toggleNotification(game)
+                }
+            }
         }
 
         // 헤더 registration

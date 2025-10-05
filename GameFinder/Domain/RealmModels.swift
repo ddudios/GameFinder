@@ -8,8 +8,8 @@
 import Foundation
 import RealmSwift
 
-// MARK: - FavoriteGame (Realm Model)
-final class FavoriteGame: Object {
+// MARK: - 통합 Game 모델
+final class RealmGame: Object {
     @Persisted(primaryKey: true) var id: Int
     @Persisted var name: String
     @Persisted var released: String?
@@ -17,11 +17,17 @@ final class FavoriteGame: Object {
     @Persisted var rating: Double
     @Persisted var ratingsCount: Int
     @Persisted var metacritic: Int?
-    @Persisted var addedAt: Date
+
+    // Favorite & Notification 플래그
+    @Persisted var isFavorite: Bool = false
+    @Persisted var isNotificationEnabled: Bool = false
+    @Persisted var favoriteAddedAt: Date?
+    @Persisted var notificationAddedAt: Date?
 
     // Relations
     @Persisted var platforms: List<RealmGamePlatform>
     @Persisted var genres: List<RealmGameGenre>
+    @Persisted var screenshots: List<RealmGameScreenshot>
 
     convenience init(from game: Game) {
         self.init()
@@ -32,10 +38,10 @@ final class FavoriteGame: Object {
         self.rating = game.rating
         self.ratingsCount = game.ratingsCount
         self.metacritic = game.metacritic
-        self.addedAt = Date()
 
         self.platforms.append(objectsIn: game.platforms.map { RealmGamePlatform(from: $0) })
         self.genres.append(objectsIn: game.genres.map { RealmGameGenre(from: $0) })
+        self.screenshots.append(objectsIn: game.screenshots.map { RealmGameScreenshot(from: $0) })
     }
 
     // Realm -> Domain 변환
@@ -50,7 +56,7 @@ final class FavoriteGame: Object {
             metacritic: metacritic,
             platforms: Array(platforms.map { $0.toDomain() }),
             genres: Array(genres.map { $0.toDomain() }),
-            screenshots: []
+            screenshots: Array(screenshots.map { $0.toDomain() })
         )
     }
 }
@@ -88,5 +94,21 @@ final class RealmGameGenre: Object {
 
     func toDomain() -> GameGenre {
         return GameGenre(id: id, name: name, slug: slug)
+    }
+}
+
+// MARK: - Screenshot
+final class RealmGameScreenshot: Object {
+    @Persisted var id: Int
+    @Persisted var image: String
+
+    convenience init(from screenshot: GameScreenshot) {
+        self.init()
+        self.id = screenshot.id
+        self.image = screenshot.image
+    }
+
+    func toDomain() -> GameScreenshot {
+        return GameScreenshot(id: id, image: image)
     }
 }

@@ -106,7 +106,18 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         return button
     }()
 
+    let notificationButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "bell"), for: .normal)
+        button.setImage(UIImage(systemName: "bell.fill"), for: .selected)
+        button.tintColor = .systemBlue
+        button.backgroundColor = .clear
+        button.isHidden = true  // 기본은 숨김
+        return button
+    }()
+
     var onFavoriteButtonTapped: ((Int) -> Void)?
+    var onNotificationButtonTapped: ((Int) -> Void)?
     private var currentGameId: Int?
     private var disposeBag = DisposeBag()
 
@@ -121,6 +132,8 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         contentView.addSubview(separatorView)
         contentView.addSubview(favoriteButton)
         favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
+        contentView.addSubview(notificationButton)
+        notificationButton.addTarget(self, action: #selector(notificationButtonTapped), for: .touchUpInside)
     }
 
     override func configureLayout() {
@@ -136,10 +149,16 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
             make.size.equalTo(36)
         }
 
+        notificationButton.snp.makeConstraints { make in
+            make.centerY.equalTo(favoriteButton)
+            make.trailing.equalTo(favoriteButton.snp.leading).offset(-4)
+            make.size.equalTo(36)
+        }
+
         titleLabel.snp.makeConstraints { make in
             make.leading.equalTo(iconImageView.snp.trailing).offset(16)
             make.top.equalToSuperview().inset(16)
-            make.trailing.equalTo(favoriteButton.snp.leading).offset(-8)
+            make.trailing.equalTo(notificationButton.snp.leading).offset(-8)
         }
 
         genreLabel.snp.makeConstraints { make in
@@ -193,19 +212,66 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         currentGameId = game.id
         titleLabel.text = game.name
 
-        // Favorite 상태 설정
-        favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+        if isUpcoming {
+            // upcomingGames: 좋아요 버튼 숨김, 알림 버튼만 표시 (중앙 정렬)
+            favoriteButton.isHidden = true
+            notificationButton.isHidden = false
+            notificationButton.isSelected = NotificationManager.shared.isNotificationEnabled(gameId: game.id)
 
-        // 실시간 동기화: 좋아요 상태 변경 구독
-        FavoriteManager.shared.favoriteStatusChanged
-            .filter { [weak self] (gameId, _) in
-                gameId == self?.currentGameId
+            // 알림 버튼을 오른쪽 중앙으로 재배치
+            notificationButton.snp.remakeConstraints { make in
+                make.centerY.equalToSuperview()
+                make.trailing.equalToSuperview().inset(8)
+                make.size.equalTo(36)
             }
-            .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] (_, isFavorite) in
-                self?.favoriteButton.isSelected = isFavorite
-            })
-            .disposed(by: disposeBag)
+
+            // titleLabel trailing 제약 조정
+            titleLabel.snp.remakeConstraints { make in
+                make.leading.equalTo(iconImageView.snp.trailing).offset(16)
+                make.top.equalToSuperview().inset(16)
+                make.trailing.equalTo(notificationButton.snp.leading).offset(-8)
+            }
+
+            // 실시간 동기화: 알림 상태 변경 구독
+            NotificationManager.shared.notificationStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isEnabled) in
+                    self?.notificationButton.isSelected = isEnabled
+                })
+                .disposed(by: disposeBag)
+        } else {
+            // 일반 게임: 좋아요 버튼 표시, 알림 버튼 숨김
+            favoriteButton.isHidden = false
+            notificationButton.isHidden = true
+            favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+
+            // 원래 레이아웃으로 복원
+            favoriteButton.snp.remakeConstraints { make in
+                make.top.equalToSuperview().inset(12)
+                make.trailing.equalToSuperview().inset(8)
+                make.size.equalTo(36)
+            }
+
+            titleLabel.snp.remakeConstraints { make in
+                make.leading.equalTo(iconImageView.snp.trailing).offset(16)
+                make.top.equalToSuperview().inset(16)
+                make.trailing.equalTo(favoriteButton.snp.leading).offset(-8)
+            }
+
+            // 실시간 동기화: 좋아요 상태 변경 구독
+            FavoriteManager.shared.favoriteStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isFavorite) in
+                    self?.favoriteButton.isSelected = isFavorite
+                })
+                .disposed(by: disposeBag)
+        }
 
         let genreNames = game.genres.map { $0.name }
         genreLabel.text = genreNames.prefix(2).joined(separator: " • ")
@@ -296,6 +362,8 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         releaseStackView.isHidden = true
         starImageView.isHidden = false
         ratingLabel.isHidden = false
+        favoriteButton.isHidden = false
+        notificationButton.isHidden = true
         disposeBag = DisposeBag()
     }
 
@@ -303,5 +371,10 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     @objc private func favoriteButtonTapped() {
         guard let gameId = currentGameId else { return }
         onFavoriteButtonTapped?(gameId)
+    }
+
+    @objc private func notificationButtonTapped() {
+        guard let gameId = currentGameId else { return }
+        onNotificationButtonTapped?(gameId)
     }
 }

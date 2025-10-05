@@ -117,7 +117,18 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         return button
     }()
 
+    let notificationButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "bell"), for: .normal)
+        button.setImage(UIImage(systemName: "bell.fill"), for: .selected)
+        button.tintColor = .systemBlue
+        button.backgroundColor = .clear
+        button.isHidden = true  // 기본은 숨김 (upcomingGames에서만 표시)
+        return button
+    }()
+
     var onFavoriteButtonTapped: ((Int) -> Void)?
+    var onNotificationButtonTapped: ((Int) -> Void)?
     private var currentGameId: Int?
     private var disposeBag = DisposeBag()
 
@@ -171,6 +182,10 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         // Favorite 버튼
         imageContainerView.addSubview(favoriteButton)
         favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
+
+        // Notification 버튼
+        imageContainerView.addSubview(notificationButton)
+        notificationButton.addTarget(self, action: #selector(notificationButtonTapped), for: .touchUpInside)
     }
     
     override func configureLayout() {
@@ -216,6 +231,12 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
 
         favoriteButton.snp.makeConstraints { make in
             make.top.equalToSuperview().inset(12)
+            make.trailing.equalToSuperview().inset(12)
+            make.size.equalTo(40)
+        }
+
+        notificationButton.snp.makeConstraints { make in
+            make.top.equalTo(favoriteButton.snp.bottom).offset(8)
             make.trailing.equalToSuperview().inset(12)
             make.size.equalTo(40)
         }
@@ -277,6 +298,25 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
                 self?.favoriteButton.isSelected = isFavorite
             })
             .disposed(by: disposeBag)
+
+        // Notification 버튼 표시 및 상태 설정 (upcomingGames에서만)
+        if isUpcoming {
+            notificationButton.isHidden = false
+            notificationButton.isSelected = NotificationManager.shared.isNotificationEnabled(gameId: game.id)
+
+            // 실시간 동기화: 알림 상태 변경 구독
+            NotificationManager.shared.notificationStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isEnabled) in
+                    self?.notificationButton.isSelected = isEnabled
+                })
+                .disposed(by: disposeBag)
+        } else {
+            notificationButton.isHidden = true
+        }
 
         // 부제목 (장르)
         let genreNames = game.genres.map { $0.name }
@@ -347,5 +387,10 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
     @objc private func favoriteButtonTapped() {
         guard let gameId = currentGameId else { return }
         onFavoriteButtonTapped?(gameId)
+    }
+
+    @objc private func notificationButtonTapped() {
+        guard let gameId = currentGameId else { return }
+        onNotificationButtonTapped?(gameId)
     }
 }

@@ -355,6 +355,7 @@ final class LibraryCategoryViewController: UIViewController {
     private let category: LibraryCategory
     private let disposeBag = DisposeBag()
     private var favoriteGames: [Game] = []
+    private var notificationGames: [Game] = []
 
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -393,9 +394,11 @@ final class LibraryCategoryViewController: UIViewController {
         setupUI()
         setupCollectionView()
 
-        // Favorite 카테고리인 경우에만 데이터 로드
+        // 카테고리별 데이터 로드
         if category == .favorite {
             loadFavoriteGames()
+        } else if category == .notification {
+            loadNotificationGames()
         }
     }
 
@@ -434,12 +437,31 @@ final class LibraryCategoryViewController: UIViewController {
             })
             .disposed(by: disposeBag)
     }
+
+    private func loadNotificationGames() {
+        // NotificationManager의 observeNotifications()로 실시간 구독
+        NotificationManager.shared.observeNotifications()
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] games in
+                self?.notificationGames = games
+                self?.collectionView.reloadData()
+                self?.emptyLabel.isHidden = !games.isEmpty
+            })
+            .disposed(by: disposeBag)
+    }
 }
 
 // MARK: - UICollectionViewDataSource
 extension LibraryCategoryViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return favoriteGames.count
+        switch category {
+        case .favorite:
+            return favoriteGames.count
+        case .notification:
+            return notificationGames.count
+        case .reading:
+            return 0
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -450,13 +472,29 @@ extension LibraryCategoryViewController: UICollectionViewDataSource {
             return UICollectionViewCell()
         }
 
-        let game = favoriteGames[indexPath.item]
-        cell.configure(with: game)
-        cell.onFavoriteButtonTapped = { [weak self] gameId in
-            guard let self = self else { return }
-            if let game = self.favoriteGames.first(where: { $0.id == gameId }) {
-                FavoriteManager.shared.toggleFavorite(game)
+        switch category {
+        case .favorite:
+            let game = favoriteGames[indexPath.item]
+            cell.configure(with: game)
+            cell.onFavoriteButtonTapped = { [weak self] gameId in
+                guard let self = self else { return }
+                if let game = self.favoriteGames.first(where: { $0.id == gameId }) {
+                    FavoriteManager.shared.toggleFavorite(game)
+                }
             }
+
+        case .notification:
+            let game = notificationGames[indexPath.item]
+            cell.configure(with: game, isUpcoming: true)  // upcomingGames 형태로 표시 (좋아요 버튼 숨김, 알림 버튼만 표시)
+            cell.onNotificationButtonTapped = { [weak self] gameId in
+                guard let self = self else { return }
+                if let game = self.notificationGames.first(where: { $0.id == gameId }) {
+                    NotificationManager.shared.toggleNotification(game)
+                }
+            }
+
+        case .reading:
+            break
         }
 
         return cell
@@ -474,7 +512,16 @@ extension LibraryCategoryViewController: UICollectionViewDelegateFlowLayout {
 // MARK: - UICollectionViewDelegate
 extension LibraryCategoryViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let game = favoriteGames[indexPath.item]
+        let game: Game
+        switch category {
+        case .favorite:
+            game = favoriteGames[indexPath.item]
+        case .notification:
+            game = notificationGames[indexPath.item]
+        case .reading:
+            return
+        }
+
         let viewModel = GameDetailViewModel(gameId: game.id)
         let detailVC = GameDetailViewController(viewModel: viewModel)
         navigationController?.pushViewController(detailVC, animated: true)

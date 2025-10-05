@@ -1,5 +1,5 @@
 //
-//  FavoriteManager.swift
+//  NotificationManager.swift
 //  GameFinder
 //
 //  Created by Claude on 10/5/25.
@@ -9,13 +9,13 @@ import Foundation
 import RealmSwift
 import RxSwift
 
-final class FavoriteManager {
-    static let shared = FavoriteManager()
+final class NotificationManager {
+    static let shared = NotificationManager()
 
     private let realm: Realm
 
-    // 좋아요 상태 변경을 알리는 Subject (gameId, isFavorite)
-    let favoriteStatusChanged = PublishSubject<(Int, Bool)>()
+    // 알림 상태 변경을 알리는 Subject (gameId, isNotificationEnabled)
+    let notificationStatusChanged = PublishSubject<(Int, Bool)>()
 
     private init() {
         do {
@@ -25,71 +25,71 @@ final class FavoriteManager {
         }
     }
 
-    // MARK: - Add Favorite
-    func addFavorite(_ game: Game) -> Bool {
+    // MARK: - Add Notification
+    func addNotification(_ game: Game) -> Bool {
         do {
             try realm.write {
                 if let existingGame = realm.object(ofType: RealmGame.self, forPrimaryKey: game.id) {
-                    // 이미 존재하는 게임 - isFavorite만 업데이트
-                    existingGame.isFavorite = true
-                    existingGame.favoriteAddedAt = Date()
+                    // 이미 존재하는 게임 - isNotificationEnabled만 업데이트
+                    existingGame.isNotificationEnabled = true
+                    existingGame.notificationAddedAt = Date()
                 } else {
                     // 새 게임 추가
                     let realmGame = RealmGame(from: game)
-                    realmGame.isFavorite = true
-                    realmGame.favoriteAddedAt = Date()
+                    realmGame.isNotificationEnabled = true
+                    realmGame.notificationAddedAt = Date()
                     realm.add(realmGame, update: .modified)
                 }
             }
-            favoriteStatusChanged.onNext((game.id, true))
+            notificationStatusChanged.onNext((game.id, true))
             return true
         } catch {
-            print("Failed to add favorite: \(error)")
+            print("Failed to add notification: \(error)")
             return false
         }
     }
 
-    // MARK: - Remove Favorite
-    func removeFavorite(gameId: Int) -> Bool {
+    // MARK: - Remove Notification
+    func removeNotification(gameId: Int) -> Bool {
         do {
             guard let realmGame = realm.object(ofType: RealmGame.self, forPrimaryKey: gameId) else {
                 return false
             }
             try realm.write {
-                realmGame.isFavorite = false
-                realmGame.favoriteAddedAt = nil
+                realmGame.isNotificationEnabled = false
+                realmGame.notificationAddedAt = nil
 
                 // isFavorite와 isNotificationEnabled 둘 다 false면 삭제
                 if !realmGame.isFavorite && !realmGame.isNotificationEnabled {
                     realm.delete(realmGame)
                 }
             }
-            favoriteStatusChanged.onNext((gameId, false))
+            notificationStatusChanged.onNext((gameId, false))
             return true
         } catch {
-            print("Failed to remove favorite: \(error)")
+            print("Failed to remove notification: \(error)")
             return false
         }
     }
 
-    // MARK: - Check if Favorite
-    func isFavorite(gameId: Int) -> Bool {
+    // MARK: - Check if Notification Enabled
+    func isNotificationEnabled(gameId: Int) -> Bool {
         guard let realmGame = realm.object(ofType: RealmGame.self, forPrimaryKey: gameId) else {
             return false
         }
-        return realmGame.isFavorite
+        return realmGame.isNotificationEnabled
     }
 
-    // MARK: - Get All Favorites
-    func getAllFavorites() -> [Game] {
-        let favorites = realm.objects(RealmGame.self)
-            .where { $0.isFavorite == true }
-            .sorted(byKeyPath: "favoriteAddedAt", ascending: false)
-        return Array(favorites.map { $0.toDomain() })
+    // MARK: - Get All Notifications
+    func getAllNotifications() -> [Game] {
+        let notifications = realm.objects(RealmGame.self)
+            .where { $0.isNotificationEnabled == true }
+            .sorted(byKeyPath: "notificationAddedAt", ascending: false)
+        return Array(notifications.map { $0.toDomain() })
     }
 
-    // MARK: - Observe Favorites (Rx)
-    func observeFavorites() -> Observable<[Game]> {
+    // MARK: - Observe Notifications (Rx)
+    func observeNotifications() -> Observable<[Game]> {
         return Observable.create { [weak self] observer in
             guard let self = self else {
                 observer.onCompleted()
@@ -97,8 +97,8 @@ final class FavoriteManager {
             }
 
             let results = self.realm.objects(RealmGame.self)
-                .where { $0.isFavorite == true }
-                .sorted(byKeyPath: "favoriteAddedAt", ascending: false)
+                .where { $0.isNotificationEnabled == true }
+                .sorted(byKeyPath: "notificationAddedAt", ascending: false)
 
             let token = results.observe { changes in
                 switch changes {
@@ -117,12 +117,12 @@ final class FavoriteManager {
         }
     }
 
-    // MARK: - Toggle Favorite
-    func toggleFavorite(_ game: Game) -> Bool {
-        if isFavorite(gameId: game.id) {
-            return removeFavorite(gameId: game.id)
+    // MARK: - Toggle Notification
+    func toggleNotification(_ game: Game) -> Bool {
+        if isNotificationEnabled(gameId: game.id) {
+            return removeNotification(gameId: game.id)
         } else {
-            return addFavorite(game)
+            return addNotification(game)
         }
     }
 }

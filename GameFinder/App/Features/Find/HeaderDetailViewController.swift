@@ -237,18 +237,35 @@ final class HeaderDetailViewController: BaseViewController {
                 let isUpcoming = self.viewModel.sectionType == .upcomingGames
                 cell.configure(with: game, isUpcoming: isUpcoming)
 
-                // Favorite 버튼 콜백 연결
-                cell.onFavoriteButtonTapped = { [weak self] gameId in
-                    guard let self = self else { return }
-                    let snapshot = self.dataSource.snapshot()
-                    if let gameItem = snapshot.itemIdentifiers.first(where: {
-                        if case .game(let g) = $0, g.id == gameId {
-                            return true
+                if isUpcoming {
+                    // upcomingGames: 알림 버튼만 표시 (좋아요 버튼 숨김)
+                    cell.onNotificationButtonTapped = { [weak self] gameId in
+                        guard let self = self else { return }
+                        let snapshot = self.dataSource.snapshot()
+                        if let gameItem = snapshot.itemIdentifiers.first(where: {
+                            if case .game(let g) = $0, g.id == gameId {
+                                return true
+                            }
+                            return false
+                        }),
+                        case .game(let game) = gameItem {
+                            NotificationManager.shared.toggleNotification(game)
                         }
-                        return false
-                    }),
-                    case .game(let game) = gameItem {
-                        FavoriteManager.shared.toggleFavorite(game)
+                    }
+                } else {
+                    // 일반 게임: 좋아요 버튼만 표시
+                    cell.onFavoriteButtonTapped = { [weak self] gameId in
+                        guard let self = self else { return }
+                        let snapshot = self.dataSource.snapshot()
+                        if let gameItem = snapshot.itemIdentifiers.first(where: {
+                            if case .game(let g) = $0, g.id == gameId {
+                                return true
+                            }
+                            return false
+                        }),
+                        case .game(let game) = gameItem {
+                            FavoriteManager.shared.toggleFavorite(game)
+                        }
                     }
                 }
 
