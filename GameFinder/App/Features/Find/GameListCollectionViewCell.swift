@@ -329,7 +329,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
             iconImageView.showSkeleton()
             iconImageView.kf.setImage(
                 with: imageURL,
-                placeholder: UIImage(named: "noImage"),
+                placeholder: UIImage(named: "noImage_icon_black"),
                 options: [
                     .transition(.fade(0.2)),
                     .cacheOriginalImage
@@ -339,7 +339,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
                 }
             )
         } else {
-            iconImageView.image = UIImage(named: "noImage")
+            iconImageView.image = UIImage(named: "noImage_icon_black")
             iconImageView.hideSkeleton()
         }
     }

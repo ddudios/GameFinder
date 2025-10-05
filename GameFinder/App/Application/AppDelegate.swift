@@ -15,38 +15,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
-        // Realm 마이그레이션 설정
-        configureRealm()
-
         NavigationBar.configureAppearance()
 
         return true
     }
-
-    // MARK: - Realm Configuration
-    private func configureRealm() {
-        let config = Realm.Configuration(
-            schemaVersion: 2, // 스키마 버전 증가
-            migrationBlock: { migration, oldSchemaVersion in
-                if oldSchemaVersion < 2 {
-                    // FavoriteGame, NotificationGame -> RealmGame 마이그레이션
-                    // 기존 테이블은 자동으로 삭제되고 새 RealmGame 테이블 사용
-                }
-            },
-            deleteRealmIfMigrationNeeded: true // 개발 중에는 마이그레이션 실패 시 DB 삭제
-        )
-
-        Realm.Configuration.defaultConfiguration = config
-
-        // Realm 초기화 확인
-        do {
-            let realm = try Realm()
-            print("✅ Realm initialized successfully at: \(realm.configuration.fileURL?.absoluteString ?? "")")
-        } catch {
-            print("❌ Realm initialization failed: \(error)")
-        }
-    }
-
+    
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
