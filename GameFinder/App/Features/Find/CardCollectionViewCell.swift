@@ -8,8 +8,9 @@
 import UIKit
 import SnapKit
 import Kingfisher
+import RxSwift
 
-final class PopularCollectionViewCell: BaseCollectionViewCell {
+final class CardCollectionViewCell: BaseCollectionViewCell {
 
     // MARK: - UI Components
     // 모든 컨텐츠를 담는 컨테이너 (transform은 여기에만 적용)
@@ -106,7 +107,20 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         indicator.color = .label
         return indicator
     }()
-    
+
+    let favoriteButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "heart"), for: .normal)
+        button.setImage(UIImage(systemName: "heart.fill"), for: .selected)
+        button.tintColor = .systemRed
+        button.backgroundColor = .clear
+        return button
+    }()
+
+    var onFavoriteButtonTapped: ((Int) -> Void)?
+    private var currentGameId: Int?
+    private var disposeBag = DisposeBag()
+
     // MARK: - Initialization
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -132,6 +146,7 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         contentContainer.transform = .identity
         contentContainer.alpha = 1.0
         loadingIndicator.stopAnimating()
+        disposeBag = DisposeBag()
     }
 
     // MARK: - Layout
@@ -152,6 +167,10 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
         // 출시일 뷰는 contentContainer 위에 (imageContainer 경계 위로 벗어나게)
         contentContainer.addSubview(releaseDateBadge)
         releaseDateBadge.addSubview(releaseDateTextLabel)
+
+        // Favorite 버튼
+        imageContainerView.addSubview(favoriteButton)
+        favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
     }
     
     override func configureLayout() {
@@ -195,6 +214,12 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
             make.center.equalToSuperview()
         }
 
+        favoriteButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(12)
+            make.trailing.equalToSuperview().inset(12)
+            make.size.equalTo(40)
+        }
+
         // titleContainer는 이미지 하단에 오버레이로 배치, 셀 밖으로 살짝 튀어나옴
         titleContainer.snp.makeConstraints { make in
             make.leading.equalTo(imageContainerView.snp.leading).offset(-20) // 셀 경계를 넘어감
@@ -236,7 +261,22 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
 
     // MARK: - Configuration
     func configure(with game: Game, isUpcoming: Bool = false) {
+        currentGameId = game.id
         floatingTitleLabel.text = game.name
+
+        // Favorite 상태 설정
+        favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+
+        // 실시간 동기화: 좋아요 상태 변경 구독
+        FavoriteManager.shared.favoriteStatusChanged
+            .filter { [weak self] (gameId, _) in
+                gameId == self?.currentGameId
+            }
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] (_, isFavorite) in
+                self?.favoriteButton.isSelected = isFavorite
+            })
+            .disposed(by: disposeBag)
 
         // 부제목 (장르)
         let genreNames = game.genres.map { $0.name }
@@ -301,5 +341,11 @@ final class PopularCollectionViewCell: BaseCollectionViewCell {
                 self?.layoutIfNeeded()
             }
         )
+    }
+
+    // MARK: - Actions
+    @objc private func favoriteButtonTapped() {
+        guard let gameId = currentGameId else { return }
+        onFavoriteButtonTapped?(gameId)
     }
 }

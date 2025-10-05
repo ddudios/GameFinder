@@ -9,6 +9,7 @@ import UIKit
 import SnapKit
 import RxSwift
 import RxCocoa
+import RealmSwift
 
 // DiffableDataSource + CompositionalLayout + UICollectionViewCell/UICollectionReusableView
 final class FinderViewController: BaseViewController {
@@ -55,8 +56,8 @@ final class FinderViewController: BaseViewController {
      cellForItemAt [0, 1]
      cell registration [0, 1]
      */// Featured 셀 registration 추가
-    private var popularRegistration: UICollectionView.CellRegistration<PopularCollectionViewCell, Game>!
-    private var upcomingRegistration: UICollectionView.CellRegistration<PopularCollectionViewCell, Game>!
+    private var popularRegistration: UICollectionView.CellRegistration<CardCollectionViewCell, Game>!
+    private var upcomingRegistration: UICollectionView.CellRegistration<CardCollectionViewCell, Game>!
 
     // 헤더 registration
     private var headerRegistration: UICollectionView.SupplementaryRegistration<SectionHeaderView>!
@@ -81,6 +82,8 @@ final class FinderViewController: BaseViewController {
         updateSnapshot()
 
 //        CustomFont.debugPrintInstalledFonts()
+        let realm = try! Realm()
+        print(realm.configuration.fileURL)
     }
 
     override func viewDidLayoutSubviews() {
@@ -94,7 +97,7 @@ final class FinderViewController: BaseViewController {
 
     private func applyInitialCenterCellEffects() {
         // 첫 번째 셀에 가운데 셀 효과 즉시 적용
-        guard let firstCell = collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? PopularCollectionViewCell else {
+        guard let firstCell = collectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? CardCollectionViewCell else {
             return
         }
 
@@ -114,10 +117,10 @@ final class FinderViewController: BaseViewController {
         let centerX = collectionView.contentOffset.x + containerWidth / 2
 
         var closestDistance: CGFloat = .infinity
-        var closestCell: PopularCollectionViewCell?
+        var closestCell: CardCollectionViewCell?
 
         collectionView.visibleCells.forEach { cell in
-            guard let featuredCell = cell as? PopularCollectionViewCell,
+            guard let featuredCell = cell as? CardCollectionViewCell,
                   let indexPath = collectionView.indexPath(for: cell),
                   indexPath.section == 0 else { return }
 
@@ -132,7 +135,7 @@ final class FinderViewController: BaseViewController {
 
         // 가운데 셀의 텍스트와 배지만 표시
         collectionView.visibleCells.forEach { cell in
-            guard let featuredCell = cell as? PopularCollectionViewCell else { return }
+            guard let featuredCell = cell as? CardCollectionViewCell else { return }
             let isCenterCell = (featuredCell === closestCell)
             featuredCell.floatingTitleLabel.alpha = isCenterCell ? 1.0 : 0.0
             featuredCell.subtitleLabel.alpha = isCenterCell ? 1.0 : 0.0
@@ -246,16 +249,37 @@ final class FinderViewController: BaseViewController {
     // registration 초기화
     private func configureCellRegistration() {
         // cellForItemAt 셀 디자인 데이터 처리하는 코드
-        popularRegistration = UICollectionView.CellRegistration<PopularCollectionViewCell, Game> { cell, indexPath, game in
+        popularRegistration = UICollectionView.CellRegistration<CardCollectionViewCell, Game> { [weak self] cell, indexPath, game in
             cell.configure(with: game)
+            cell.onFavoriteButtonTapped = { [weak self] gameId in
+                guard let self = self else { return }
+                let snapshot = self.dataSource.snapshot()
+                if let game = snapshot.itemIdentifiers.first(where: { $0.id == gameId }) {
+                    FavoriteManager.shared.toggleFavorite(game)
+                }
+            }
         }
 
-        freeRegistration = UICollectionView.CellRegistration<FreeCollectionViewCell, Game> { cell, indexPath, game in
+        freeRegistration = UICollectionView.CellRegistration<FreeCollectionViewCell, Game> { [weak self] cell, indexPath, game in
             cell.configure(with: game)
+            cell.onFavoriteButtonTapped = { [weak self] gameId in
+                guard let self = self else { return }
+                let snapshot = self.dataSource.snapshot()
+                if let game = snapshot.itemIdentifiers.first(where: { $0.id == gameId }) {
+                    FavoriteManager.shared.toggleFavorite(game)
+                }
+            }
         }
 
-        upcomingRegistration = UICollectionView.CellRegistration<PopularCollectionViewCell, Game> { cell, indexPath, game in
+        upcomingRegistration = UICollectionView.CellRegistration<CardCollectionViewCell, Game> { [weak self] cell, indexPath, game in
             cell.configure(with: game, isUpcoming: true)
+            cell.onFavoriteButtonTapped = { [weak self] gameId in
+                guard let self = self else { return }
+                let snapshot = self.dataSource.snapshot()
+                if let game = snapshot.itemIdentifiers.first(where: { $0.id == gameId }) {
+                    FavoriteManager.shared.toggleFavorite(game)
+                }
+            }
         }
 
         // 헤더 registration
@@ -460,11 +484,11 @@ extension FinderViewController {
                     let centerX = scrollOffset.x + containerWidth / 2
 
                     var closestDistance: CGFloat = .infinity
-                    var closestCell: PopularCollectionViewCell?
+                    var closestCell: CardCollectionViewCell?
 
                     // 먼저 가장 가운데 셀을 찾기
                     visibleItems.forEach { item in
-                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? PopularCollectionViewCell else { return }
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? CardCollectionViewCell else { return }
 
                         let itemCenterX = item.frame.midX
                         let distanceFromCenter = abs(itemCenterX - centerX)
@@ -477,7 +501,7 @@ extension FinderViewController {
 
                     // 모든 셀에 transform, z-index, 텍스트 가시성 적용
                     visibleItems.forEach { item in
-                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? PopularCollectionViewCell else { return }
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? CardCollectionViewCell else { return }
 
                         let itemCenterX = item.frame.midX
                         let distanceFromCenter = abs(itemCenterX - centerX)
@@ -596,11 +620,11 @@ extension FinderViewController {
                     let centerX = scrollOffset.x + containerWidth / 2
 
                     var closestDistance: CGFloat = .infinity
-                    var closestCell: PopularCollectionViewCell?
+                    var closestCell: CardCollectionViewCell?
 
                     // 먼저 가장 가운데 셀을 찾기
                     visibleItems.forEach { item in
-                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? PopularCollectionViewCell else { return }
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? CardCollectionViewCell else { return }
 
                         let itemCenterX = item.frame.midX
                         let distanceFromCenter = abs(itemCenterX - centerX)
@@ -613,7 +637,7 @@ extension FinderViewController {
 
                     // 모든 셀에 transform, z-index, 텍스트 가시성 적용
                     visibleItems.forEach { item in
-                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? PopularCollectionViewCell else { return }
+                        guard let cell = collectionView.cellForItem(at: item.indexPath) as? CardCollectionViewCell else { return }
 
                         let itemCenterX = item.frame.midX
                         let distanceFromCenter = abs(itemCenterX - centerX)

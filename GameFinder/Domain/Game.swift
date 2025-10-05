@@ -210,4 +210,20 @@ extension GameDetail {
             )
         }
     }
+
+    // GameDetail을 Game으로 변환
+    func toGame() -> Game {
+        return Game(
+            id: id,
+            name: name,
+            released: released,
+            backgroundImage: backgroundImage,
+            rating: rating ?? 0.0,
+            ratingsCount: ratingsCount ?? 0,
+            metacritic: metacritic,
+            platforms: platforms,
+            genres: genres,
+            screenshots: [] // GameDetail에는 스크린샷 정보가 없으므로 빈 배열
+        )
+    }
 }

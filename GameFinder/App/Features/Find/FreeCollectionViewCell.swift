@@ -69,6 +69,17 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
         return stackView
     }()
 
+    let favoriteButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "heart"), for: .normal)
+        button.setImage(UIImage(systemName: "heart.fill"), for: .selected)
+        button.tintColor = .systemRed
+        button.backgroundColor = .clear
+        return button
+    }()
+
+    var onFavoriteButtonTapped: ((Int) -> Void)?
+    private var currentGameId: Int?
     var disposeBag = DisposeBag()
 
     override func layoutSubviews() {
@@ -88,7 +99,22 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
     }
 
     func configure(with game: Game) {
+        currentGameId = game.id
         titleLabel.text = game.name
+
+        // Favorite 상태 설정
+        favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+
+        // 실시간 동기화: 좋아요 상태 변경 구독
+        FavoriteManager.shared.favoriteStatusChanged
+            .filter { [weak self] (gameId, _) in
+                gameId == self?.currentGameId
+            }
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] (_, isFavorite) in
+                self?.favoriteButton.isSelected = isFavorite
+            })
+            .disposed(by: disposeBag)
 
         // 장르
         let genreNames = game.genres.map { $0.name }
@@ -121,6 +147,8 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
     override func configureHierarchy() {
         contentView.addSubview(iconImageView)
         contentView.addSubview(textStackView)
+        contentView.addSubview(favoriteButton)
+        favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
     }
 
     override func configureLayout() {
@@ -139,8 +167,20 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
 
         textStackView.snp.makeConstraints { make in
             make.leading.equalTo(iconImageView.snp.trailing).offset(16)
-            make.trailing.equalToSuperview().inset(16)
+            make.trailing.equalTo(favoriteButton.snp.leading).offset(-8)
             make.centerY.equalToSuperview()
         }
+
+        favoriteButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(8)
+            make.trailing.equalToSuperview().inset(16)
+            make.size.equalTo(36)
+        }
+    }
+
+    // MARK: - Actions
+    @objc private func favoriteButtonTapped() {
+        guard let gameId = currentGameId else { return }
+        onFavoriteButtonTapped?(gameId)
     }
 }

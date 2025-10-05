@@ -42,6 +42,9 @@ final class GameDetailViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     private let viewWillAppearRelay = PublishRelay<Void>()
 
+    private var currentGameDetail: GameDetail?
+    private var favoriteButton: UIButton?
+
     // MARK: - UI Components
     private lazy var collectionView: UICollectionView = {
         let layout = createLayout()
@@ -95,6 +98,17 @@ final class GameDetailViewController: BaseViewController {
     private func setupNavigationBar() {
         navigationController?.navigationBar.topItem?.backButtonDisplayMode = .minimal
         navigationController?.navigationBar.tintColor = .secondaryLabel
+
+        // Favorite 버튼
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "heart"), for: .normal)
+        button.setImage(UIImage(systemName: "heart.fill"), for: .selected)
+        button.tintColor = .systemRed
+        button.backgroundColor = .clear
+        button.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
+
+        favoriteButton = button
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: button)
     }
 
     override func configureHierarchy() {
@@ -405,8 +419,21 @@ final class GameDetailViewController: BaseViewController {
         .asDriver(onErrorJustReturn: (GameDetail(from: GameDetailDTO(id: 0, name: "", nameOriginal: nil, description: nil, descriptionRaw: nil, released: nil, backgroundImage: nil, backgroundImageAdditional: nil, rating: nil, ratingsCount: nil, metacritic: nil, playtime: nil, platforms: nil, genres: nil, developers: nil, publishers: nil, tags: nil, esrbRating: nil)), []))
         .drive(with: self) { owner, data in
             let (gameDetail, screenshots) = data
+            owner.currentGameDetail = gameDetail
             owner.navigationItem.title = gameDetail.name
             owner.updateDataSource(with: gameDetail, screenshots: screenshots)
+
+            // Favorite 버튼 상태 업데이트
+            owner.favoriteButton?.isSelected = FavoriteManager.shared.isFavorite(gameId: gameDetail.id)
+
+            // 실시간 동기화: 좋아요 상태 변경 구독
+            FavoriteManager.shared.favoriteStatusChanged
+                .filter { (gameId, _) in gameId == gameDetail.id }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak owner] (_, isFavorite) in
+                    owner?.favoriteButton?.isSelected = isFavorite
+                })
+                .disposed(by: owner.disposeBag)
         }
         .disposed(by: disposeBag)
 
@@ -588,6 +615,13 @@ final class GameDetailViewController: BaseViewController {
         )
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
+    }
+
+    // MARK: - Actions
+    @objc private func favoriteButtonTapped() {
+        guard let gameDetail = currentGameDetail else { return }
+        let game = gameDetail.toGame()
+        FavoriteManager.shared.toggleFavorite(game)
     }
 }
 

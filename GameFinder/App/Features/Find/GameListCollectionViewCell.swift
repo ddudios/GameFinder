@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import Kingfisher
+import RxSwift
 
 final class GameListCollectionViewCell: BaseCollectionViewCell {
 
@@ -96,6 +97,19 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         return view
     }()
 
+    let favoriteButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "heart"), for: .normal)
+        button.setImage(UIImage(systemName: "heart.fill"), for: .selected)
+        button.tintColor = .systemRed
+        button.backgroundColor = .clear
+        return button
+    }()
+
+    var onFavoriteButtonTapped: ((Int) -> Void)?
+    private var currentGameId: Int?
+    private var disposeBag = DisposeBag()
+
     override func configureHierarchy() {
         contentView.addSubview(iconImageView)
         contentView.addSubview(titleLabel)
@@ -105,6 +119,8 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         contentView.addSubview(releaseStackView)
         releaseBadgeView.addSubview(releaseBadgeLabel)
         contentView.addSubview(separatorView)
+        contentView.addSubview(favoriteButton)
+        favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
     }
 
     override func configureLayout() {
@@ -114,10 +130,16 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
             make.size.equalTo(80)
         }
 
+        favoriteButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(12)
+            make.trailing.equalToSuperview().inset(8)
+            make.size.equalTo(36)
+        }
+
         titleLabel.snp.makeConstraints { make in
             make.leading.equalTo(iconImageView.snp.trailing).offset(16)
             make.top.equalToSuperview().inset(16)
-            make.trailing.equalToSuperview().inset(16)
+            make.trailing.equalTo(favoriteButton.snp.leading).offset(-8)
         }
 
         genreLabel.snp.makeConstraints { make in
@@ -168,7 +190,22 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     }
 
     func configure(with game: Game, isUpcoming: Bool = false) {
+        currentGameId = game.id
         titleLabel.text = game.name
+
+        // Favorite 상태 설정
+        favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+
+        // 실시간 동기화: 좋아요 상태 변경 구독
+        FavoriteManager.shared.favoriteStatusChanged
+            .filter { [weak self] (gameId, _) in
+                gameId == self?.currentGameId
+            }
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] (_, isFavorite) in
+                self?.favoriteButton.isSelected = isFavorite
+            })
+            .disposed(by: disposeBag)
 
         let genreNames = game.genres.map { $0.name }
         genreLabel.text = genreNames.prefix(2).joined(separator: " • ")
@@ -259,5 +296,12 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         releaseStackView.isHidden = true
         starImageView.isHidden = false
         ratingLabel.isHidden = false
+        disposeBag = DisposeBag()
+    }
+
+    // MARK: - Actions
+    @objc private func favoriteButtonTapped() {
+        guard let gameId = currentGameId else { return }
+        onFavoriteButtonTapped?(gameId)
     }
 }

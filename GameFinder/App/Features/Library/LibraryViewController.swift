@@ -353,16 +353,20 @@ extension LibraryViewController: UIPageViewControllerDelegate {
 final class LibraryCategoryViewController: UIViewController {
 
     private let category: LibraryCategory
+    private let disposeBag = DisposeBag()
+    private var favoriteGames: [Game] = []
 
-    private let collectionView: UICollectionView = {
+    private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        layout.minimumInteritemSpacing = 16
-        layout.minimumLineSpacing = 16
-        layout.sectionInset = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        layout.minimumInteritemSpacing = 0
+        layout.minimumLineSpacing = 0
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
 
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .clear
+        collectionView.delegate = self
+        collectionView.dataSource = self
         return collectionView
     }()
 
@@ -387,6 +391,12 @@ final class LibraryCategoryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        setupCollectionView()
+
+        // Favorite 카테고리인 경우에만 데이터 로드
+        if category == .favorite {
+            loadFavoriteGames()
+        }
     }
 
     private func setupUI() {
@@ -403,6 +413,70 @@ final class LibraryCategoryViewController: UIViewController {
         }
 
         emptyLabel.text = "No items in \(category.title)"
-        emptyLabel.isHidden = false
+        emptyLabel.isHidden = true
+    }
+
+    private func setupCollectionView() {
+        collectionView.register(
+            GameListCollectionViewCell.self,
+            forCellWithReuseIdentifier: GameListCollectionViewCell.identifier
+        )
+    }
+
+    private func loadFavoriteGames() {
+        // FavoriteManager의 observeFavorites()로 실시간 구독
+        FavoriteManager.shared.observeFavorites()
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] games in
+                self?.favoriteGames = games
+                self?.collectionView.reloadData()
+                self?.emptyLabel.isHidden = !games.isEmpty
+            })
+            .disposed(by: disposeBag)
+    }
+}
+
+// MARK: - UICollectionViewDataSource
+extension LibraryCategoryViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return favoriteGames.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(
+            withReuseIdentifier: GameListCollectionViewCell.identifier,
+            for: indexPath
+        ) as? GameListCollectionViewCell else {
+            return UICollectionViewCell()
+        }
+
+        let game = favoriteGames[indexPath.item]
+        cell.configure(with: game)
+        cell.onFavoriteButtonTapped = { [weak self] gameId in
+            guard let self = self else { return }
+            if let game = self.favoriteGames.first(where: { $0.id == gameId }) {
+                FavoriteManager.shared.toggleFavorite(game)
+            }
+        }
+
+        return cell
+    }
+}
+
+// MARK: - UICollectionViewDelegateFlowLayout
+extension LibraryCategoryViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let width = collectionView.bounds.width
+        return CGSize(width: width, height: 100)
+    }
+}
+
+// MARK: - UICollectionViewDelegate
+extension LibraryCategoryViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let game = favoriteGames[indexPath.item]
+        let viewModel = GameDetailViewModel(gameId: game.id)
+        let detailVC = GameDetailViewController(viewModel: viewModel)
+        navigationController?.pushViewController(detailVC, animated: true)
     }
 }
