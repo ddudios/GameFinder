@@ -234,11 +234,12 @@ final class HeaderDetailViewController: BaseViewController {
                 ) as? GameListCollectionViewCell else {
                     return UICollectionViewCell()
                 }
+
                 let isUpcoming = self.viewModel.sectionType == .upcomingGames
-                cell.configure(with: game, isUpcoming: isUpcoming)
 
                 if isUpcoming {
-                    // upcomingGames: 알림 버튼만 표시 (좋아요 버튼 숨김)
+                    // upcomingGames: 알림 버튼만 오른쪽 y축 center에
+                    cell.configure(with: game, isUpcoming: true)
                     cell.onNotificationButtonTapped = { [weak self] gameId in
                         guard let self = self else { return }
                         let snapshot = self.dataSource.snapshot()
@@ -253,7 +254,8 @@ final class HeaderDetailViewController: BaseViewController {
                         }
                     }
                 } else {
-                    // 일반 게임: 좋아요 버튼만 표시
+                    // 나머지 섹션: 좋아요 버튼만 오른쪽 y축 center에
+                    cell.configure(with: game, isFavoriteOnly: true)
                     cell.onFavoriteButtonTapped = { [weak self] gameId in
                         guard let self = self else { return }
                         let snapshot = self.dataSource.snapshot()

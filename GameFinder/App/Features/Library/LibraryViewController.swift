@@ -354,6 +354,7 @@ final class LibraryCategoryViewController: UIViewController {
 
     private let category: LibraryCategory
     private let disposeBag = DisposeBag()
+    private var readingGames: [Game] = []
     private var favoriteGames: [Game] = []
     private var notificationGames: [Game] = []
 
@@ -395,7 +396,9 @@ final class LibraryCategoryViewController: UIViewController {
         setupCollectionView()
 
         // 카테고리별 데이터 로드
-        if category == .favorite {
+        if category == .reading {
+            loadReadingGames()
+        } else if category == .favorite {
             loadFavoriteGames()
         } else if category == .notification {
             loadNotificationGames()
@@ -424,6 +427,18 @@ final class LibraryCategoryViewController: UIViewController {
             GameListCollectionViewCell.self,
             forCellWithReuseIdentifier: GameListCollectionViewCell.identifier
         )
+    }
+
+    private func loadReadingGames() {
+        // ReadingManager의 observeReadings()로 실시간 구독
+        ReadingManager.shared.observeReadings()
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] games in
+                self?.readingGames = games
+                self?.collectionView.reloadData()
+                self?.emptyLabel.isHidden = !games.isEmpty
+            })
+            .disposed(by: disposeBag)
     }
 
     private func loadFavoriteGames() {
@@ -455,12 +470,12 @@ final class LibraryCategoryViewController: UIViewController {
 extension LibraryCategoryViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch category {
+        case .reading:
+            return readingGames.count
         case .favorite:
             return favoriteGames.count
         case .notification:
             return notificationGames.count
-        case .reading:
-            return 0
         }
     }
 
@@ -473,9 +488,35 @@ extension LibraryCategoryViewController: UICollectionViewDataSource {
         }
 
         switch category {
+        case .reading:
+            let game = readingGames[indexPath.item]
+            cell.configure(with: game, isReading: true)  // Reading 형태로 표시 (북마크 버튼만 오른쪽 중앙)
+            cell.onBookmarkButtonTapped = { [weak self] gameId in
+                guard let self = self else { return }
+                if let game = self.readingGames.first(where: { $0.id == gameId }) {
+                    // 현재 상태 확인
+                    if ReadingManager.shared.isReading(gameId: gameId) {
+                        // true -> false: 삭제 알럿 표시
+                        let alert = UIAlertController(
+                            title: "게임 기록 삭제",
+                            message: "삭제된 내용은 복구할 수 없습니다.",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+                        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
+                            ReadingManager.shared.removeReading(gameId: gameId)
+                        })
+                        self.present(alert, animated: true)
+                    } else {
+                        // false -> true: 바로 추가
+                        ReadingManager.shared.addReading(game)
+                    }
+                }
+            }
+
         case .favorite:
             let game = favoriteGames[indexPath.item]
-            cell.configure(with: game)
+            cell.configure(with: game, isFavoriteOnly: true)  // Favorite 형태로 표시 (좋아요 버튼만 오른쪽 중앙)
             cell.onFavoriteButtonTapped = { [weak self] gameId in
                 guard let self = self else { return }
                 if let game = self.favoriteGames.first(where: { $0.id == gameId }) {
@@ -492,9 +533,6 @@ extension LibraryCategoryViewController: UICollectionViewDataSource {
                     NotificationManager.shared.toggleNotification(game)
                 }
             }
-
-        case .reading:
-            break
         }
 
         return cell
@@ -514,12 +552,12 @@ extension LibraryCategoryViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let game: Game
         switch category {
+        case .reading:
+            game = readingGames[indexPath.item]
         case .favorite:
             game = favoriteGames[indexPath.item]
         case .notification:
             game = notificationGames[indexPath.item]
-        case .reading:
-            return
         }
 
         let viewModel = GameDetailViewModel(gameId: game.id)

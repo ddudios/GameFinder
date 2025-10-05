@@ -6,75 +6,49 @@
 //
 
 import Foundation
-import RealmSwift
 import RxSwift
 
 final class FavoriteManager {
     static let shared = FavoriteManager()
 
-    private let realm: Realm
+    private let repository: RealmGameRepository
 
     // 좋아요 상태 변경을 알리는 Subject (gameId, isFavorite)
     let favoriteStatusChanged = PublishSubject<(Int, Bool)>()
 
     private init() {
-        do {
-            realm = try Realm()
-        } catch {
-            fatalError("Realm initialization failed: \(error)")
-        }
+        repository = RealmGameRepository()
     }
 
     // MARK: - Add Favorite
     func addFavorite(_ game: Game) -> Bool {
-        do {
-            try realm.write {
-                if let existingGame = realm.object(ofType: RealmGame.self, forPrimaryKey: game.id) {
-                    // 이미 존재하는 게임 - isFavorite만 업데이트
-                    existingGame.isFavorite = true
-                    existingGame.favoriteAddedAt = Date()
-                } else {
-                    // 새 게임 추가
-                    let realmGame = RealmGame(from: game)
-                    realmGame.isFavorite = true
-                    realmGame.favoriteAddedAt = Date()
-                    realm.add(realmGame, update: .modified)
-                }
-            }
-            favoriteStatusChanged.onNext((game.id, true))
-            return true
-        } catch {
-            print("Failed to add favorite: \(error)")
+        guard repository.saveOrUpdateGame(game) else {
             return false
         }
+
+        guard repository.updateFavorite(gameId: game.id, isFavorite: true) else {
+            return false
+        }
+
+        favoriteStatusChanged.onNext((game.id, true))
+        return true
     }
 
     // MARK: - Remove Favorite
     func removeFavorite(gameId: Int) -> Bool {
-        do {
-            guard let realmGame = realm.object(ofType: RealmGame.self, forPrimaryKey: gameId) else {
-                return false
-            }
-            try realm.write {
-                realmGame.isFavorite = false
-                realmGame.favoriteAddedAt = nil
-
-                // isFavorite와 isNotificationEnabled 둘 다 false면 삭제
-                if !realmGame.isFavorite && !realmGame.isNotificationEnabled {
-                    realm.delete(realmGame)
-                }
-            }
-            favoriteStatusChanged.onNext((gameId, false))
-            return true
-        } catch {
-            print("Failed to remove favorite: \(error)")
+        guard repository.updateFavorite(gameId: gameId, isFavorite: false) else {
             return false
         }
+
+        _ = repository.deleteGameIfUnused(gameId: gameId)
+
+        favoriteStatusChanged.onNext((gameId, false))
+        return true
     }
 
     // MARK: - Check if Favorite
     func isFavorite(gameId: Int) -> Bool {
-        guard let realmGame = realm.object(ofType: RealmGame.self, forPrimaryKey: gameId) else {
+        guard let realmGame = repository.findGameById(gameId) else {
             return false
         }
         return realmGame.isFavorite
@@ -82,39 +56,12 @@ final class FavoriteManager {
 
     // MARK: - Get All Favorites
     func getAllFavorites() -> [Game] {
-        let favorites = realm.objects(RealmGame.self)
-            .where { $0.isFavorite == true }
-            .sorted(byKeyPath: "favoriteAddedAt", ascending: false)
-        return Array(favorites.map { $0.toDomain() })
+        return repository.findFavorites()
     }
 
     // MARK: - Observe Favorites (Rx)
     func observeFavorites() -> Observable<[Game]> {
-        return Observable.create { [weak self] observer in
-            guard let self = self else {
-                observer.onCompleted()
-                return Disposables.create()
-            }
-
-            let results = self.realm.objects(RealmGame.self)
-                .where { $0.isFavorite == true }
-                .sorted(byKeyPath: "favoriteAddedAt", ascending: false)
-
-            let token = results.observe { changes in
-                switch changes {
-                case .initial(let collection):
-                    observer.onNext(Array(collection.map { $0.toDomain() }))
-                case .update(let collection, _, _, _):
-                    observer.onNext(Array(collection.map { $0.toDomain() }))
-                case .error(let error):
-                    observer.onError(error)
-                }
-            }
-
-            return Disposables.create {
-                token.invalidate()
-            }
-        }
+        return repository.observeFavorites()
     }
 
     // MARK: - Toggle Favorite

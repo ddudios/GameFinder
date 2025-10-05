@@ -78,7 +78,17 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
         return button
     }()
 
+    let bookmarkButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        button.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
+        button.tintColor = .systemOrange
+        button.backgroundColor = .clear
+        return button
+    }()
+
     var onFavoriteButtonTapped: ((Int) -> Void)?
+    var onBookmarkButtonTapped: ((Int) -> Void)?
     private var currentGameId: Int?
     var disposeBag = DisposeBag()
 
@@ -98,23 +108,61 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
         disposeBag = DisposeBag()
     }
 
-    func configure(with game: Game) {
+    func configure(with game: Game, showOnlyFavorite: Bool = false) {
         currentGameId = game.id
         titleLabel.text = game.name
 
-        // Favorite 상태 설정
-        favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+        if showOnlyFavorite {
+            // freeGames: 좋아요 버튼만 표시
+            favoriteButton.isHidden = false
+            bookmarkButton.isHidden = true
 
-        // 실시간 동기화: 좋아요 상태 변경 구독
-        FavoriteManager.shared.favoriteStatusChanged
-            .filter { [weak self] (gameId, _) in
-                gameId == self?.currentGameId
-            }
-            .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] (_, isFavorite) in
-                self?.favoriteButton.isSelected = isFavorite
-            })
-            .disposed(by: disposeBag)
+            favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+
+            // 실시간 동기화: 좋아요 상태 변경 구독
+            FavoriteManager.shared.favoriteStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isFavorite) in
+                    self?.favoriteButton.isSelected = isFavorite
+                })
+                .disposed(by: disposeBag)
+
+        } else {
+            // 기본: 모든 버튼 표시
+            favoriteButton.isHidden = false
+            bookmarkButton.isHidden = false
+
+            // Favorite 상태 설정
+            favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+
+            // 실시간 동기화: 좋아요 상태 변경 구독
+            FavoriteManager.shared.favoriteStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isFavorite) in
+                    self?.favoriteButton.isSelected = isFavorite
+                })
+                .disposed(by: disposeBag)
+
+            // Bookmark 상태 설정
+            bookmarkButton.isSelected = ReadingManager.shared.isReading(gameId: game.id)
+
+            // 실시간 동기화: 게임 기록 상태 변경 구독
+            ReadingManager.shared.readingStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isReading) in
+                    self?.bookmarkButton.isSelected = isReading
+                })
+                .disposed(by: disposeBag)
+        }
 
         // 장르
         let genreNames = game.genres.map { $0.name }
@@ -149,6 +197,8 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
         contentView.addSubview(textStackView)
         contentView.addSubview(favoriteButton)
         favoriteButton.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
+        contentView.addSubview(bookmarkButton)
+        bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
     }
 
     override func configureLayout() {
@@ -167,8 +217,14 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
 
         textStackView.snp.makeConstraints { make in
             make.leading.equalTo(iconImageView.snp.trailing).offset(16)
-            make.trailing.equalTo(favoriteButton.snp.leading).offset(-8)
+            make.trailing.equalTo(bookmarkButton.snp.leading).offset(-8)
             make.centerY.equalToSuperview()
+        }
+
+        bookmarkButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(8)
+            make.trailing.equalTo(favoriteButton.snp.leading).offset(-4)
+            make.size.equalTo(36)
         }
 
         favoriteButton.snp.makeConstraints { make in
@@ -182,5 +238,10 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
     @objc private func favoriteButtonTapped() {
         guard let gameId = currentGameId else { return }
         onFavoriteButtonTapped?(gameId)
+    }
+
+    @objc private func bookmarkButtonTapped() {
+        guard let gameId = currentGameId else { return }
+        onBookmarkButtonTapped?(gameId)
     }
 }

@@ -127,8 +127,19 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         return button
     }()
 
+    let bookmarkButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "bookmark"), for: .normal)
+        button.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
+        button.tintColor = .systemOrange
+        button.backgroundColor = .clear
+        button.isHidden = true  // 기본은 숨김 (upcomingGames에서만 표시)
+        return button
+    }()
+
     var onFavoriteButtonTapped: ((Int) -> Void)?
     var onNotificationButtonTapped: ((Int) -> Void)?
+    var onBookmarkButtonTapped: ((Int) -> Void)?
     private var currentGameId: Int?
     private var disposeBag = DisposeBag()
 
@@ -186,6 +197,10 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         // Notification 버튼
         imageContainerView.addSubview(notificationButton)
         notificationButton.addTarget(self, action: #selector(notificationButtonTapped), for: .touchUpInside)
+
+        // Bookmark 버튼
+        imageContainerView.addSubview(bookmarkButton)
+        bookmarkButton.addTarget(self, action: #selector(bookmarkButtonTapped), for: .touchUpInside)
     }
     
     override func configureLayout() {
@@ -227,6 +242,12 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
 
         loadingIndicator.snp.makeConstraints { make in
             make.center.equalToSuperview()
+        }
+
+        bookmarkButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().inset(12)
+            make.trailing.equalTo(favoriteButton.snp.leading).offset(-8)
+            make.size.equalTo(40)
         }
 
         favoriteButton.snp.makeConstraints { make in
@@ -281,28 +302,25 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
     }
 
     // MARK: - Configuration
-    func configure(with game: Game, isUpcoming: Bool = false) {
+    func configure(with game: Game, showOnlyNotification: Bool = false, showOnlyFavorite: Bool = false) {
         currentGameId = game.id
         floatingTitleLabel.text = game.name
 
-        // Favorite 상태 설정
-        favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
-
-        // 실시간 동기화: 좋아요 상태 변경 구독
-        FavoriteManager.shared.favoriteStatusChanged
-            .filter { [weak self] (gameId, _) in
-                gameId == self?.currentGameId
-            }
-            .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] (_, isFavorite) in
-                self?.favoriteButton.isSelected = isFavorite
-            })
-            .disposed(by: disposeBag)
-
-        // Notification 버튼 표시 및 상태 설정 (upcomingGames에서만)
-        if isUpcoming {
+        // 버튼 표시 로직
+        if showOnlyNotification {
+            // upcomingGames: 알림 버튼만 오른쪽 위에
+            favoriteButton.isHidden = true
+            bookmarkButton.isHidden = true
             notificationButton.isHidden = false
+
             notificationButton.isSelected = NotificationManager.shared.isNotificationEnabled(gameId: game.id)
+
+            // 알림 버튼을 오른쪽 위로 재배치
+            notificationButton.snp.remakeConstraints { make in
+                make.top.equalToSuperview().inset(12)
+                make.trailing.equalToSuperview().inset(12)
+                make.size.equalTo(40)
+            }
 
             // 실시간 동기화: 알림 상태 변경 구독
             NotificationManager.shared.notificationStatusChanged
@@ -314,15 +332,62 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
                     self?.notificationButton.isSelected = isEnabled
                 })
                 .disposed(by: disposeBag)
-        } else {
+
+        } else if showOnlyFavorite {
+            // popularGames, freeGames: 좋아요 버튼만 오른쪽 위에
+            favoriteButton.isHidden = false
+            bookmarkButton.isHidden = true
             notificationButton.isHidden = true
+
+            favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+
+            // 실시간 동기화: 좋아요 상태 변경 구독
+            FavoriteManager.shared.favoriteStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isFavorite) in
+                    self?.favoriteButton.isSelected = isFavorite
+                })
+                .disposed(by: disposeBag)
+
+        } else {
+            // 기본: 모든 버튼 표시 (기존 로직 유지)
+            favoriteButton.isHidden = false
+            bookmarkButton.isHidden = false
+            notificationButton.isHidden = true
+
+            favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: game.id)
+            bookmarkButton.isSelected = ReadingManager.shared.isReading(gameId: game.id)
+
+            // 실시간 동기화
+            FavoriteManager.shared.favoriteStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isFavorite) in
+                    self?.favoriteButton.isSelected = isFavorite
+                })
+                .disposed(by: disposeBag)
+
+            ReadingManager.shared.readingStatusChanged
+                .filter { [weak self] (gameId, _) in
+                    gameId == self?.currentGameId
+                }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isReading) in
+                    self?.bookmarkButton.isSelected = isReading
+                })
+                .disposed(by: disposeBag)
         }
 
         // 부제목 (장르)
         let genreNames = game.genres.map { $0.name }
         subtitleLabel.text = genreNames.prefix(2).joined(separator: " • ")
 
-        if isUpcoming {
+        if showOnlyNotification {
             // Upcoming 섹션: 배지 숨김, 출시일 표시
             badgeView.isHidden = true
             releaseDateBadge.isHidden = false
@@ -392,5 +457,10 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
     @objc private func notificationButtonTapped() {
         guard let gameId = currentGameId else { return }
         onNotificationButtonTapped?(gameId)
+    }
+
+    @objc private func bookmarkButtonTapped() {
+        guard let gameId = currentGameId else { return }
+        onBookmarkButtonTapped?(gameId)
     }
 }

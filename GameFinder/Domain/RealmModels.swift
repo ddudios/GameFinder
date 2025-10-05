@@ -10,44 +10,35 @@ import RealmSwift
 
 // MARK: - 통합 Game 모델
 final class RealmGame: Object {
-    @Persisted(primaryKey: true) var id: Int
+    @Persisted(primaryKey: true) var id: ObjectId
+    @Persisted(indexed: true) var gameId: Int // 기존 게임 ID (API ID)
     @Persisted var name: String
     @Persisted var released: String?
     @Persisted var backgroundImage: String?
     @Persisted var rating: Double
     @Persisted var ratingsCount: Int
     @Persisted var metacritic: Int?
+    @Persisted var addedAt: Date = Date()
 
-    // Favorite & Notification 플래그
+    // Favorite & Notification & Reading 플래그
     @Persisted var isFavorite: Bool = false
     @Persisted var isNotificationEnabled: Bool = false
+    @Persisted var isReading: Bool = false
     @Persisted var favoriteAddedAt: Date?
     @Persisted var notificationAddedAt: Date?
+    @Persisted var readingAddedAt: Date?
 
-    // Relations
-    @Persisted var platforms: List<RealmGamePlatform>
-    @Persisted var genres: List<RealmGameGenre>
-    @Persisted var screenshots: List<RealmGameScreenshot>
+    // Relations - 마스터 테이블 참조
+    @Persisted var platforms: List<RealmPlatform>
+    @Persisted var genres: List<RealmGenre>
 
-    convenience init(from game: Game) {
-        self.init()
-        self.id = game.id
-        self.name = game.name
-        self.released = game.released
-        self.backgroundImage = game.backgroundImage
-        self.rating = game.rating
-        self.ratingsCount = game.ratingsCount
-        self.metacritic = game.metacritic
-
-        self.platforms.append(objectsIn: game.platforms.map { RealmGamePlatform(from: $0) })
-        self.genres.append(objectsIn: game.genres.map { RealmGameGenre(from: $0) })
-        self.screenshots.append(objectsIn: game.screenshots.map { RealmGameScreenshot(from: $0) })
-    }
+    // Screenshots는 역참조 (LinkingObjects)
+    @Persisted(originProperty: "game") var screenshots: LinkingObjects<RealmScreenshot>
 
     // Realm -> Domain 변환
     func toDomain() -> Game {
         return Game(
-            id: id,
+            id: gameId,
             name: name,
             released: released,
             backgroundImage: backgroundImage,
@@ -62,53 +53,65 @@ final class RealmGame: Object {
 }
 
 // MARK: - Platform
-final class RealmGamePlatform: Object {
-    @Persisted var id: Int
+final class RealmPlatform: Object {
+    @Persisted(primaryKey: true) var id: ObjectId
+    @Persisted(indexed: true) var platformId: Int // 기존 플랫폼 ID (API ID)
     @Persisted var name: String
     @Persisted var slug: String
 
+    // 역참조: 이 플랫폼을 가진 게임들
+    @Persisted(originProperty: "platforms") var games: LinkingObjects<RealmGame>
+
     convenience init(from platform: GamePlatform) {
         self.init()
-        self.id = platform.id
+        self.platformId = platform.id
         self.name = platform.name
         self.slug = platform.slug
     }
 
     func toDomain() -> GamePlatform {
-        return GamePlatform(id: id, name: name, slug: slug)
+        return GamePlatform(id: platformId, name: name, slug: slug)
     }
 }
 
 // MARK: - Genre
-final class RealmGameGenre: Object {
-    @Persisted var id: Int
+final class RealmGenre: Object {
+    @Persisted(primaryKey: true) var id: ObjectId
+    @Persisted(indexed: true) var genreId: Int // 기존 장르 ID (API ID)
     @Persisted var name: String
     @Persisted var slug: String
 
+    // 역참조: 이 장르를 가진 게임들
+    @Persisted(originProperty: "genres") var games: LinkingObjects<RealmGame>
+
     convenience init(from genre: GameGenre) {
         self.init()
-        self.id = genre.id
+        self.genreId = genre.id
         self.name = genre.name
         self.slug = genre.slug
     }
 
     func toDomain() -> GameGenre {
-        return GameGenre(id: id, name: name, slug: slug)
+        return GameGenre(id: genreId, name: name, slug: slug)
     }
 }
 
-// MARK: - Screenshot
-final class RealmGameScreenshot: Object {
-    @Persisted var id: Int
+// MARK: - Screenshot (게임 종속 데이터)
+final class RealmScreenshot: Object {
+    @Persisted(primaryKey: true) var id: ObjectId
+    @Persisted(indexed: true) var screenshotId: Int // 스크린샷 ID (API ID)
+    @Persisted var gameId: Int // 게임 ID
     @Persisted var image: String
+    @Persisted var game: RealmGame? // 역참조를 위한 게임 관계
 
-    convenience init(from screenshot: GameScreenshot) {
+    convenience init(gameId: Int, screenshot: GameScreenshot) {
         self.init()
-        self.id = screenshot.id
+        self.gameId = gameId
+        self.screenshotId = screenshot.id
         self.image = screenshot.image
     }
 
     func toDomain() -> GameScreenshot {
-        return GameScreenshot(id: id, image: image)
+        return GameScreenshot(id: screenshotId, image: image)
     }
 }

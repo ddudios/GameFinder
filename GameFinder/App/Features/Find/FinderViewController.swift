@@ -250,7 +250,8 @@ final class FinderViewController: BaseViewController {
     private func configureCellRegistration() {
         // cellForItemAt 셀 디자인 데이터 처리하는 코드
         popularRegistration = UICollectionView.CellRegistration<CardCollectionViewCell, Game> { [weak self] cell, indexPath, game in
-            cell.configure(with: game)
+            // popularGames: 좋아요 버튼만 표시
+            cell.configure(with: game, showOnlyFavorite: true)
             cell.onFavoriteButtonTapped = { [weak self] gameId in
                 guard let self = self else { return }
                 let snapshot = self.dataSource.snapshot()
@@ -261,7 +262,8 @@ final class FinderViewController: BaseViewController {
         }
 
         freeRegistration = UICollectionView.CellRegistration<FreeCollectionViewCell, Game> { [weak self] cell, indexPath, game in
-            cell.configure(with: game)
+            // freeGames: 좋아요 버튼만 표시
+            cell.configure(with: game, showOnlyFavorite: true)
             cell.onFavoriteButtonTapped = { [weak self] gameId in
                 guard let self = self else { return }
                 let snapshot = self.dataSource.snapshot()
@@ -272,14 +274,8 @@ final class FinderViewController: BaseViewController {
         }
 
         upcomingRegistration = UICollectionView.CellRegistration<CardCollectionViewCell, Game> { [weak self] cell, indexPath, game in
-            cell.configure(with: game, isUpcoming: true)
-            cell.onFavoriteButtonTapped = { [weak self] gameId in
-                guard let self = self else { return }
-                let snapshot = self.dataSource.snapshot()
-                if let game = snapshot.itemIdentifiers.first(where: { $0.id == gameId }) {
-                    FavoriteManager.shared.toggleFavorite(game)
-                }
-            }
+            // upcomingGames: 알림 버튼만 표시
+            cell.configure(with: game, showOnlyNotification: true)
             cell.onNotificationButtonTapped = { [weak self] gameId in
                 guard let self = self else { return }
                 let snapshot = self.dataSource.snapshot()

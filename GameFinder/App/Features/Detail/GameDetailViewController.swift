@@ -14,6 +14,7 @@ import Kingfisher
 enum GameDetailSection: Int, CaseIterable {
     case screenshots
     case releaseAndRating
+    case actionButtons
     case genreAndTags
     case ageRating
     case platforms
@@ -26,6 +27,7 @@ enum GameDetailSection: Int, CaseIterable {
 enum GameDetailItem: Hashable {
     case screenshot(String)
     case releaseAndRating(String?, Double?, Int?)
+    case actionButtons(Int)
     case genreAndTags([GameGenre], [GameTag])
     case ageRating(GameESRBRating?)
     case platforms([GamePlatform])
@@ -43,7 +45,6 @@ final class GameDetailViewController: BaseViewController {
     private let viewWillAppearRelay = PublishRelay<Void>()
 
     private var currentGameDetail: GameDetail?
-    private var favoriteButton: UIButton?
 
     // MARK: - UI Components
     private lazy var collectionView: UICollectionView = {
@@ -98,17 +99,7 @@ final class GameDetailViewController: BaseViewController {
     private func setupNavigationBar() {
         navigationController?.navigationBar.topItem?.backButtonDisplayMode = .minimal
         navigationController?.navigationBar.tintColor = .secondaryLabel
-
-        // Favorite 버튼
-        let button = UIButton(type: .custom)
-        button.setImage(UIImage(systemName: "heart"), for: .normal)
-        button.setImage(UIImage(systemName: "heart.fill"), for: .selected)
-        button.tintColor = .systemRed
-        button.backgroundColor = .clear
-        button.addTarget(self, action: #selector(favoriteButtonTapped), for: .touchUpInside)
-
-        favoriteButton = button
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: button)
+        // rightBarButtonItem 제거 - 버튼들은 collectionView 내부에 표시
     }
 
     override func configureHierarchy() {
@@ -160,6 +151,10 @@ final class GameDetailViewController: BaseViewController {
             forCellWithReuseIdentifier: ReleaseAndRatingCollectionViewCell.identifier
         )
         collectionView.register(
+            ActionButtonsCollectionViewCell.self,
+            forCellWithReuseIdentifier: ActionButtonsCollectionViewCell.identifier
+        )
+        collectionView.register(
             GenreAndTagsCollectionViewCell.self,
             forCellWithReuseIdentifier: GenreAndTagsCollectionViewCell.identifier
         )
@@ -198,6 +193,8 @@ final class GameDetailViewController: BaseViewController {
                 return self?.createScreenshotsSection()
             case .releaseAndRating:
                 return self?.createReleaseAndRatingSection()
+            case .actionButtons:
+                return self?.createActionButtonsSection()
             case .genreAndTags:
                 return self?.createGenreAndTagsSection()
             case .ageRating:
@@ -263,6 +260,25 @@ final class GameDetailViewController: BaseViewController {
 
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16)
+
+        return section
+    }
+
+    private func createActionButtonsSection() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(60)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .absolute(60)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 0, bottom: 16, trailing: 0)
 
         return section
     }
@@ -422,18 +438,6 @@ final class GameDetailViewController: BaseViewController {
             owner.currentGameDetail = gameDetail
             owner.navigationItem.title = gameDetail.name
             owner.updateDataSource(with: gameDetail, screenshots: screenshots)
-
-            // Favorite 버튼 상태 업데이트
-            owner.favoriteButton?.isSelected = FavoriteManager.shared.isFavorite(gameId: gameDetail.id)
-
-            // 실시간 동기화: 좋아요 상태 변경 구독
-            FavoriteManager.shared.favoriteStatusChanged
-                .filter { (gameId, _) in gameId == gameDetail.id }
-                .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { [weak owner] (_, isFavorite) in
-                    owner?.favoriteButton?.isSelected = isFavorite
-                })
-                .disposed(by: owner.disposeBag)
         }
         .disposed(by: disposeBag)
 
@@ -473,6 +477,10 @@ final class GameDetailViewController: BaseViewController {
             snapshot.appendSections([.releaseAndRating])
             snapshot.appendItems([.releaseAndRating(gameDetail.released, gameDetail.rating, gameDetail.ratingsCount)], toSection: .releaseAndRating)
         }
+
+        // Action Buttons section - 항상 표시
+        snapshot.appendSections([.actionButtons])
+        snapshot.appendItems([.actionButtons(gameDetail.id)], toSection: .actionButtons)
 
         // Genre and Tags section - 장르나 태그가 하나라도 있을 때만 추가
         if !gameDetail.genres.isEmpty || !gameDetail.tags.isEmpty {
@@ -530,6 +538,57 @@ final class GameDetailViewController: BaseViewController {
                     return UICollectionViewCell()
                 }
                 cell.configure(releaseDate: releaseDate, rating: rating, ratingsCount: ratingsCount)
+                return cell
+
+            case .actionButtons(let gameId):
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: ActionButtonsCollectionViewCell.identifier,
+                    for: indexPath
+                ) as? ActionButtonsCollectionViewCell else {
+                    return UICollectionViewCell()
+                }
+                cell.configure(with: gameId)
+
+                cell.onBookmarkButtonTapped = { [weak self] gameId in
+                    guard let self = self,
+                          let gameDetail = self.currentGameDetail else { return }
+
+                    let game = gameDetail.toGame()
+
+                    // 이미 기록 중인 경우: 삭제 확인 alert
+                    if ReadingManager.shared.isReading(gameId: gameId) {
+                        let alert = UIAlertController(
+                            title: "게임 기록 삭제",
+                            message: "\(game.name)을(를) 게임 기록에서 삭제하시겠습니까?",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
+                        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
+                            ReadingManager.shared.removeReading(gameId: gameId)
+                        })
+                        self.present(alert, animated: true)
+                    } else {
+                        // 기록 추가
+                        ReadingManager.shared.addReading(game)
+                    }
+                }
+
+                cell.onFavoriteButtonTapped = { [weak self] gameId in
+                    guard let self = self,
+                          let gameDetail = self.currentGameDetail else { return }
+
+                    let game = gameDetail.toGame()
+                    FavoriteManager.shared.toggleFavorite(game)
+                }
+
+                cell.onNotificationButtonTapped = { [weak self] gameId in
+                    guard let self = self,
+                          let gameDetail = self.currentGameDetail else { return }
+
+                    let game = gameDetail.toGame()
+                    NotificationManager.shared.toggleNotification(game)
+                }
+
                 return cell
 
             case .genreAndTags(let genres, let tags):
@@ -615,13 +674,6 @@ final class GameDetailViewController: BaseViewController {
         )
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
-    }
-
-    // MARK: - Actions
-    @objc private func favoriteButtonTapped() {
-        guard let gameDetail = currentGameDetail else { return }
-        let game = gameDetail.toGame()
-        FavoriteManager.shared.toggleFavorite(game)
     }
 }
 
