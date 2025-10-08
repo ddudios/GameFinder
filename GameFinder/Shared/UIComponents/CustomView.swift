@@ -84,7 +84,7 @@ final class SectionHeaderView: UICollectionReusableView {
         super.init(frame: frame)
         label.textColor = .label
         label.numberOfLines = 1
-        label.font = .Chosun.regular16
+        label.font = .Title.bold16
 
         chevronImageView.image = UIImage(systemName: "chevron.right")
         chevronImageView.tintColor = .secondaryLabel

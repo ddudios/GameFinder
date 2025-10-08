@@ -22,11 +22,11 @@ final class FinderViewController: BaseViewController {
         var headerTitle: String {
             switch self {
             case .upcomingGames:
-                return "COMING SOON"
+                return L10n.Finder.upcomingGamesSectionHeader
             case .freeGames:
-                return "TOP FREE GAMES"
+                return L10n.Finder.freeGamesSectionHeader
             case .popularGames:
-                return "TOP PLAYED GAMES"
+                return L10n.Finder.popularGamesSectionHeader
             }
         }
     }
@@ -243,7 +243,7 @@ final class FinderViewController: BaseViewController {
     //MARK: - Layout
     private func configureNavigationBar() {
         navigationItem.title = L10n.Finder.navTitle
-        navigationItem.backButtonTitle = "Game Finder"
+        navigationItem.backButtonTitle = L10n.Finder.navTitle
     }
     
     // registration 초기화
@@ -447,7 +447,7 @@ extension FinderViewController {
                         heightDimension: .fractionalHeight(1)
                     )
                 )
-                item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8)  // 셀과 셀 사이 간격
+                item.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 8, bottom: 0, trailing: 8)  // 셀과 셀 사이 간격
 
                 // 스크린샷과 동일한 비율: 가로 0.85, 세로는 가로의 4/3배
                 let groupSize = NSCollectionLayoutSize(

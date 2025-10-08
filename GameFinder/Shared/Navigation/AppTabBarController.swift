@@ -24,7 +24,8 @@ enum TabBarItem: Int, CaseIterable {
         switch self {
         case .first: return "gamecontroller"
         case .second: return "rectangle.stack"
-        case .third: return "magnifyingglass"
+        case .third: return "gearshape"
+//        case .third: return "magnifyingglass"
         }
     }
     

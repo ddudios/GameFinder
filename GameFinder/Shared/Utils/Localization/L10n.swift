@@ -21,9 +21,26 @@ enum L10n {
     
     enum Finder {
         /// Game Finder
-        static let navTitle = "nav_title_game_finder".localized
+        static let navTitle = "nav_title_first".localized
         
         /// 게임 검색
         static let searchPlaceholder = "placeholder_search_games".localized
+        
+        /// 출시 예정
+        static let upcomingGamesSectionHeader = "section_header_upcoming_games".localized
+        
+        /// 무료 게임
+        static let freeGamesSectionHeader = "section_header_free_games".localized
+        
+        /// 인기 게임
+        static let popularGamesSectionHeader = "section_header_popular_games".localized
+    }
+    
+    enum Library {
+        static let navTitle = "nav_title_second".localized
+    }
+    
+    enum Settings {
+        static let navTitle = "nav_title_third".localized
     }
 }

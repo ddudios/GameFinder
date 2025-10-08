@@ -97,7 +97,7 @@ final class LibraryViewController: BaseViewController {
 
     // MARK: - Setup
     private func setNavigationBar() {
-        navigationItem.title = "Library"
+        navigationItem.title = L10n.Library.navTitle
     }
 
     override func configureHierarchy() {
