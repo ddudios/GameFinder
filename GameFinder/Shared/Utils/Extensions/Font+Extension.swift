@@ -60,37 +60,25 @@ extension UIFont {
     struct Heading {
         private init() { }
         static let heavy24 = UIFont.systemFont(ofSize: 24, weight: .heavy)
+        static let heavy15 = UIFont.systemFont(ofSize: 15, weight: .heavy)
     }
     
     struct Title {
         private init() { }
+        static let bold24 = UIFont.systemFont(ofSize: 24, weight: .bold)
+        static let bold20 = UIFont.systemFont(ofSize: 20, weight: .bold)
         static let bold16 = UIFont.systemFont(ofSize: 16, weight: .bold)
         static let bold14 = UIFont.systemFont(ofSize: 14, weight: .bold)
     }
     
     struct Body {
         private init() { }
+        static let regular16 = UIFont.systemFont(ofSize: 16, weight: .regular)
+        
+        static let semibold14 = UIFont.systemFont(ofSize: 14, weight: .semibold)
         static let regular14 = UIFont.systemFont(ofSize: 14, weight: .regular)
         
         static let bold12 = UIFont.systemFont(ofSize: 12, weight: .bold)
         static let regular12 = UIFont.systemFont(ofSize: 12, weight: .regular)
-    }
-    
-    struct Prominent {
-        private init() { }
-        static let bold15 = UIFont.systemFont(ofSize: 15, weight: .bold)
-        static let semibold14 = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        static let semibold12 = UIFont.systemFont(ofSize: 12, weight: .semibold)
-    }
-        
-    struct Label {
-        private init() { }
-        static let medium10 = UIFont.systemFont(ofSize: 10, weight: .medium)
-    }
-    
-    struct Highlight {
-        private init() { }
-        static let heavy15 = UIFont.systemFont(ofSize: 15, weight: .heavy)
-        static let heavy14 = UIFont.systemFont(ofSize: 14, weight: .heavy)
     }
 }

@@ -19,13 +19,14 @@ struct Game: Hashable {
     let platforms: [GamePlatform]
     let genres: [GameGenre]
     let screenshots: [GameScreenshot]
-    
+    let readingUpdatedAt: Date? // 게임 기록 최신 업데이트 날짜
+
     // MARK: - Hashable 구현
     // DiffableDataSource는 이 메서드로 아이템을 구분합니다
     func hash(into hasher: inout Hasher) {
         hasher.combine(id) // API의 고유 ID로 구분
     }
-    
+
     // 두 게임이 같은지 비교 (id만 비교)
     static func == (lhs: Game, rhs: Game) -> Bool {
         return lhs.id == rhs.id
@@ -138,6 +139,9 @@ extension Game {
                 image: screenshot.image
             )
         } ?? []
+
+        // API 응답에는 readingUpdatedAt이 없으므로 nil
+        self.readingUpdatedAt = nil
     }
 }
 
@@ -223,7 +227,8 @@ extension GameDetail {
             metacritic: metacritic,
             platforms: platforms,
             genres: genres,
-            screenshots: [] // GameDetail에는 스크린샷 정보가 없으므로 빈 배열
+            screenshots: [], // GameDetail에는 스크린샷 정보가 없으므로 빈 배열
+            readingUpdatedAt: nil
         )
     }
 }

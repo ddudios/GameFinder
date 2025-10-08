@@ -59,7 +59,7 @@ final class RealmGameRepository: GameRepository {
     func findReadings() -> [Game] {
         let readings = realm.objects(RealmGame.self)
             .where { $0.isReading == true }
-            .sorted(byKeyPath: "readingAddedAt", ascending: false)
+            .sorted(byKeyPath: "readingUpdatedAt", ascending: false)
         return Array(readings.map { $0.toDomain() })
     }
 
@@ -129,7 +129,7 @@ final class RealmGameRepository: GameRepository {
 
             let results = self.realm.objects(RealmGame.self)
                 .where { $0.isReading == true }
-                .sorted(byKeyPath: "readingAddedAt", ascending: false)
+                .sorted(byKeyPath: "readingUpdatedAt", ascending: false)
 
             let token = results.observe { changes in
                 switch changes {
@@ -191,7 +191,17 @@ final class RealmGameRepository: GameRepository {
         do {
             try realm.write {
                 realmGame.isReading = isReading
-                realmGame.readingAddedAt = isReading ? Date() : nil
+                if isReading {
+                    // 추가할 때: readingAddedAt이 없으면 설정, readingUpdatedAt은 항상 업데이트
+                    if realmGame.readingAddedAt == nil {
+                        realmGame.readingAddedAt = Date()
+                    }
+                    realmGame.readingUpdatedAt = Date()
+                } else {
+                    // 삭제할 때: 둘 다 nil
+                    realmGame.readingAddedAt = nil
+                    realmGame.readingUpdatedAt = nil
+                }
             }
             return true
         } catch {

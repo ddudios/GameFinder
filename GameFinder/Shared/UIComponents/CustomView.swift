@@ -14,7 +14,7 @@ final class BadgeView: UIView {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = .Signiture
+        imageView.tintColor = .Signature
         return imageView
     }()
     private let textLabel = {

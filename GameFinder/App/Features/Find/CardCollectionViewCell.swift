@@ -121,7 +121,7 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bell"), for: .normal)
         button.setImage(UIImage(systemName: "bell.fill"), for: .selected)
-        button.tintColor = .systemBlue
+        button.tintColor = .systemOrange
         button.backgroundColor = .clear
         button.isHidden = true  // 기본은 숨김 (upcomingGames에서만 표시)
         return button
@@ -131,7 +131,7 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bookmark"), for: .normal)
         button.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
-        button.tintColor = .systemOrange
+        button.tintColor = .Signature
         button.backgroundColor = .clear
         button.isHidden = true  // 기본은 숨김 (upcomingGames에서만 표시)
         return button

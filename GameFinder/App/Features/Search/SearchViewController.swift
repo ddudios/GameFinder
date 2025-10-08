@@ -13,7 +13,7 @@ final class SettingViewController: BaseViewController {
     }
     
     private func setNavigationBar() {
-        navigationItem.title = "Settings"
+        navigationItem.title = "Search"
     }
     
     override func configureView() {

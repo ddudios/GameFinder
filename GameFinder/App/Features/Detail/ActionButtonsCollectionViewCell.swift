@@ -15,7 +15,7 @@ final class ActionButtonsCollectionViewCell: BaseCollectionViewCell {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bookmark"), for: .normal)
         button.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
-        button.tintColor = .systemOrange
+        button.tintColor = .Signature
         button.backgroundColor = .clear
         return button
     }()
@@ -33,7 +33,7 @@ final class ActionButtonsCollectionViewCell: BaseCollectionViewCell {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bell"), for: .normal)
         button.setImage(UIImage(systemName: "bell.fill"), for: .selected)
-        button.tintColor = .systemBlue
+        button.tintColor = .systemOrange
         button.backgroundColor = .clear
         return button
     }()

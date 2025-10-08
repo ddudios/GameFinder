@@ -26,7 +26,7 @@ enum LibraryCategory: Int, CaseIterable {
 
     var icon: String {
         switch self {
-        case .reading: return "book.pages.fill"
+        case .reading: return "bookmark.fill"
         case .favorite: return "heart.fill"
         case .notification: return "bell.fill"
         }
@@ -48,29 +48,6 @@ final class LibraryViewController: BaseViewController {
     }()
 
     private let contentView = UIView()
-
-    private let backgroundImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        return imageView
-    }()
-
-    private let blurEffectView: UIVisualEffectView = {
-        let blurEffect = UIBlurEffect(style: .regular)
-        let effectView = UIVisualEffectView(effect: blurEffect)
-        return effectView
-    }()
-
-    private let gradientLayer: CAGradientLayer = {
-        let layer = CAGradientLayer()
-        layer.colors = [
-            UIColor.clear.cgColor,
-            UIColor.systemBackground.cgColor
-        ]
-        layer.locations = [0.3, 1.0]
-        return layer
-    }()
 
     private let categoryButtonsStackView = {
         let stackView = UIStackView()
@@ -102,7 +79,6 @@ final class LibraryViewController: BaseViewController {
         super.viewDidLoad()
         setupCategoryViewControllers()
         setupPageViewController()
-        loadRandomBackgroundImage()
         bind()
     }
 
@@ -116,7 +92,6 @@ final class LibraryViewController: BaseViewController {
         super.viewDidLayoutSubviews()
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        gradientLayer.frame = blurEffectView.bounds
         CATransaction.commit()
     }
 
@@ -129,10 +104,6 @@ final class LibraryViewController: BaseViewController {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
 
-        contentView.addSubview(backgroundImageView)
-        contentView.addSubview(blurEffectView)
-        blurEffectView.contentView.layer.addSublayer(gradientLayer)
-
         contentView.addSubview(categoryButtonsStackView)
         categoryButtonsStackView.addArrangedSubview(readingButton)
         categoryButtonsStackView.addArrangedSubview(favoriteButton)
@@ -144,8 +115,6 @@ final class LibraryViewController: BaseViewController {
     }
 
     override func configureLayout() {
-        let screenWidth = view.frame.width
-        let backgroundHeight = screenWidth * 3 / 4
 
         scrollView.snp.makeConstraints { make in
             make.edges.equalTo(view.safeAreaLayoutGuide)
@@ -155,16 +124,7 @@ final class LibraryViewController: BaseViewController {
             make.edges.equalTo(scrollView)
             make.width.equalTo(scrollView)
         }
-
-        backgroundImageView.snp.makeConstraints { make in
-            make.top.horizontalEdges.equalToSuperview()
-            make.height.equalTo(backgroundHeight)
-        }
-
-        blurEffectView.snp.makeConstraints { make in
-            make.edges.equalTo(backgroundImageView)
-        }
-
+        
         categoryButtonsStackView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(16)
             make.centerX.equalToSuperview()
@@ -172,10 +132,9 @@ final class LibraryViewController: BaseViewController {
         }
 
         categoryPageViewController.view.snp.makeConstraints { make in
-            make.top.equalTo(categoryButtonsStackView.snp.bottom).offset(20)
+            make.top.equalTo(categoryButtonsStackView.snp.bottom).offset(10)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalToSuperview()
-            make.height.equalTo(600)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
         }
     }
 
@@ -226,9 +185,18 @@ final class LibraryViewController: BaseViewController {
 
             var config = button.configuration
             if category == currentCategory {
-                config?.baseForegroundColor = .label
+                // 선택된 상태: 각 카테고리별 색상
+                switch category {
+                case .reading:
+                    config?.baseForegroundColor = .Signature
+                case .favorite:
+                    config?.baseForegroundColor = .systemRed
+                case .notification:
+                    config?.baseForegroundColor = .systemYellow
+                }
             } else {
-                config?.baseForegroundColor = .systemBackground
+                // 선택되지 않은 상태: .label
+                config?.baseForegroundColor = .label
             }
             button.configuration = config
         }
@@ -253,67 +221,6 @@ final class LibraryViewController: BaseViewController {
         updateButtonStates()
     }
 
-    // MARK: - Background Image
-    private func loadRandomBackgroundImage() {
-        // upcomingGames와 동일하게 출시 예정 게임의 첫 번째 이미지 가져오기
-        let today = Date()
-        let futureDate = Calendar.current.date(byAdding: .month, value: 3, to: today)!
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-
-        NetworkObservable.request(
-            router: RawgRouter.upcoming(
-                start: dateFormatter.string(from: today),
-                end: dateFormatter.string(from: futureDate),
-                page: 1,
-                pageSize: 1
-            ),
-            as: GameListDTO.self
-        )
-        .asObservable()
-        .subscribe { [weak self] result in
-            switch result {
-            case .success(let dto):
-                if let firstGame = dto.results.first,
-                   let imageUrl = firstGame.backgroundImage,
-                   let url = URL(string: imageUrl) {
-                    self?.backgroundImageView.kf.setImage(with: url, placeholder: UIImage(named: "noImage"))
-                } else {
-                    self?.backgroundImageView.image = UIImage(named: "noImage")
-                }
-            case .failure:
-                // 실패 시 인기 게임 이미지로 대체
-                self?.loadFallbackImage()
-            }
-        }
-        .disposed(by: disposeBag)
-    }
-
-    private func loadFallbackImage() {
-        // Popular games에서 첫 번째 게임 이미지 가져오기
-        NetworkObservable.request(
-            router: RawgRouter.popular(page: 1, pageSize: 1),
-            as: GameListDTO.self
-        )
-        .asObservable()
-        .subscribe { [weak self] result in
-            switch result {
-            case .success(let dto):
-                if let firstGame = dto.results.first,
-                   let imageUrl = firstGame.backgroundImage,
-                   let url = URL(string: imageUrl) {
-                    self?.backgroundImageView.kf.setImage(with: url, placeholder: UIImage(named: "noImage"))
-                } else {
-                    self?.backgroundImageView.image = UIImage(named: "noImage")
-                }
-            case .failure:
-                self?.backgroundImageView.image = UIImage(named: "noImage")
-            }
-        }
-        .disposed(by: disposeBag)
-    }
-
-    // MARK: - Binding
     private func bind() {
         // 필요한 경우 추가 바인딩
     }
@@ -427,6 +334,10 @@ final class LibraryCategoryViewController: UIViewController {
             GameListCollectionViewCell.self,
             forCellWithReuseIdentifier: GameListCollectionViewCell.identifier
         )
+        collectionView.register(
+            GameDiaryListCollectionViewCell.self,
+            forCellWithReuseIdentifier: GameDiaryListCollectionViewCell.identifier
+        )
     }
 
     private func loadReadingGames() {
@@ -480,62 +391,49 @@ extension LibraryCategoryViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: GameListCollectionViewCell.identifier,
-            for: indexPath
-        ) as? GameListCollectionViewCell else {
-            return UICollectionViewCell()
-        }
-
         switch category {
         case .reading:
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: GameDiaryListCollectionViewCell.identifier,
+                for: indexPath
+            ) as? GameDiaryListCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+
             let game = readingGames[indexPath.item]
-            cell.configure(with: game, isReading: true)  // Reading 형태로 표시 (북마크 버튼만 오른쪽 중앙)
-            cell.onBookmarkButtonTapped = { [weak self] gameId in
-                guard let self = self else { return }
-                if let game = self.readingGames.first(where: { $0.id == gameId }) {
-                    // 현재 상태 확인
-                    if ReadingManager.shared.isReading(gameId: gameId) {
-                        // true -> false: 삭제 알럿 표시
-                        let alert = UIAlertController(
-                            title: "게임 기록 삭제",
-                            message: "삭제된 내용은 복구할 수 없습니다.",
-                            preferredStyle: .alert
-                        )
-                        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-                        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
-                            ReadingManager.shared.removeReading(gameId: gameId)
-                        })
-                        self.present(alert, animated: true)
-                    } else {
-                        // false -> true: 바로 추가
-                        ReadingManager.shared.addReading(game)
+            cell.configure(with: game, lastUpdatedDate: game.readingUpdatedAt)
+            return cell
+
+        case .favorite, .notification:
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: GameListCollectionViewCell.identifier,
+                for: indexPath
+            ) as? GameListCollectionViewCell else {
+                return UICollectionViewCell()
+            }
+
+            if category == .favorite {
+                let game = favoriteGames[indexPath.item]
+                cell.configure(with: game, isFavoriteOnly: true)  // Favorite 형태로 표시 (좋아요 버튼만 오른쪽 중앙)
+                cell.onFavoriteButtonTapped = { [weak self] gameId in
+                    guard let self = self else { return }
+                    if let game = self.favoriteGames.first(where: { $0.id == gameId }) {
+                        FavoriteManager.shared.toggleFavorite(game)
+                    }
+                }
+            } else {
+                let game = notificationGames[indexPath.item]
+                cell.configure(with: game, isUpcoming: true)  // upcomingGames 형태로 표시 (좋아요 버튼 숨김, 알림 버튼만 표시)
+                cell.onNotificationButtonTapped = { [weak self] gameId in
+                    guard let self = self else { return }
+                    if let game = self.notificationGames.first(where: { $0.id == gameId }) {
+                        NotificationManager.shared.toggleNotification(game)
                     }
                 }
             }
 
-        case .favorite:
-            let game = favoriteGames[indexPath.item]
-            cell.configure(with: game, isFavoriteOnly: true)  // Favorite 형태로 표시 (좋아요 버튼만 오른쪽 중앙)
-            cell.onFavoriteButtonTapped = { [weak self] gameId in
-                guard let self = self else { return }
-                if let game = self.favoriteGames.first(where: { $0.id == gameId }) {
-                    FavoriteManager.shared.toggleFavorite(game)
-                }
-            }
-
-        case .notification:
-            let game = notificationGames[indexPath.item]
-            cell.configure(with: game, isUpcoming: true)  // upcomingGames 형태로 표시 (좋아요 버튼 숨김, 알림 버튼만 표시)
-            cell.onNotificationButtonTapped = { [weak self] gameId in
-                guard let self = self else { return }
-                if let game = self.notificationGames.first(where: { $0.id == gameId }) {
-                    NotificationManager.shared.toggleNotification(game)
-                }
-            }
+            return cell
         }
-
-        return cell
     }
 }
 
@@ -543,7 +441,44 @@ extension LibraryCategoryViewController: UICollectionViewDataSource {
 extension LibraryCategoryViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = collectionView.bounds.width
-        return CGSize(width: width, height: 100)
+
+        switch category {
+        case .reading:
+            // 한 줄에 2개, 여백 고려
+            let spacing: CGFloat = 16
+            let itemWidth = (width - spacing * 3) / 2 // 양쪽 16 + 중간 16
+            let itemHeight = itemWidth * 1.2 // 비율 조정
+            return CGSize(width: itemWidth, height: itemHeight)
+        case .favorite, .notification:
+            return CGSize(width: width, height: 100)
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        switch category {
+        case .reading:
+            return UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        case .favorite, .notification:
+            return UIEdgeInsets.zero
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        switch category {
+        case .reading:
+            return 16
+        case .favorite, .notification:
+            return 0
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        switch category {
+        case .reading:
+            return 16
+        case .favorite, .notification:
+            return 0
+        }
     }
 }
 
@@ -554,12 +489,18 @@ extension LibraryCategoryViewController: UICollectionViewDelegate {
         switch category {
         case .reading:
             game = readingGames[indexPath.item]
+            // Reading 카테고리: DiaryViewController로 이동
+            let diaryVC = DiaryViewController(gameId: game.id, gameName: game.name)
+            navigationController?.pushViewController(diaryVC, animated: true)
+            return
+
         case .favorite:
             game = favoriteGames[indexPath.item]
         case .notification:
             game = notificationGames[indexPath.item]
         }
 
+        // Favorite, Notification 카테고리: GameDetailViewController로 이동
         let viewModel = GameDetailViewModel(gameId: game.id)
         let detailVC = GameDetailViewController(viewModel: viewModel)
         navigationController?.pushViewController(detailVC, animated: true)

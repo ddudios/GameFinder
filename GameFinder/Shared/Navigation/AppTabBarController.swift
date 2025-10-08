@@ -24,7 +24,7 @@ enum TabBarItem: Int, CaseIterable {
         switch self {
         case .first: return "gamecontroller"
         case .second: return "rectangle.stack"
-        case .third: return "gearshape"
+        case .third: return "magnifyingglass"
         }
     }
     
@@ -63,8 +63,8 @@ final class AppTabBarController: UITabBarController {
         tabBarAppearance.configureWithOpaqueBackground()
         tabBarAppearance.backgroundColor = .systemBackground
         
-        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = UIColor.Signiture
-        tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.Signiture]
+        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = UIColor.Signature
+        tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.Signature]
         
         tabBarAppearance.stackedLayoutAppearance.normal.iconColor = .quaternaryLabel
         tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.quaternaryLabel]

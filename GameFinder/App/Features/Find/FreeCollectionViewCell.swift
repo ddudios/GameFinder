@@ -40,7 +40,7 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
     private let starImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = .Signiture
+        imageView.tintColor = .Signature
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -82,7 +82,7 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bookmark"), for: .normal)
         button.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
-        button.tintColor = .systemOrange
+        button.tintColor = .Signature
         button.backgroundColor = .clear
         return button
     }()

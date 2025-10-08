@@ -47,14 +47,14 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
     private let starImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "star.fill")
-        imageView.tintColor = .Signiture
+        imageView.tintColor = .Signature
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
 
     private let releaseBadgeView = {
         let view = UIView()
-        view.backgroundColor = UIColor.Signiture
+        view.backgroundColor = UIColor.Signature
         view.layer.cornerRadius = 12
         return view
     }()
@@ -110,7 +110,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bell"), for: .normal)
         button.setImage(UIImage(systemName: "bell.fill"), for: .selected)
-        button.tintColor = .systemBlue
+        button.tintColor = .systemOrange
         button.backgroundColor = .clear
         button.isHidden = true  // 기본은 숨김
         return button
@@ -120,7 +120,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
         let button = UIButton(type: .custom)
         button.setImage(UIImage(systemName: "bookmark"), for: .normal)
         button.setImage(UIImage(systemName: "bookmark.fill"), for: .selected)
-        button.tintColor = .systemOrange
+        button.tintColor = .Signature
         button.backgroundColor = .clear
         button.isHidden = true  // 기본은 숨김
         return button
