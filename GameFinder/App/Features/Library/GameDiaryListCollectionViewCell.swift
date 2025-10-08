@@ -20,7 +20,7 @@ final class GameDiaryListCollectionViewCell: BaseCollectionViewCell {
 
     private let overlayView = {
         let view = UIView()
-        view.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.7)
+        view.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.5)
         return view
     }()
 
