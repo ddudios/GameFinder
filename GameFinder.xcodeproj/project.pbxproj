@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B057CC522E96C65A00FEF3A5 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */; };
+		B057CC542E96C65A00FEF3A5 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC532E96C65A00FEF3A5 /* FirebaseCrashlytics */; };
+		B057CC562E96C65A00FEF3A5 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC552E96C65A00FEF3A5 /* FirebaseMessaging */; };
 		B08FEDE22E87B8F000488358 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = B08FEDE12E87B8F000488358 /* .gitignore */; };
 		B08FEE052E87D03600488358 /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = B08FEE042E87D03600488358 /* SnapKit */; };
 		B08FEE082E87D04200488358 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = B08FEE072E87D04200488358 /* Kingfisher */; };
@@ -62,11 +65,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B057CC562E96C65A00FEF3A5 /* FirebaseMessaging in Frameworks */,
 				B0C9713B2E87DB9100EDC2DA /* RealmSwift in Frameworks */,
 				B08FEE4C2E87D19200488358 /* RxSwift in Frameworks */,
 				B08FEE0B2E87D05A00488358 /* Alamofire in Frameworks */,
 				B08FEE4A2E87D19200488358 /* RxCocoa in Frameworks */,
 				B08FEE082E87D04200488358 /* Kingfisher in Frameworks */,
+				B057CC542E96C65A00FEF3A5 /* FirebaseCrashlytics in Frameworks */,
+				B057CC522E96C65A00FEF3A5 /* FirebaseAnalyticsCore in Frameworks */,
 				B08FEE052E87D03600488358 /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -118,6 +124,9 @@
 				B08FEE492E87D19200488358 /* RxCocoa */,
 				B08FEE4B2E87D19200488358 /* RxSwift */,
 				B0C9713A2E87DB9100EDC2DA /* RealmSwift */,
+				B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */,
+				B057CC532E96C65A00FEF3A5 /* FirebaseCrashlytics */,
+				B057CC552E96C65A00FEF3A5 /* FirebaseMessaging */,
 			);
 			productName = GameFinder;
 			productReference = B08FECF82E87B2B000488358 /* GameFinder.app */;
@@ -156,6 +165,7 @@
 				B08FEE092E87D05A00488358 /* XCRemoteSwiftPackageReference "Alamofire" */,
 				B08FEE482E87D19200488358 /* XCRemoteSwiftPackageReference "RxSwift" */,
 				B0C971392E87DB9100EDC2DA /* XCRemoteSwiftPackageReference "realm-swift" */,
+				B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B08FECF92E87B2B000488358 /* Products */;
@@ -408,6 +418,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.4.0;
+			};
+		};
 		B08FEE032E87D03600488358 /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit.git";
@@ -451,6 +469,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+		B057CC532E96C65A00FEF3A5 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		B057CC552E96C65A00FEF3A5 /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
+		};
 		B08FEE042E87D03600488358 /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B08FEE032E87D03600488358 /* XCRemoteSwiftPackageReference "SnapKit" */;
