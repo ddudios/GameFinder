@@ -18,6 +18,7 @@ enum RawgRouter: URLRequestConvertible {
     case search(query: String, page: Int = 1)      // 검색: /games?search=
     case upcoming(start: String, end: String,
                   page: Int = 1, pageSize: Int = 20) // 기간 내 출시: /games?dates=YYYY-MM-DD,YYYY-MM-DD
+    case platform(platformName: String, page: Int = 1, pageSize: Int = 20) // 플랫폼별 게임
 
     // MARK: - Base
     private var baseURL: URL {
@@ -37,7 +38,7 @@ enum RawgRouter: URLRequestConvertible {
             return "/games/\(id)"
         case let .screenshots(id):
             return "/games/\(id)/screenshots"
-        case .popular, .freeToPlay, .search, .upcoming:
+        case .popular, .freeToPlay, .search, .upcoming, .platform:
             return "/games"
         }
     }
@@ -73,6 +74,29 @@ enum RawgRouter: URLRequestConvertible {
             return [
                 "dates": "\(start),\(end)",  // 예: "2025-10-01,2026-10-01"
                 "ordering": "released",
+                "page": page,
+                "page_size": pageSize
+            ]
+
+        case let .platform(platformName, page, pageSize):
+            // 플랫폼 이름을 ID로 변환
+            let platformIds: String
+            switch platformName.lowercased() {
+            case "steam", "pc":
+                platformIds = "4" // PC
+            case "playstation":
+                platformIds = "187,18,16" // PS5, PS4, PS3
+            case "nintendo":
+                platformIds = "7,8,9" // Switch, Wii U, Wii
+            case "mobile":
+                platformIds = "21,3" // Android, iOS
+            default:
+                platformIds = "4" // 기본값: PC
+            }
+
+            return [
+                "platforms": platformIds,
+                "ordering": "-added",
                 "page": page,
                 "page_size": pageSize
             ]

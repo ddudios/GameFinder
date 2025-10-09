@@ -244,6 +244,20 @@ final class FinderViewController: BaseViewController {
     private func configureNavigationBar() {
         navigationItem.title = L10n.Finder.navTitle
         navigationItem.backButtonTitle = L10n.Finder.navTitle
+
+        let searchButton = UIBarButtonItem(
+            image: UIImage(systemName: "magnifyingglass"),
+            style: .plain,
+            target: self,
+            action: #selector(searchButtonTapped)
+        )
+        searchButton.tintColor = .Signature
+        navigationItem.rightBarButtonItem = searchButton
+    }
+
+    @objc private func searchButtonTapped() {
+        let searchVC = SearchViewController()
+        navigationController?.pushViewController(searchVC, animated: true)
     }
     
     // registration 초기화
