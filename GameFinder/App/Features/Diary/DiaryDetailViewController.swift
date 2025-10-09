@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import AVFoundation
+import AVKit
 
 final class DiaryDetailViewController: BaseViewController {
 
@@ -220,9 +221,18 @@ final class DiaryDetailViewController: BaseViewController {
     // MARK: - Actions
     @objc private func editButtonTapped() {
         let createVC = CreateDiaryViewController(gameId: gameId, diary: diary)
+        createVC.onDiarySaved = { [weak self] in
+            self?.reloadDiaryData()
+        }
         let navVC = UINavigationController(rootViewController: createVC)
         navVC.modalPresentationStyle = .fullScreen
         present(navVC, animated: true)
+    }
+
+    private func reloadDiaryData() {
+        mediaItems.removeAll()
+        loadDiaryData()
+        mediaCollectionView.reloadData()
     }
 
     @objc private func deleteButtonTapped() {
@@ -239,6 +249,28 @@ final class DiaryDetailViewController: BaseViewController {
             }
         })
         present(confirmAlert, animated: true)
+    }
+
+    private func showFullscreenImage(mediaItem: MediaItem) {
+        guard let image = UIImage(data: mediaItem.data) else { return }
+        let fullscreenVC = FullscreenImageViewController(image: image)
+        fullscreenVC.modalPresentationStyle = .overFullScreen
+        present(fullscreenVC, animated: true)
+    }
+
+    private func playFullscreenVideo(mediaItem: MediaItem) {
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".mov")
+        do {
+            try mediaItem.data.write(to: tempURL)
+            let player = AVPlayer(url: tempURL)
+            let playerVC = AVPlayerViewController()
+            playerVC.player = player
+            present(playerVC, animated: true) {
+                player.play()
+            }
+        } catch {
+            print("Failed to load video: \(error)")
+        }
     }
 }
 
@@ -258,6 +290,17 @@ extension DiaryDetailViewController: UICollectionViewDataSource {
 
         let mediaItem = mediaItems[indexPath.item]
         cell.configure(with: mediaItem)
+
+        // 이미지 탭 콜백
+        cell.onImageTapped = { [weak self] in
+            self?.showFullscreenImage(mediaItem: mediaItem)
+        }
+
+        // 비디오 탭 콜백
+        cell.onVideoTapped = { [weak self] in
+            self?.playFullscreenVideo(mediaItem: mediaItem)
+        }
+
         return cell
     }
 }
@@ -290,6 +333,10 @@ extension DiaryDetailViewController: UIScrollViewDelegate {
 
 // MARK: - DiaryMediaCell
 final class DiaryMediaCell: UICollectionViewCell {
+
+    var onImageTapped: (() -> Void)?
+    var onVideoTapped: (() -> Void)?
+    private var currentMediaType: String?
 
     private let imageView = {
         let imageView = UIImageView()
@@ -329,9 +376,28 @@ final class DiaryMediaCell: UICollectionViewCell {
             make.center.equalToSuperview()
             make.size.equalTo(60)
         }
+
+        // 이미지 탭 제스처
+        let imageTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        imageView.isUserInteractionEnabled = true
+        imageView.addGestureRecognizer(imageTapGesture)
+
+        // 비디오 play icon 탭 제스처
+        let videoTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        playIconImageView.isUserInteractionEnabled = true
+        playIconImageView.addGestureRecognizer(videoTapGesture)
+    }
+
+    @objc private func handleTap() {
+        if currentMediaType == "image" {
+            onImageTapped?()
+        } else if currentMediaType == "video" {
+            onVideoTapped?()
+        }
     }
 
     func configure(with mediaItem: MediaItem) {
+        currentMediaType = mediaItem.type
         if mediaItem.type == "image" {
             imageView.image = UIImage(data: mediaItem.data)
             playIconImageView.isHidden = true
@@ -363,5 +429,153 @@ final class DiaryMediaCell: UICollectionViewCell {
         super.prepareForReuse()
         imageView.image = nil
         playIconImageView.isHidden = true
+        currentMediaType = nil
+    }
+}
+
+// MARK: - FullscreenImageViewController
+final class FullscreenImageViewController: UIViewController {
+
+    private let image: UIImage
+    private var initialCenter: CGPoint = .zero
+
+    private let scrollView = {
+        let scrollView = UIScrollView()
+        scrollView.minimumZoomScale = 1.0
+        scrollView.maximumZoomScale = 3.0
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.showsHorizontalScrollIndicator = false
+        return scrollView
+    }()
+
+    private let imageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.isUserInteractionEnabled = true
+        return imageView
+    }()
+
+    private let closeButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "xmark"), for: .normal)
+        button.tintColor = .white
+        button.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        button.layer.cornerRadius = 20
+        return button
+    }()
+
+    init(image: UIImage) {
+        self.image = image
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+        setupUI()
+        imageView.image = image
+    }
+
+    private func setupUI() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(imageView)
+        view.addSubview(closeButton)
+
+        scrollView.delegate = self
+
+        scrollView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        imageView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.height.equalTo(scrollView)
+        }
+
+        closeButton.snp.makeConstraints { make in
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
+            make.leading.equalToSuperview().offset(16)
+            make.size.equalTo(40)
+        }
+
+        closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
+
+        // 배경 탭 제스처 추가
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(backgroundTapped))
+        tapGesture.delegate = self
+        view.addGestureRecognizer(tapGesture)
+
+        // 스와이프 다운 제스처 추가
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+        panGesture.delegate = self
+        view.addGestureRecognizer(panGesture)
+    }
+
+    @objc private func closeButtonTapped() {
+        dismiss(animated: true)
+    }
+
+    @objc private func backgroundTapped() {
+        dismiss(animated: true)
+    }
+
+    @objc private func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
+        let translation = gesture.translation(in: view)
+        let velocity = gesture.velocity(in: view)
+
+        switch gesture.state {
+        case .began:
+            initialCenter = view.center
+
+        case .changed:
+            // 아래로만 드래그 허용
+            if translation.y > 0 {
+                view.center = CGPoint(x: initialCenter.x, y: initialCenter.y + translation.y)
+                // 드래그 거리에 따라 배경 투명도 조정
+                let progress = min(translation.y / 200, 1.0)
+                view.backgroundColor = UIColor.black.withAlphaComponent(1.0 - progress)
+            }
+
+        case .ended, .cancelled:
+            // 충분히 아래로 드래그했거나 빠른 속도로 스와이프한 경우 dismiss
+            if translation.y > 100 || velocity.y > 500 {
+                dismiss(animated: true)
+            } else {
+                // 원래 위치로 복귀
+                UIView.animate(withDuration: 0.3) {
+                    self.view.center = self.initialCenter
+                    self.view.backgroundColor = .black
+                }
+            }
+
+        default:
+            break
+        }
+    }
+}
+
+// MARK: - UIScrollViewDelegate
+extension FullscreenImageViewController: UIScrollViewDelegate {
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        return imageView
+    }
+}
+
+// MARK: - UIGestureRecognizerDelegate
+extension FullscreenImageViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        // Tap gesture의 경우: imageView나 closeButton이 아닌 배경을 탭한 경우에만 제스처 수신
+        if gestureRecognizer is UITapGestureRecognizer {
+            return touch.view == view || touch.view == scrollView
+        }
+        // Pan gesture의 경우: zoom이 1.0일 때만 동작
+        if gestureRecognizer is UIPanGestureRecognizer {
+            return scrollView.zoomScale == 1.0
+        }
+        return true
     }
 }

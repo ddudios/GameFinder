@@ -179,7 +179,7 @@ extension DiaryViewController: UITableViewDelegate {
         deleteAction.image = UIImage(systemName: "trash.fill")
 
         // 수정 액션
-        let editAction = UIContextualAction(style: .normal, title: "수정") { [weak self] _, _, completionHandler in
+        let editAction = UIContextualAction(style: .normal, title: L10n.edit) { [weak self] _, _, completionHandler in
             guard let self = self else {
                 completionHandler(false)
                 return
@@ -191,7 +191,7 @@ extension DiaryViewController: UITableViewDelegate {
             completionHandler(true)
         }
         editAction.backgroundColor = .label
-        editAction.image = UIImage(systemName: "pencil")
+        editAction.image = UIImage(systemName: "pencil")?.withTintColor(.systemBackground, renderingMode: .alwaysOriginal)
 
         return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
     }

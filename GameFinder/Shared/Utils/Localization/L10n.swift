@@ -8,6 +8,9 @@
 import Foundation
 
 enum L10n {
+    
+    static let edit = "edit".localized
+    
     enum TabBar {
         /// Finder
         static let first = "tab_bar_title_first".localized

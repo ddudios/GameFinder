@@ -22,6 +22,7 @@ final class CreateDiaryViewController: BaseViewController {
     private var diary: RealmDiary? // 수정 모드일 때 사용
     private var mediaItems: [MediaItem] = []
     private let createdDate: Date
+    var onDiarySaved: (() -> Void)?
 
     // MARK: - UI Components
     private let scrollView = {
@@ -316,7 +317,9 @@ final class CreateDiaryViewController: BaseViewController {
         }
 
         if success {
-            dismiss(animated: true)
+            dismiss(animated: true) {
+                self.onDiarySaved?()
+            }
         } else {
             showAlert(message: "저장에 실패했습니다.")
         }

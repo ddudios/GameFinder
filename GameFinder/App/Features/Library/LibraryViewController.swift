@@ -12,13 +12,13 @@ import RxCocoa
 import Kingfisher
 
 enum LibraryCategory: Int, CaseIterable {
-    case reading
+    case diary
     case favorite
     case notification
 
     var title: String {
         switch self {
-        case .reading: return "Reading"
+        case .diary: return "Diary"
         case .favorite: return "Favorite"
         case .notification: return "Notification"
         }
@@ -26,7 +26,7 @@ enum LibraryCategory: Int, CaseIterable {
 
     var icon: String {
         switch self {
-        case .reading: return "bookmark.fill"
+        case .diary: return "bookmark.fill"
         case .favorite: return "heart.fill"
         case .notification: return "bell.fill"
         }
@@ -38,17 +38,9 @@ final class LibraryViewController: BaseViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
     private let viewWillAppearRelay = PublishRelay<Void>()
-    private var currentCategory: LibraryCategory = .reading
+    private var currentCategory: LibraryCategory = .diary
 
     // MARK: - UI Components
-    private let scrollView = {
-        let scrollView = UIScrollView()
-        scrollView.showsVerticalScrollIndicator = false
-        return scrollView
-    }()
-
-    private let contentView = UIView()
-
     private let categoryButtonsStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
@@ -57,7 +49,7 @@ final class LibraryViewController: BaseViewController {
         return stackView
     }()
 
-    private lazy var readingButton = createCategoryButton(for: .reading)
+    private lazy var readingButton = createCategoryButton(for: .diary)
     private lazy var favoriteButton = createCategoryButton(for: .favorite)
     private lazy var notificationButton = createCategoryButton(for: .notification)
 
@@ -101,32 +93,19 @@ final class LibraryViewController: BaseViewController {
     }
 
     override func configureHierarchy() {
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
-
-        contentView.addSubview(categoryButtonsStackView)
+        view.addSubview(categoryButtonsStackView)
         categoryButtonsStackView.addArrangedSubview(readingButton)
         categoryButtonsStackView.addArrangedSubview(favoriteButton)
         categoryButtonsStackView.addArrangedSubview(notificationButton)
 
         addChild(categoryPageViewController)
-        contentView.addSubview(categoryPageViewController.view)
+        view.addSubview(categoryPageViewController.view)
         categoryPageViewController.didMove(toParent: self)
     }
 
     override func configureLayout() {
-
-        scrollView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
-        }
-
-        contentView.snp.makeConstraints { make in
-            make.edges.equalTo(scrollView)
-            make.width.equalTo(scrollView)
-        }
-        
         categoryButtonsStackView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(16)
+            make.top.equalTo(view.safeAreaLayoutGuide).offset(16)
             make.centerX.equalToSuperview()
             make.height.equalTo(60)
         }
@@ -134,7 +113,7 @@ final class LibraryViewController: BaseViewController {
         categoryPageViewController.view.snp.makeConstraints { make in
             make.top.equalTo(categoryButtonsStackView.snp.bottom).offset(10)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom)
+            make.bottom.equalTo(view.safeAreaLayoutGuide)
         }
     }
 
@@ -187,12 +166,12 @@ final class LibraryViewController: BaseViewController {
             if category == currentCategory {
                 // 선택된 상태: 각 카테고리별 색상
                 switch category {
-                case .reading:
+                case .diary:
                     config?.baseForegroundColor = .Signature
                 case .favorite:
                     config?.baseForegroundColor = .systemRed
                 case .notification:
-                    config?.baseForegroundColor = .systemYellow
+                    config?.baseForegroundColor = .systemOrange
                 }
             } else {
                 // 선택되지 않은 상태: .label
@@ -303,7 +282,7 @@ final class LibraryCategoryViewController: UIViewController {
         setupCollectionView()
 
         // 카테고리별 데이터 로드
-        if category == .reading {
+        if category == .diary {
             loadReadingGames()
         } else if category == .favorite {
             loadFavoriteGames()
@@ -381,7 +360,7 @@ final class LibraryCategoryViewController: UIViewController {
 extension LibraryCategoryViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch category {
-        case .reading:
+        case .diary:
             return readingGames.count
         case .favorite:
             return favoriteGames.count
@@ -392,7 +371,7 @@ extension LibraryCategoryViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         switch category {
-        case .reading:
+        case .diary:
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: GameDiaryListCollectionViewCell.identifier,
                 for: indexPath
@@ -443,29 +422,30 @@ extension LibraryCategoryViewController: UICollectionViewDelegateFlowLayout {
         let width = collectionView.bounds.width
 
         switch category {
-        case .reading:
+        case .diary:
             // 한 줄에 2개, 여백 고려
             let spacing: CGFloat = 16
             let itemWidth = (width - spacing * 3) / 2 // 양쪽 16 + 중간 16
             let itemHeight = itemWidth * 1.2 // 비율 조정
             return CGSize(width: itemWidth, height: itemHeight)
         case .favorite, .notification:
-            return CGSize(width: width, height: 100)
+            // horizontal padding 16씩 고려
+            return CGSize(width: width - 32, height: 100)
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
         switch category {
-        case .reading:
+        case .diary:
             return UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
         case .favorite, .notification:
-            return UIEdgeInsets.zero
+            return UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         }
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         switch category {
-        case .reading:
+        case .diary:
             return 16
         case .favorite, .notification:
             return 0
@@ -474,7 +454,7 @@ extension LibraryCategoryViewController: UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         switch category {
-        case .reading:
+        case .diary:
             return 16
         case .favorite, .notification:
             return 0
@@ -487,7 +467,7 @@ extension LibraryCategoryViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let game: Game
         switch category {
-        case .reading:
+        case .diary:
             game = readingGames[indexPath.item]
             // Reading 카테고리: DiaryViewController로 이동
             let diaryVC = DiaryViewController(gameId: game.id, gameName: game.name)
