@@ -63,7 +63,7 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
 
     private let releaseDateTextLabel = {
         let label = UILabel()
-        label.font = .Chosun.regular16
+        label.font = .Title.bold16
         label.textColor = .label
         label.numberOfLines = 1
         label.textAlignment = .center
@@ -157,7 +157,7 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         imageView.kf.cancelDownloadTask()
         imageView.image = nil
         imageView.alpha = 1.0
-        imageView.hideSkeleton()
+        imageView.hideSkeletonLoading()
         floatingTitleLabel.text = nil
         floatingTitleLabel.alpha = 0.0
         subtitleLabel.text = nil
@@ -296,9 +296,6 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         CATransaction.setDisableActions(true)
         gradientLayer.frame = imageView.bounds
         CATransaction.commit()
-
-        // 스켈레톤 프레임 업데이트
-        imageView.updateSkeletonFrame()
     }
 
     // MARK: - Configuration
@@ -425,11 +422,11 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
               let imageURL = URL(string: backgroundImageString) else {
             print("이미지 URL 없음: \(game.name)")
             imageView.image = UIImage(named: "noImage")
-            imageView.hideSkeleton()
+            imageView.hideSkeletonLoading()
             return
         }
         loadingIndicator.startAnimating()
-        imageView.showSkeleton()
+        imageView.showSkeletonLoading()
 
         imageView.kf.setImage(
             with: imageURL,
@@ -440,7 +437,7 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
             ],
             completionHandler: { [weak self] result in
                 self?.loadingIndicator.stopAnimating()
-                self?.imageView.hideSkeleton()
+                self?.imageView.hideSkeletonLoading()
                 // 이미지 로드 완료 후 그라디에이션 레이어 프레임 업데이트
                 self?.setNeedsLayout()
                 self?.layoutIfNeeded()

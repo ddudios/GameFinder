@@ -146,10 +146,15 @@ final class LibraryViewController: BaseViewController {
     }
 
     private func selectCategory(_ category: LibraryCategory) {
+        // 이전 카테고리 값을 저장
+        let previousCategory = currentCategory
+
+        // direction 계산 (이전 값과 비교)
+        let direction: UIPageViewController.NavigationDirection = category.rawValue > previousCategory.rawValue ? .forward : .reverse
+
+        // 현재 카테고리 업데이트
         currentCategory = category
         updateButtonStates()
-
-        let direction: UIPageViewController.NavigationDirection = category.rawValue > currentCategory.rawValue ? .forward : .reverse
 
         categoryPageViewController.setViewControllers(
             [categoryViewControllers[category.rawValue]],

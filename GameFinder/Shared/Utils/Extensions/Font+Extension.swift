@@ -8,7 +8,6 @@
 import UIKit
 
 enum CustomFont: String {
-    case chosun = "ChosunGu"
     case nanumBarunGothic = "NanumBarunGothicOTF"
     case IlsangItalic = "87MMILSANG-Oblique"
     
@@ -38,12 +37,6 @@ enum CustomFont: String {
 }
 
 extension UIFont {
-    /// SectionHeader
-    struct Chosun {
-        private init() { }
-        static let regular16 = CustomFont.chosun.of(size: 16)
-    }
-    
     /// Number
     enum NanumBarunGothic {
         static let bold16 = CustomFont.nanumBarunGothic.of(size: 16, weight: .bold)

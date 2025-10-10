@@ -92,16 +92,11 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
     private var currentGameId: Int?
     var disposeBag = DisposeBag()
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        iconImageView.updateSkeletonFrame()
-    }
-
     override func prepareForReuse() {
         super.prepareForReuse()
         iconImageView.kf.cancelDownloadTask()
         iconImageView.image = nil
-        iconImageView.hideSkeleton()
+        iconImageView.hideSkeletonLoading()
         titleLabel.text = nil
         genreLabel.text = nil
         ratingLabel.text = nil
@@ -174,7 +169,7 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
         // 이미지 로딩
         if let backgroundImageString = game.backgroundImage,
            let imageURL = URL(string: backgroundImageString) {
-            iconImageView.showSkeleton()
+            iconImageView.showSkeletonLoading()
             iconImageView.kf.setImage(
                 with: imageURL,
                 placeholder: UIImage(named: "noImage"),
@@ -183,12 +178,12 @@ final class FreeCollectionViewCell: BaseCollectionViewCell {
                     .cacheOriginalImage
                 ],
                 completionHandler: { [weak self] _ in
-                    self?.iconImageView.hideSkeleton()
+                    self?.iconImageView.hideSkeletonLoading()
                 }
             )
         } else {
             iconImageView.image = UIImage(named: "noImage")
-            iconImageView.hideSkeleton()
+            iconImageView.hideSkeletonLoading()
         }
     }
 

@@ -67,6 +67,11 @@ final class FinderViewController: BaseViewController {
     private let viewWillAppear = PublishRelay<Void>()
     private var hasInitializedCenterCell = false
 
+    // Loading states for skeleton view
+    private var isLoadingUpcoming = true
+    private var isLoadingPopular = true
+    private var isLoadingFree = true
+
     // Auto scroll for upcomingGames
     private var autoScrollTimer: Timer?
     private var currentUpcomingIndex = 0
@@ -169,6 +174,7 @@ final class FinderViewController: BaseViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(with: self) { owner, games in
                 print("popularGames 받음: \(games.count)개")
+                owner.isLoadingPopular = false
                 owner.updateSection(.popularGames, with: games)
             }
             .disposed(by: disposeBag)
@@ -178,6 +184,7 @@ final class FinderViewController: BaseViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(with: self) { owner, games in
                 print("freeGames 받음: \(games.count)개")
+                owner.isLoadingFree = false
                 owner.updateSection(.freeGames, with: games)
             }
             .disposed(by: disposeBag)
@@ -187,6 +194,7 @@ final class FinderViewController: BaseViewController {
             .observe(on: MainScheduler.instance)
             .subscribe(with: self) { owner, games in
                 print("upcomingGames 받음: \(games.count)개")
+                owner.isLoadingUpcoming = false
                 owner.updateSection(.upcomingGames, with: games)
                 // 데이터 로드 후 자동 스크롤 시작
                 owner.startAutoScroll()
@@ -206,13 +214,38 @@ final class FinderViewController: BaseViewController {
     // 실질적인 Basic 데이터를 넣어줘야 함
     private func updateSnapshot() {
         var snapshot = NSDiffableDataSourceSnapshot<Section, Game>()  // 데이터 정의: 이 스냅샷을 dataSource에 넣어주는 것이기 때문에 같은 타입으로 정의하고 초기화()
-        
+
         snapshot.appendSections(Section.allCases)
         // 섹션의 수이자 섹션을 구분하기 위한 고유값
         // 섹션이 몇 개가 필요한지 배열로 지정해줌
         // 고유하면 되기 때문에 보통 열거형으로 사용 (고유하기만 하면 되어서 꼭 열거형일 필요는 없지만 편리한 도구로 열거형을 사용)
-        
+
+        // 초기 로딩 시 스켈레톤용 더미 데이터 추가
+        let upcomingSkeletons = (1...5).map { createSkeletonGame(id: -$0) }
+        let freeSkeletons = (6...8).map { createSkeletonGame(id: -$0) }
+        let popularSkeletons = (9...13).map { createSkeletonGame(id: -$0) }
+
+        snapshot.appendItems(upcomingSkeletons, toSection: .upcomingGames)
+        snapshot.appendItems(freeSkeletons, toSection: .freeGames)
+        snapshot.appendItems(popularSkeletons, toSection: .popularGames)
+
         dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
+    private func createSkeletonGame(id: Int) -> Game {
+        return Game(
+            id: id,
+            name: "",
+            released: nil,
+            backgroundImage: nil,
+            rating: 0.0,
+            ratingsCount: 0,
+            metacritic: nil,
+            platforms: [],
+            genres: [],
+            screenshots: [],
+            readingUpdatedAt: nil
+        )
     }
     
     private func updateSection(_ section: Section, with games: [Game]) {
@@ -262,6 +295,10 @@ final class FinderViewController: BaseViewController {
     
     // registration 초기화
     private func configureCellRegistration() {
+        // Skeleton cell registrations
+        collectionView.register(CardSkeletonCell.self, forCellWithReuseIdentifier: CardSkeletonCell.identifier)
+        collectionView.register(FreeGameSkeletonCell.self, forCellWithReuseIdentifier: FreeGameSkeletonCell.identifier)
+
         // cellForItemAt 셀 디자인 데이터 처리하는 코드
         popularRegistration = UICollectionView.CellRegistration<CardCollectionViewCell, Game> { [weak self] cell, indexPath, game in
             // popularGames: 좋아요 버튼만 표시
@@ -316,6 +353,22 @@ final class FinderViewController: BaseViewController {
         ) { collectionView, indexPath, itemIdentifier in
             let sectionType = Section.allCases[indexPath.section]
 
+            // 스켈레톤 셀 표시 (id가 음수인 경우)
+            if itemIdentifier.id < 0 {
+                if sectionType == .freeGames {
+                    return collectionView.dequeueReusableCell(
+                        withReuseIdentifier: FreeGameSkeletonCell.identifier,
+                        for: indexPath
+                    )
+                } else {
+                    return collectionView.dequeueReusableCell(
+                        withReuseIdentifier: CardSkeletonCell.identifier,
+                        for: indexPath
+                    )
+                }
+            }
+
+            // 실제 데이터 셀 표시
             if sectionType == .popularGames {
                 return collectionView.dequeueConfiguredReusableCell(
                     using: self.popularRegistration,

@@ -35,6 +35,8 @@ enum GameDetailItem: Hashable {
     case website(String?)
     case systemRequirements(String?)
     case developerPublisher([GameDeveloper], [GamePublisher])
+    case screenshotSkeleton
+    case infoSkeleton(id: Int)
 }
 
 final class GameDetailViewController: BaseViewController {
@@ -45,6 +47,7 @@ final class GameDetailViewController: BaseViewController {
     private let viewWillAppearRelay = PublishRelay<Void>()
 
     private var currentGameDetail: GameDetail?
+    private var isLoading = true
 
     // MARK: - UI Components
     private lazy var collectionView: UICollectionView = {
@@ -182,6 +185,17 @@ final class GameDetailViewController: BaseViewController {
             DeveloperPublisherCollectionViewCell.self,
             forCellWithReuseIdentifier: DeveloperPublisherCollectionViewCell.identifier
         )
+        collectionView.register(
+            CardSkeletonCell.self,
+            forCellWithReuseIdentifier: CardSkeletonCell.identifier
+        )
+        collectionView.register(
+            ListSkeletonCell.self,
+            forCellWithReuseIdentifier: ListSkeletonCell.identifier
+        )
+
+        // Show initial skeleton loading
+        showSkeletonLoading()
     }
 
     private func createLayout() -> UICollectionViewLayout {
@@ -435,6 +449,7 @@ final class GameDetailViewController: BaseViewController {
         .asDriver(onErrorJustReturn: (GameDetail(from: GameDetailDTO(id: 0, name: "", nameOriginal: nil, description: nil, descriptionRaw: nil, released: nil, backgroundImage: nil, backgroundImageAdditional: nil, rating: nil, ratingsCount: nil, metacritic: nil, playtime: nil, platforms: nil, genres: nil, developers: nil, publishers: nil, tags: nil, esrbRating: nil)), []))
         .drive(with: self) { owner, data in
             let (gameDetail, screenshots) = data
+            owner.isLoading = false
             owner.currentGameDetail = gameDetail
             owner.navigationItem.title = gameDetail.name
             owner.updateDataSource(with: gameDetail, screenshots: screenshots)
@@ -450,6 +465,23 @@ final class GameDetailViewController: BaseViewController {
     }
 
     // MARK: - DataSource
+    private func showSkeletonLoading() {
+        var snapshot = NSDiffableDataSourceSnapshot<GameDetailSection, GameDetailItem>()
+
+        // Screenshot skeleton
+        snapshot.appendSections([.screenshots])
+        snapshot.appendItems([.screenshotSkeleton], toSection: .screenshots)
+
+        // Info skeletons (for other sections)
+        snapshot.appendSections([.releaseAndRating, .genreAndTags, .description])
+        snapshot.appendItems([.infoSkeleton(id: 1)], toSection: .releaseAndRating)
+        snapshot.appendItems([.infoSkeleton(id: 2)], toSection: .genreAndTags)
+        snapshot.appendItems([.infoSkeleton(id: 3)], toSection: .description)
+
+        dataSource.apply(snapshot, animatingDifferences: false)
+        pageControl.isHidden = true
+    }
+
     private func updateDataSource(with gameDetail: GameDetail, screenshots: [Screenshot]) {
         var snapshot = NSDiffableDataSourceSnapshot<GameDetailSection, GameDetailItem>()
 
@@ -512,7 +544,7 @@ final class GameDetailViewController: BaseViewController {
             snapshot.appendItems([.developerPublisher(gameDetail.developers, gameDetail.publishers)], toSection: .developerPublisher)
         }
 
-        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 
     private lazy var dataSource: UICollectionViewDiffableDataSource<GameDetailSection, GameDetailItem> = {
@@ -660,6 +692,18 @@ final class GameDetailViewController: BaseViewController {
                 }
                 cell.configure(developers: developers, publishers: publishers)
                 return cell
+
+            case .screenshotSkeleton:
+                return collectionView.dequeueReusableCell(
+                    withReuseIdentifier: CardSkeletonCell.identifier,
+                    for: indexPath
+                )
+
+            case .infoSkeleton:
+                return collectionView.dequeueReusableCell(
+                    withReuseIdentifier: ListSkeletonCell.identifier,
+                    for: indexPath
+                )
             }
         }
         return dataSource

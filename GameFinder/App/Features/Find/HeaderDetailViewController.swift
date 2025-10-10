@@ -14,6 +14,7 @@ import Kingfisher
 enum DetailItem: Hashable {
     case header(title: String, releaseDate: String?)
     case game(Game)
+    case skeleton(id: Int)
 }
 
 final class HeaderDetailViewController: BaseViewController {
@@ -23,12 +24,15 @@ final class HeaderDetailViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     private let viewWillAppearRelay = PublishRelay<Void>()
     private let loadNextPageRelay = PublishRelay<Void>()
+    private var isLoading = true
 
     // MARK: - UI Components
     private let backgroundImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
+        imageView.backgroundColor = .systemBackground
+        imageView.alpha = 0  // 초기에는 숨김
         return imageView
     }()
 
@@ -48,7 +52,22 @@ final class HeaderDetailViewController: BaseViewController {
         collectionView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
+        collectionView.alpha = 0  // 초기에는 숨김
         return collectionView
+    }()
+
+    private let loadingIndicatorBackground = {
+        let view = UIView()
+        view.backgroundColor = .systemBackground
+        view.alpha = 0
+        return view
+    }()
+
+    private let loadingIndicator = {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.hidesWhenStopped = true  // 멈추면 자동으로 숨김
+        indicator.color = .label
+        return indicator
     }()
 
     // MARK: - Initialization
@@ -66,7 +85,20 @@ final class HeaderDetailViewController: BaseViewController {
         super.viewDidLoad()
         setupNavigationBar()
         setupCollectionView()
+        showLoadingIndicator()  // 로딩 인디케이터 표시
         bind()
+    }
+
+    private func showLoadingIndicator() {
+        loadingIndicatorBackground.alpha = 1
+        loadingIndicator.startAnimating()
+    }
+
+    private func hideLoadingIndicator() {
+        loadingIndicator.stopAnimating()  // 즉시 인디케이터 중지 및 숨김
+        UIView.animate(withDuration: 0.3) {
+            self.loadingIndicatorBackground.alpha = 0
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -85,6 +117,8 @@ final class HeaderDetailViewController: BaseViewController {
         view.addSubview(backgroundImageView)
         backgroundImageView.layer.addSublayer(gradientLayer)
         view.addSubview(collectionView)
+        view.addSubview(loadingIndicatorBackground)
+        view.addSubview(loadingIndicator)
     }
 
     override func configureLayout() {
@@ -101,6 +135,14 @@ final class HeaderDetailViewController: BaseViewController {
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.bottom.equalToSuperview()
+        }
+
+        loadingIndicatorBackground.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+
+        loadingIndicator.snp.makeConstraints { make in
+            make.center.equalToSuperview()
         }
 
         // 컬렉션뷰 contentInset을 배경 이미지 1/4 지점부터 시작하도록 설정
@@ -128,6 +170,10 @@ final class HeaderDetailViewController: BaseViewController {
         collectionView.register(
             GameListCollectionViewCell.self,
             forCellWithReuseIdentifier: GameListCollectionViewCell.identifier
+        )
+        collectionView.register(
+            ListSkeletonCell.self,
+            forCellWithReuseIdentifier: ListSkeletonCell.identifier
         )
     }
 
@@ -174,16 +220,35 @@ final class HeaderDetailViewController: BaseViewController {
         output.games
             .asDriver()
             .drive(with: self) { owner, games in
+                owner.isLoading = false
+                owner.hideLoadingIndicator()
                 owner.updateDataSource(with: games)
 
-                // 1번 인덱스 게임의 배경 이미지 설정
-                if games.count > 1,
-                   let backgroundImageString = games[0].backgroundImage,
+                // CollectionView 페이드 인
+                UIView.animate(withDuration: 0.3) {
+                    owner.collectionView.alpha = 1
+                }
+
+                // 첫 번째 게임의 배경 이미지 설정
+                if let firstGame = games.first,
+                   let backgroundImageString = firstGame.backgroundImage,
                    !backgroundImageString.isEmpty,
                    let imageURL = URL(string: backgroundImageString) {
-                    owner.backgroundImageView.kf.setImage(with: imageURL, placeholder: UIImage(named: "noImage"))
+                    owner.backgroundImageView.kf.setImage(
+                        with: imageURL,
+                        placeholder: nil,
+                        options: [.transition(.fade(0.3))]
+                    ) { result in
+                        // 이미지 로드 완료 후 페이드 인
+                        UIView.animate(withDuration: 0.3) {
+                            owner.backgroundImageView.alpha = 1
+                        }
+                    }
                 } else {
-                    owner.backgroundImageView.image = UIImage(named: "noImage")
+                    // 이미지가 없어도 배경은 표시
+                    UIView.animate(withDuration: 0.3) {
+                        owner.backgroundImageView.alpha = 1
+                    }
                 }
             }
             .disposed(by: disposeBag)
@@ -191,12 +256,34 @@ final class HeaderDetailViewController: BaseViewController {
         output.errorAlertMessage
             .asDriver(onErrorJustReturn: "에러 발생")
             .drive(with: self) { owner, message in
+                owner.isLoading = false
+                owner.hideLoadingIndicator()
+
+                // 에러 시에도 collectionView 표시
+                UIView.animate(withDuration: 0.3) {
+                    owner.collectionView.alpha = 1
+                }
+
                 owner.showAlert(message: message)
             }
             .disposed(by: disposeBag)
     }
 
     // MARK: - DataSource
+    private func showSkeletonLoading() {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
+        snapshot.appendSections([0])
+
+        // 첫 번째 아이템: 헤더
+        var items: [DetailItem] = [.header(title: viewModel.sectionTitle, releaseDate: nil)]
+
+        // 스켈레톤 아이템들 (5개)
+        items.append(contentsOf: (1...5).map { .skeleton(id: $0) })
+
+        snapshot.appendItems(items, toSection: 0)
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
     private func updateDataSource(with games: [Game]) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
         snapshot.appendSections([0])
@@ -209,7 +296,7 @@ final class HeaderDetailViewController: BaseViewController {
         items.append(contentsOf: games.map { .game($0) })
 
         snapshot.appendItems(items, toSection: 0)
-        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 
     private lazy var dataSource: UICollectionViewDiffableDataSource<Int, DetailItem> = {
@@ -226,6 +313,12 @@ final class HeaderDetailViewController: BaseViewController {
                 }
                 cell.configure(with: title, releaseDate: releaseDate)
                 return cell
+
+            case .skeleton:
+                return collectionView.dequeueReusableCell(
+                    withReuseIdentifier: ListSkeletonCell.identifier,
+                    for: indexPath
+                )
 
             case .game(let game):
                 guard let cell = collectionView.dequeueReusableCell(

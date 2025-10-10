@@ -46,4 +46,11 @@ enum L10n {
     enum Settings {
         static let navTitle = "nav_title_third".localized
     }
+    
+    enum Alert {
+        static let okButton = "alert_button_ok".localized
+        
+        static let languageTitle = "alert_title_language".localized
+        static let languageMessage = "alert_message_language".localized
+    }
 }

@@ -18,6 +18,7 @@ final class PlatformDetailViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     private let viewWillAppearRelay = PublishRelay<Void>()
     private let loadNextPageRelay = PublishRelay<Void>()
+    private var isLoading = true
 
     // MARK: - UI Components
     private let backgroundImageView = {
@@ -127,6 +128,13 @@ final class PlatformDetailViewController: BaseViewController {
             GameListCollectionViewCell.self,
             forCellWithReuseIdentifier: GameListCollectionViewCell.identifier
         )
+        collectionView.register(
+            ListSkeletonCell.self,
+            forCellWithReuseIdentifier: ListSkeletonCell.identifier
+        )
+
+        // Show initial skeleton loading
+        showSkeletonLoading()
     }
 
     private func createLayout() -> UICollectionViewLayout {
@@ -172,6 +180,7 @@ final class PlatformDetailViewController: BaseViewController {
         output.games
             .asDriver()
             .drive(with: self) { owner, games in
+                owner.isLoading = false
                 owner.updateDataSource(with: games)
             }
             .disposed(by: disposeBag)
@@ -185,6 +194,20 @@ final class PlatformDetailViewController: BaseViewController {
     }
 
     // MARK: - DataSource
+    private func showSkeletonLoading() {
+        var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
+        snapshot.appendSections([0])
+
+        // 첫 번째 아이템: 헤더
+        var items: [DetailItem] = [.header(title: viewModel.platformName, releaseDate: nil)]
+
+        // 스켈레톤 아이템들 (5개)
+        items.append(contentsOf: (1...5).map { .skeleton(id: $0) })
+
+        snapshot.appendItems(items, toSection: 0)
+        dataSource.apply(snapshot, animatingDifferences: false)
+    }
+
     private func updateDataSource(with games: [Game]) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
         snapshot.appendSections([0])
@@ -196,7 +219,7 @@ final class PlatformDetailViewController: BaseViewController {
         items.append(contentsOf: games.map { .game($0) })
 
         snapshot.appendItems(items, toSection: 0)
-        dataSource.apply(snapshot, animatingDifferences: false)
+        dataSource.apply(snapshot, animatingDifferences: true)
     }
 
     private lazy var dataSource: UICollectionViewDiffableDataSource<Int, DetailItem> = {
@@ -213,6 +236,12 @@ final class PlatformDetailViewController: BaseViewController {
                 }
                 cell.configure(with: title, releaseDate: releaseDate)
                 return cell
+
+            case .skeleton:
+                return collectionView.dequeueReusableCell(
+                    withReuseIdentifier: ListSkeletonCell.identifier,
+                    for: indexPath
+                )
 
             case .game(let game):
                 guard let cell = collectionView.dequeueReusableCell(

@@ -32,11 +32,11 @@ final class ScreenshotCollectionViewCell: BaseCollectionViewCell {
     func configure(with imageUrl: String) {
         guard let url = URL(string: imageUrl) else {
             imageView.image = UIImage(named: "noImage")
-            imageView.hideSkeleton()
+            imageView.hideSkeletonLoading()
             return
         }
 
-        imageView.showSkeleton()
+        imageView.showSkeletonLoading()
         imageView.kf.setImage(
             with: url,
             placeholder: UIImage(named: "noImage"),
@@ -45,7 +45,7 @@ final class ScreenshotCollectionViewCell: BaseCollectionViewCell {
                 .cacheOriginalImage
             ],
             completionHandler: { [weak self] _ in
-                self?.imageView.hideSkeleton()
+                self?.imageView.hideSkeletonLoading()
             }
         )
     }
@@ -54,11 +54,6 @@ final class ScreenshotCollectionViewCell: BaseCollectionViewCell {
         super.prepareForReuse()
         imageView.kf.cancelDownloadTask()
         imageView.image = nil
-        imageView.hideSkeleton()
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        imageView.updateSkeletonFrame()
+        imageView.hideSkeletonLoading()
     }
 }

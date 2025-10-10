@@ -190,8 +190,7 @@ extension DiaryViewController: UITableViewDelegate {
             self.present(navVC, animated: true)
             completionHandler(true)
         }
-        editAction.backgroundColor = .label
-        editAction.image = UIImage(systemName: "pencil")?.withTintColor(.systemBackground, renderingMode: .alwaysOriginal)
+        editAction.image = UIImage(systemName: "pencil")
 
         return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
     }

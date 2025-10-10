@@ -427,7 +427,7 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
 
         if let backgroundImageString = game.backgroundImage,
            let imageURL = URL(string: backgroundImageString) {
-            iconImageView.showSkeleton()
+            iconImageView.showSkeletonLoading()
             iconImageView.kf.setImage(
                 with: imageURL,
                 placeholder: UIImage(named: "noImage_icon_black"),
@@ -436,25 +436,20 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
                     .cacheOriginalImage
                 ],
                 completionHandler: { [weak self] _ in
-                    self?.iconImageView.hideSkeleton()
+                    self?.iconImageView.hideSkeletonLoading()
                 }
             )
         } else {
             iconImageView.image = UIImage(named: "noImage_icon_black")
-            iconImageView.hideSkeleton()
+            iconImageView.hideSkeletonLoading()
         }
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        iconImageView.updateSkeletonFrame()
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
         iconImageView.kf.cancelDownloadTask()
         iconImageView.image = nil
-        iconImageView.hideSkeleton()
+        iconImageView.hideSkeletonLoading()
         titleLabel.text = nil
         genreLabel.text = nil
         ratingLabel.text = nil
