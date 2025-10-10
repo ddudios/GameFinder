@@ -23,12 +23,17 @@ final class ReadingManager {
     // MARK: - Add Reading
     func addReading(_ game: Game) -> Bool {
         guard repository.saveOrUpdateGame(game) else {
+            LogManager.error.error("Failed to save game for reading: \(game.id)")
             return false
         }
 
         guard repository.updateReading(gameId: game.id, isReading: true) else {
+            LogManager.error.error("Failed to update reading status: \(game.id)")
             return false
         }
+
+        // 로깅 및 Analytics
+        LogManager.logAddReading(gameId: game.id, gameName: game.name)
 
         readingStatusChanged.onNext((game.id, true))
         return true
@@ -37,10 +42,14 @@ final class ReadingManager {
     // MARK: - Remove Reading
     func removeReading(gameId: Int) -> Bool {
         guard repository.updateReading(gameId: gameId, isReading: false) else {
+            LogManager.error.error("Failed to remove reading: \(gameId)")
             return false
         }
 
         _ = repository.deleteGameIfUnused(gameId: gameId)
+
+        // 로깅 및 Analytics
+        LogManager.logRemoveReading(gameId: gameId)
 
         readingStatusChanged.onNext((gameId, false))
         return true

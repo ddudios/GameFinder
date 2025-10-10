@@ -30,9 +30,10 @@ final class RealmGameRepository: GameRepository {
                 updateGameProperties(realmGame, with: game)
                 updateRelations(for: realmGame, with: game)
             }
+            LogManager.database.debug("💾 Saved/Updated game: \(game.name) (id: \(game.id))")
             return true
         } catch {
-            print("Failed to save or update game: \(error)")
+            LogManager.database.error("❌ Failed to save or update game: \(game.id) - \(error.localizedDescription)")
             return false
         }
     }
@@ -151,6 +152,7 @@ final class RealmGameRepository: GameRepository {
     // MARK: - Update Flags
     func updateFavorite(gameId: Int, isFavorite: Bool) -> Bool {
         guard let realmGame = findGameById(gameId) else {
+            LogManager.database.warning("⚠️ Game not found for favorite update: \(gameId)")
             return false
         }
 
@@ -159,15 +161,17 @@ final class RealmGameRepository: GameRepository {
                 realmGame.isFavorite = isFavorite
                 realmGame.favoriteAddedAt = isFavorite ? Date() : nil
             }
+            LogManager.database.debug("💾 Updated favorite: \(gameId) - \(isFavorite)")
             return true
         } catch {
-            print("Failed to update favorite: \(error)")
+            LogManager.database.error("❌ Failed to update favorite: \(gameId) - \(error.localizedDescription)")
             return false
         }
     }
 
     func updateNotification(gameId: Int, isEnabled: Bool) -> Bool {
         guard let realmGame = findGameById(gameId) else {
+            LogManager.database.warning("⚠️ Game not found for notification update: \(gameId)")
             return false
         }
 
@@ -176,15 +180,17 @@ final class RealmGameRepository: GameRepository {
                 realmGame.isNotificationEnabled = isEnabled
                 realmGame.notificationAddedAt = isEnabled ? Date() : nil
             }
+            LogManager.database.debug("💾 Updated notification: \(gameId) - \(isEnabled)")
             return true
         } catch {
-            print("Failed to update notification: \(error)")
+            LogManager.database.error("❌ Failed to update notification: \(gameId) - \(error.localizedDescription)")
             return false
         }
     }
 
     func updateReading(gameId: Int, isReading: Bool) -> Bool {
         guard let realmGame = findGameById(gameId) else {
+            LogManager.database.warning("⚠️ Game not found for reading update: \(gameId)")
             return false
         }
 
@@ -203,9 +209,10 @@ final class RealmGameRepository: GameRepository {
                     realmGame.readingUpdatedAt = nil
                 }
             }
+            LogManager.database.debug("💾 Updated reading: \(gameId) - \(isReading)")
             return true
         } catch {
-            print("Failed to update reading: \(error)")
+            LogManager.database.error("❌ Failed to update reading: \(gameId) - \(error.localizedDescription)")
             return false
         }
     }
@@ -220,12 +227,13 @@ final class RealmGameRepository: GameRepository {
             try realm.write {
                 // isFavorite, isNotificationEnabled, isReading 모두 false면 삭제
                 if !realmGame.isFavorite && !realmGame.isNotificationEnabled && !realmGame.isReading {
+                    LogManager.database.debug("🗑️ Deleted unused game: \(gameId)")
                     realm.delete(realmGame)
                 }
             }
             return true
         } catch {
-            print("Failed to delete game: \(error)")
+            LogManager.database.error("❌ Failed to delete game: \(gameId) - \(error.localizedDescription)")
             return false
         }
     }

@@ -104,6 +104,10 @@ final class HeaderDetailViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: true)
+
+        // Screen View 로깅
+        LogManager.logScreenView("HeaderDetail", screenClass: "HeaderDetailViewController")
+
         viewWillAppearRelay.accept(())
     }
 

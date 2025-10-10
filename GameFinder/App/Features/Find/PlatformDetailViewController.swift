@@ -68,6 +68,10 @@ final class PlatformDetailViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: true)
+
+        // Screen View 로깅
+        LogManager.logScreenView("PlatformDetail", screenClass: "PlatformDetailViewController")
+
         viewWillAppearRelay.accept(())
     }
 

@@ -23,12 +23,17 @@ final class FavoriteManager {
     // MARK: - Add Favorite
     func addFavorite(_ game: Game) -> Bool {
         guard repository.saveOrUpdateGame(game) else {
+            LogManager.error.error("Failed to save game for favorite: \(game.id)")
             return false
         }
 
         guard repository.updateFavorite(gameId: game.id, isFavorite: true) else {
+            LogManager.error.error("Failed to update favorite status: \(game.id)")
             return false
         }
+
+        // 로깅 및 Analytics
+        LogManager.logAddFavorite(gameId: game.id, gameName: game.name)
 
         favoriteStatusChanged.onNext((game.id, true))
         return true
@@ -37,10 +42,14 @@ final class FavoriteManager {
     // MARK: - Remove Favorite
     func removeFavorite(gameId: Int) -> Bool {
         guard repository.updateFavorite(gameId: gameId, isFavorite: false) else {
+            LogManager.error.error("Failed to remove favorite: \(gameId)")
             return false
         }
 
         _ = repository.deleteGameIfUnused(gameId: gameId)
+
+        // 로깅 및 Analytics
+        LogManager.logRemoveFavorite(gameId: gameId)
 
         favoriteStatusChanged.onNext((gameId, false))
         return true

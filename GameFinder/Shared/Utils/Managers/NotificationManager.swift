@@ -23,12 +23,17 @@ final class NotificationManager {
     // MARK: - Add Notification
     func addNotification(_ game: Game) -> Bool {
         guard repository.saveOrUpdateGame(game) else {
+            LogManager.error.error("Failed to save game for notification: \(game.id)")
             return false
         }
 
         guard repository.updateNotification(gameId: game.id, isEnabled: true) else {
+            LogManager.error.error("Failed to update notification status: \(game.id)")
             return false
         }
+
+        // 로깅 및 Analytics
+        LogManager.logAddNotification(gameId: game.id, gameName: game.name)
 
         notificationStatusChanged.onNext((game.id, true))
         return true
@@ -37,10 +42,14 @@ final class NotificationManager {
     // MARK: - Remove Notification
     func removeNotification(gameId: Int) -> Bool {
         guard repository.updateNotification(gameId: gameId, isEnabled: false) else {
+            LogManager.error.error("Failed to remove notification: \(gameId)")
             return false
         }
 
         _ = repository.deleteGameIfUnused(gameId: gameId)
+
+        // 로깅 및 Analytics
+        LogManager.logRemoveNotification(gameId: gameId)
 
         notificationStatusChanged.onNext((gameId, false))
         return true

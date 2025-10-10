@@ -77,6 +77,10 @@ final class LibraryViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: true)
+
+        // Screen View 로깅
+        LogManager.logScreenView("Library", screenClass: "LibraryViewController")
+
         viewWillAppearRelay.accept(())
     }
 
@@ -359,6 +363,63 @@ final class LibraryCategoryViewController: UIViewController {
             })
             .disposed(by: disposeBag)
     }
+
+    // MARK: - Delete Confirmation
+    private func showDeleteConfirmation(for gameId: Int) {
+        // 게임 이름 찾기
+        let gameName = readingGames.first(where: { $0.id == gameId })?.name ?? "이 게임"
+
+        let alert = UIAlertController(
+            title: "기록 삭제",
+            message: "\"\(gameName)\"의 모든 일기와 미디어를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+            preferredStyle: .alert
+        )
+
+        let deleteAction = UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+            self?.deleteGameRecord(gameId: gameId, gameName: gameName)
+        }
+
+        let cancelAction = UIAlertAction(title: "취소", style: .cancel)
+
+        alert.addAction(cancelAction)
+        alert.addAction(deleteAction)
+
+        present(alert, animated: true)
+    }
+
+    private func deleteGameRecord(gameId: Int, gameName: String) {
+        // 1. 모든 일기 및 미디어 삭제
+        let diaryDeleted = DiaryManager.shared.deleteAllDiaries(for: gameId)
+
+        // 2. Reading 상태 제거
+        let readingRemoved = ReadingManager.shared.removeReading(gameId: gameId)
+
+        if diaryDeleted && readingRemoved {
+            LogManager.userAction.info("📕 Removed game from diary: \(gameName) (id: \(gameId))")
+
+            // 성공 토스트 메시지 (선택사항)
+            showSuccessMessage("\(gameName)의 기록이 삭제되었습니다.")
+        } else {
+            // 실패 시 에러 메시지
+            showErrorMessage("기록 삭제에 실패했습니다. 다시 시도해주세요.")
+        }
+    }
+
+    private func showSuccessMessage(_ message: String) {
+        let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        present(alert, animated: true)
+
+        // 1초 후 자동으로 닫기
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            alert.dismiss(animated: true)
+        }
+    }
+
+    private func showErrorMessage(_ message: String) {
+        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
+    }
 }
 
 // MARK: - UICollectionViewDataSource
@@ -386,6 +447,12 @@ extension LibraryCategoryViewController: UICollectionViewDataSource {
 
             let game = readingGames[indexPath.item]
             cell.configure(with: game, lastUpdatedDate: game.readingUpdatedAt)
+
+            // 삭제 버튼 콜백
+            cell.onDeleteButtonTapped = { [weak self] gameId in
+                self?.showDeleteConfirmation(for: gameId)
+            }
+
             return cell
 
         case .favorite, .notification:

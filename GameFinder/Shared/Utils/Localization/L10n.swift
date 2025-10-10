@@ -10,6 +10,8 @@ import Foundation
 enum L10n {
     
     static let edit = "edit".localized
+    static let today = "today".localized
+    static let tomorrow = "tomorrow".localized
     
     enum TabBar {
         /// Finder

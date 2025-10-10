@@ -95,6 +95,10 @@ final class GameDetailViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: true)
+
+        // Screen View 로깅
+        LogManager.logScreenView("GameDetail", screenClass: "GameDetailViewController")
+
         viewWillAppearRelay.accept(())
     }
 

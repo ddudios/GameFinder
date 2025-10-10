@@ -150,6 +150,10 @@ final class FinderViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        // Screen View 로깅
+        LogManager.logScreenView("Finder", screenClass: "FinderViewController")
+
         viewWillAppear.accept(())
     }
 

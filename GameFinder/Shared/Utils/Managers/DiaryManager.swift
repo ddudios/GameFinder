@@ -106,10 +106,15 @@ final class DiaryManager {
                     game.readingUpdatedAt = Date()
                 }
             }
+
+            // 로깅 및 Analytics
+            let gameName = realm.objects(RealmGame.self).where({ $0.gameId == gameId }).first?.name ?? "Unknown"
+            LogManager.logCreateDiary(gameId: gameId, gameName: gameName, mediaCount: mediaItems.count)
+
             diaryListChanged.onNext(gameId)
             return true
         } catch {
-            print("Failed to create diary: \(error)")
+            LogManager.error.error("Failed to create diary: \(error.localizedDescription)")
             return false
         }
     }
@@ -160,6 +165,7 @@ final class DiaryManager {
     ///   - mediaItems: 새 미디어 아이템 배열
     /// - Returns: 성공 여부
     func updateDiary(diary: RealmDiary, title: String, content: String, mediaItems: [MediaItem]) -> Bool {
+        let gameId = diary.gameId
         do {
             try realm.write {
                 // 기존 미디어 파일 삭제
@@ -185,10 +191,14 @@ final class DiaryManager {
                     game.readingUpdatedAt = Date()
                 }
             }
+
+            // 로깅 및 Analytics
+            LogManager.logUpdateDiary(gameId: gameId, mediaCount: mediaItems.count)
+
             diaryListChanged.onNext(diary.gameId)
             return true
         } catch {
-            print("Failed to update diary: \(error)")
+            LogManager.error.error("Failed to update diary: \(error.localizedDescription)")
             return false
         }
     }
@@ -214,10 +224,14 @@ final class DiaryManager {
                     game.readingUpdatedAt = Date()
                 }
             }
+
+            // 로깅 및 Analytics
+            LogManager.logDeleteDiary(gameId: gameId)
+
             diaryListChanged.onNext(gameId)
             return true
         } catch {
-            print("Failed to delete diary: \(error)")
+            LogManager.error.error("Failed to delete diary: \(error.localizedDescription)")
             return false
         }
     }
@@ -227,5 +241,47 @@ final class DiaryManager {
         return realm.objects(RealmDiary.self)
             .where { $0.gameId == gameId }
             .count
+    }
+
+    // MARK: - Delete All for Game
+
+    /// 특정 게임의 모든 일기 삭제 (미디어 파일 포함)
+    /// - Parameter gameId: 게임 ID
+    /// - Returns: 성공 여부
+    func deleteAllDiaries(for gameId: Int) -> Bool {
+        let diaries = realm.objects(RealmDiary.self)
+            .where { $0.gameId == gameId }
+
+        guard !diaries.isEmpty else {
+            return true // 삭제할 일기가 없으면 성공으로 처리
+        }
+
+        do {
+            try realm.write {
+                // 모든 미디어 파일 삭제
+                for diary in diaries {
+                    for media in diary.mediaItems {
+                        deleteMediaFromDisk(relativePath: media.filePath)
+                    }
+                }
+
+                // Realm에서 일기 삭제
+                realm.delete(diaries)
+
+                // readingUpdatedAt 갱신
+                if let game = realm.objects(RealmGame.self).where({ $0.gameId == gameId }).first {
+                    game.readingUpdatedAt = Date()
+                }
+            }
+
+            // 로깅
+            LogManager.database.info("🗑️ Deleted all diaries for game: \(gameId), count: \(diaries.count)")
+
+            diaryListChanged.onNext(gameId)
+            return true
+        } catch {
+            LogManager.error.error("Failed to delete all diaries for game: \(gameId) - \(error.localizedDescription)")
+            return false
+        }
     }
 }

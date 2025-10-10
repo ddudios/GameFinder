@@ -44,11 +44,18 @@ final class GameDetailViewModel: RxViewModelProtocol {
             .subscribe { result in
                 switch result {
                 case .success(let dto):
-                    gameDetail.accept(GameDetail(from: dto))
+                    let detail = GameDetail(from: dto)
+                    gameDetail.accept(detail)
+
+                    // 게임 조회 로깅 및 Analytics
+                    LogManager.logGameView(gameId: dto.id, gameName: dto.name)
+
                 case .failure(let error):
+                    LogManager.error.error("Failed to load game detail: \(self.gameId) - \(error.errorDescription ?? "unknown")")
                     errorAlertMessage.onNext(error.errorDescription ?? "알 수 없는 오류가 발생했습니다")
                 }
             } onError: { error in
+                LogManager.error.error("Game detail API error: \(error.localizedDescription)")
                 errorAlertMessage.onNext(error.localizedDescription)
             }
             .disposed(by: disposeBag)
@@ -66,6 +73,7 @@ final class GameDetailViewModel: RxViewModelProtocol {
                 switch result {
                 case .success(let dto):
                     screenshots.accept(dto.results)
+                    LogManager.network.debug("Loaded \(dto.results.count) screenshots for game: \(self.gameId)")
                 case .failure:
                     break // 스크린샷은 선택사항이므로 에러 무시
                 }

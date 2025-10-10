@@ -11,6 +11,11 @@ import Kingfisher
 
 final class GameDiaryListCollectionViewCell: BaseCollectionViewCell {
 
+    // MARK: - Properties
+    private var currentGameId: Int?
+    var onDeleteButtonTapped: ((Int) -> Void)?
+
+    // MARK: - UI Components
     private let backgroundImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -22,6 +27,20 @@ final class GameDiaryListCollectionViewCell: BaseCollectionViewCell {
         let view = UIView()
         view.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.5)
         return view
+    }()
+
+    private let deleteButton = {
+        let button = UIButton(type: .system)
+        var config = UIButton.Configuration.plain()
+        config.image = UIImage(systemName: "bookmark.fill")
+        config.baseForegroundColor = .Signature
+        config.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
+
+        let imageConfig = UIImage.SymbolConfiguration(pointSize: 16, weight: .semibold)
+        config.preferredSymbolConfigurationForImage = imageConfig
+
+        button.configuration = config
+        return button
     }()
 
     private let monthLabel = {
@@ -53,6 +72,16 @@ final class GameDiaryListCollectionViewCell: BaseCollectionViewCell {
         return label
     }()
 
+    // MARK: - Initialization
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        deleteButton.addTarget(self, action: #selector(deleteButtonTapped), for: .touchUpInside)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func prepareForReuse() {
         super.prepareForReuse()
         backgroundImageView.kf.cancelDownloadTask()
@@ -60,9 +89,18 @@ final class GameDiaryListCollectionViewCell: BaseCollectionViewCell {
         gameTitleLabel.text = nil
         monthLabel.text = nil
         yearLabel.text = nil
+        currentGameId = nil
     }
 
+    // MARK: - Actions
+    @objc private func deleteButtonTapped() {
+        guard let gameId = currentGameId else { return }
+        onDeleteButtonTapped?(gameId)
+    }
+
+    // MARK: - Configuration
     func configure(with game: Game, lastUpdatedDate: Date?) {
+        currentGameId = game.id
         gameTitleLabel.text = game.name
 
         // 날짜 포맷 설정
@@ -116,6 +154,7 @@ final class GameDiaryListCollectionViewCell: BaseCollectionViewCell {
         contentView.addSubview(overlayView)
         contentView.addSubview(dateStackView)
         contentView.addSubview(gameTitleLabel)
+        contentView.addSubview(deleteButton)
     }
 
     override func configureLayout() {
@@ -133,6 +172,11 @@ final class GameDiaryListCollectionViewCell: BaseCollectionViewCell {
         dateStackView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(16)
             make.leading.equalToSuperview().offset(16)
+        }
+
+        deleteButton.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(12)
+            make.trailing.equalToSuperview().inset(12)
         }
 
         gameTitleLabel.snp.makeConstraints { make in

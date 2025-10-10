@@ -397,10 +397,10 @@ final class GameListCollectionViewCell: BaseCollectionViewCell {
 
                     if let dayDifference = calendar.dateComponents([.day], from: today, to: releaseDay).day {
                         if dayDifference == 0 {
-                            releaseBadgeLabel.text = "오늘"
+                            releaseBadgeLabel.text = L10n.today
                             releaseBadgeView.isHidden = false
                         } else if dayDifference == 1 {
-                            releaseBadgeLabel.text = "내일"
+                            releaseBadgeLabel.text = L10n.tomorrow
                             releaseBadgeView.isHidden = false
                         } else {
                             releaseBadgeView.isHidden = true

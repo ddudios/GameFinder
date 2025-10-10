@@ -68,6 +68,11 @@ final class SearchResultViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: true)
+
+        // Screen View 및 검색 로깅
+        LogManager.logScreenView("SearchResult", screenClass: "SearchResultViewController")
+        LogManager.logSearch(query: viewModel.query)
+
         viewWillAppearRelay.accept(())
     }
 
