@@ -622,7 +622,7 @@ final class GameDetailViewController: BaseViewController {
                           let gameDetail = self.currentGameDetail else { return }
 
                     let game = gameDetail.toGame()
-                    NotificationManager.shared.toggleNotification(game)
+                    self.handleNotificationToggle(for: game)
                 }
 
                 return cell

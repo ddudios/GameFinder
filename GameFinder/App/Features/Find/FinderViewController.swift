@@ -335,7 +335,7 @@ final class FinderViewController: BaseViewController {
                 guard let self = self else { return }
                 let snapshot = self.dataSource.snapshot()
                 if let game = snapshot.itemIdentifiers.first(where: { $0.id == gameId }) {
-                    NotificationManager.shared.toggleNotification(game)
+                    self.handleNotificationToggle(for: game)
                 }
             }
         }

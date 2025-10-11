@@ -23,11 +23,14 @@ enum SettingSection: Int, CaseIterable {
 }
 
 enum SettingItem {
+    case notification
     case language
     case contact
 
     var title: String {
         switch self {
+        case .notification:
+            return "Notifications"
         case .language:
             return "Language"
         case .contact:
@@ -37,6 +40,8 @@ enum SettingItem {
 
     var icon: String {
         switch self {
+        case .notification:
+            return "bell.fill"
         case .language:
             return "globe"
         case .contact:
@@ -49,8 +54,8 @@ final class SettingViewController: BaseViewController {
 
     // MARK: - Properties
     private let sections: [[SettingItem]] = [
-        [.language],      // General
-        [.contact]        // Support
+        [.notification, .language],      // General
+        [.contact]                        // Support
     ]
 
     // MARK: - UI Components
@@ -93,6 +98,84 @@ final class SettingViewController: BaseViewController {
     }
 
     // MARK: - Actions
+    private func showNotificationSettings() {
+        NotificationManager.shared.checkPermissionStatus { [weak self] isAuthorized in
+            guard let self = self else { return }
+
+            if isAuthorized {
+                // 권한이 있으면 토글 설정 표시
+                self.showNotificationToggle()
+            } else {
+                // 권한이 없으면 권한 요청
+                self.requestNotificationPermission()
+            }
+        }
+    }
+
+    private func requestNotificationPermission() {
+        NotificationManager.shared.requestPermission { [weak self] granted in
+            if granted {
+                self?.showNotificationToggle()
+            } else {
+                self?.showPermissionDeniedAlert()
+            }
+        }
+    }
+
+    private func showNotificationToggle() {
+        let isEnabled = UserDefaults.isGlobalNotificationEnabled
+
+        let alert = UIAlertController(
+            title: "Notifications",
+            message: "Enable notifications to receive alerts for game releases.",
+            preferredStyle: .actionSheet
+        )
+
+        let toggleTitle = isEnabled ? "Turn Off Notifications" : "Turn On Notifications"
+        let toggleStyle: UIAlertAction.Style = isEnabled ? .destructive : .default
+
+        alert.addAction(UIAlertAction(title: toggleTitle, style: toggleStyle) { [weak self] _ in
+            let newState = !isEnabled
+            NotificationManager.shared.toggleGlobalNotification(enabled: newState)
+
+            let message = newState ? "Notifications enabled" : "Notifications disabled"
+            let confirmAlert = UIAlertController(
+                title: nil,
+                message: message,
+                preferredStyle: .alert
+            )
+            confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            self?.present(confirmAlert, animated: true)
+        })
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+        if let popoverController = alert.popoverPresentationController {
+            popoverController.sourceView = view
+            popoverController.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = []
+        }
+
+        present(alert, animated: true)
+    }
+
+    private func showPermissionDeniedAlert() {
+        let alert = UIAlertController(
+            title: "Permission Required",
+            message: "Please enable notifications in Settings to receive game release alerts.",
+            preferredStyle: .alert
+        )
+
+        alert.addAction(UIAlertAction(title: "Open Settings", style: .default) { _ in
+            if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsUrl)
+            }
+        })
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
     private func showLanguageSelection() {
         let alert = UIAlertController(
             title: "Select Language",
@@ -189,6 +272,8 @@ extension SettingViewController: UITableViewDelegate {
         let item = sections[indexPath.section][indexPath.row]
 
         switch item {
+        case .notification:
+            showNotificationSettings()
         case .language:
             showLanguageSelection()
         case .contact:

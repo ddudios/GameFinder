@@ -51,8 +51,18 @@ enum L10n {
     
     enum Alert {
         static let okButton = "alert_button_ok".localized
-        
+
         static let languageTitle = "alert_title_language".localized
         static let languageMessage = "alert_message_language".localized
+    }
+
+    enum Notification {
+        static let title = "notification_title".localized
+        static let body = "notification_body".localized
+        static let added = "notification_added".localized
+        static let removed = "notification_removed".localized
+        static let turnOnTitle = "notification_turn_on_title".localized
+        static let turnOnMessage = "notification_turn_on_message".localized
+        static let turnOnButton = "notification_turn_on_button".localized
     }
 }

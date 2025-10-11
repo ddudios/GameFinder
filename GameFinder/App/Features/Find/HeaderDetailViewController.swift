@@ -347,7 +347,7 @@ final class HeaderDetailViewController: BaseViewController {
                             return false
                         }),
                         case .game(let game) = gameItem {
-                            NotificationManager.shared.toggleNotification(game)
+                            self.handleNotificationToggle(for: game)
                         }
                     }
                 } else {

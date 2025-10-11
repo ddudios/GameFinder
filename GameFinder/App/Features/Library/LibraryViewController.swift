@@ -245,7 +245,7 @@ extension LibraryViewController: UIPageViewControllerDelegate {
 }
 
 // MARK: - Library Category ViewController
-final class LibraryCategoryViewController: UIViewController {
+final class LibraryCategoryViewController: BaseViewController {
 
     private let category: LibraryCategory
     private let disposeBag = DisposeBag()
@@ -287,7 +287,6 @@ final class LibraryCategoryViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
         setupCollectionView()
 
         // 카테고리별 데이터 로드
@@ -300,10 +299,12 @@ final class LibraryCategoryViewController: UIViewController {
         }
     }
 
-    private func setupUI() {
+    override func configureHierarchy() {
         view.addSubview(collectionView)
         view.addSubview(emptyLabel)
+    }
 
+    override func configureLayout() {
         collectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -312,7 +313,10 @@ final class LibraryCategoryViewController: UIViewController {
             make.center.equalToSuperview()
             make.leading.trailing.equalToSuperview().inset(40)
         }
+    }
 
+    override func configureView() {
+        super.configureView()
         emptyLabel.text = "No items in \(category.title)"
         emptyLabel.isHidden = true
     }
@@ -478,7 +482,7 @@ extension LibraryCategoryViewController: UICollectionViewDataSource {
                 cell.onNotificationButtonTapped = { [weak self] gameId in
                     guard let self = self else { return }
                     if let game = self.notificationGames.first(where: { $0.id == gameId }) {
-                        NotificationManager.shared.toggleNotification(game)
+                        self.handleNotificationToggle(for: game)
                     }
                 }
             }
