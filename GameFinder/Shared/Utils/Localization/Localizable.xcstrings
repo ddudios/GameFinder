@@ -93,6 +93,9 @@
         }
       }
     },
+    "Key" : {
+      "extractionState" : "manual"
+    },
     "nav_title_first" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -162,29 +165,6 @@
         }
       }
     },
-    "notification_body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ will be released tomorrow!"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@が明日リリースされます！"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ 이(가) 내일 출시됩니다!"
-          }
-        }
-      }
-    },
     "notification_added" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -204,6 +184,29 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "출시일 하루 전 오후 6시에 알림이 설정되었습니다."
+          }
+        }
+      }
+    },
+    "notification_body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ will be released tomorrow!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@が明日リリースされます！"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 이(가) 내일 출시됩니다!"
           }
         }
       }
