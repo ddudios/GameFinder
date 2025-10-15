@@ -153,7 +153,6 @@ final class NotificationManager {
         content.title = L10n.Notification.title
         content.body = String(format: L10n.Notification.body, game.name)
         content.sound = .default
-        content.badge = 1
         content.userInfo = ["gameId": game.id]
 
         let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: oneDayBefore)

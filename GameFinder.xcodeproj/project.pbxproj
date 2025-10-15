@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B03D96942EA02DBF00F5E760 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B03D96932EA02DBF00F5E760 /* FirebaseFirestore */; };
 		B057CC522E96C65A00FEF3A5 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */; };
 		B057CC542E96C65A00FEF3A5 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC532E96C65A00FEF3A5 /* FirebaseCrashlytics */; };
 		B057CC562E96C65A00FEF3A5 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC552E96C65A00FEF3A5 /* FirebaseMessaging */; };
@@ -68,6 +69,7 @@
 				B057CC562E96C65A00FEF3A5 /* FirebaseMessaging in Frameworks */,
 				B0C9713B2E87DB9100EDC2DA /* RealmSwift in Frameworks */,
 				B08FEE4C2E87D19200488358 /* RxSwift in Frameworks */,
+				B03D96942EA02DBF00F5E760 /* FirebaseFirestore in Frameworks */,
 				B08FEE0B2E87D05A00488358 /* Alamofire in Frameworks */,
 				B08FEE4A2E87D19200488358 /* RxCocoa in Frameworks */,
 				B08FEE082E87D04200488358 /* Kingfisher in Frameworks */,
@@ -128,6 +130,7 @@
 				B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */,
 				B057CC532E96C65A00FEF3A5 /* FirebaseCrashlytics */,
 				B057CC552E96C65A00FEF3A5 /* FirebaseMessaging */,
+				B03D96932EA02DBF00F5E760 /* FirebaseFirestore */,
 			);
 			productName = GameFinder;
 			productReference = B08FECF82E87B2B000488358 /* GameFinder.app */;
@@ -231,6 +234,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = GameFinder/GameFinder.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
@@ -238,6 +242,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/GameFinder/App/Support/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = GameFinder;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -268,12 +273,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = GameFinder/GameFinder.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 27A9369F66;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/GameFinder/App/Support/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = GameFinder;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -497,6 +504,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		B03D96932EA02DBF00F5E760 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
 		B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

@@ -41,9 +41,9 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         // 하단 그라디에이션만 (상단은 완전 투명)
         layer.colors = [
             UIColor.clear.cgColor,
-            UIColor.systemBackground.withAlphaComponent(0.6).cgColor
+            UIColor.systemBackground.withAlphaComponent(0.7).cgColor
         ]
-        layer.locations = [0.6, 1.0]
+        layer.locations = [0.3, 1.0]
         layer.startPoint = CGPoint(x: 0.5, y: 0.0) // 상단 중앙
         layer.endPoint = CGPoint(x: 0.5, y: 1.0) // 하단 중앙
         return layer
@@ -84,9 +84,9 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
         label.textColor = UIColor.label
         label.numberOfLines = 2
         label.layer.shadowColor = UIColor.systemBackground.cgColor
-        label.layer.shadowOpacity = 0.8
+        label.layer.shadowOpacity = 0.4
         label.layer.shadowOffset = CGSize(width: 0, height: 2)
-        label.layer.shadowRadius = 4
+        label.layer.shadowRadius = 3
         label.alpha = 0 // 초기값 숨김 (visibility용)
         return label
     }()
@@ -278,12 +278,6 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
             make.leading.trailing.bottom.equalToSuperview()
         }
 
-        // 그림자
-        imageContainerView.layer.shadowColor = UIColor.systemBackground.cgColor
-        imageContainerView.layer.shadowOpacity = 0.3
-        imageContainerView.layer.shadowOffset = CGSize(width: 0, height: 8)
-        imageContainerView.layer.shadowRadius = 16
-
         layer.masksToBounds = false
         contentView.layer.masksToBounds = false
     }
@@ -408,12 +402,6 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
             badgeView.configure(rating: game.rating)
             releaseDateBadge.isHidden = true
         }
-
-        // VoiceOver 접근성
-        isAccessibilityElement = true
-        accessibilityLabel = "\(game.name), Rating: \(String(format: "%.1f", game.rating))"
-        accessibilityValue = genreNames.prefix(2).joined(separator: ", ")
-        accessibilityHint = "Double tap to view details"
 
         // 이미지 로딩
         imageView.image = nil

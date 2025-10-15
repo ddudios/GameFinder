@@ -7,6 +7,7 @@
 
 import UIKit
 
+//MARK: - Toast
 extension UIViewController {
     func showToast(message: String, duration: TimeInterval = 2.0) {
         let toastContainer = UIView()
@@ -50,5 +51,29 @@ extension UIViewController {
                 toastContainer.removeFromSuperview()
             })
         })
+    }
+}
+
+//MARK: - Noti Swizzle
+extension UIViewController {
+    
+    class func swizzleMethod() {
+        
+        let origin = #selector(viewWillAppear)
+        let change = #selector(changeViewWillAppear)
+        
+        guard let originMethod =
+                class_getInstanceMethod (UIViewController.self, origin), let
+                changeMethod = class_getInstanceMethod(UIViewController.self,
+                                                       change) else {
+            print ("함수를 찾을 수 없거나 오류")
+            return
+        }
+        
+        method_exchangeImplementations(originMethod, changeMethod)
+    }
+    
+    @objc func changeViewWillAppear() {
+        print ("changeViewWillAppear")
     }
 }
