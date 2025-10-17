@@ -18,9 +18,9 @@ enum LibraryCategory: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .diary: return "Diary"
-        case .favorite: return "Favorite"
-        case .notification: return "Notification"
+        case .diary: return L10n.diary
+        case .favorite: return L10n.favorite
+        case .notification: return L10n.notification
         }
     }
 
@@ -317,7 +317,7 @@ final class LibraryCategoryViewController: BaseViewController {
 
     override func configureView() {
         super.configureView()
-        emptyLabel.text = "No items in \(category.title)"
+        emptyLabel.text = L10n.Library.emptyLable.localized(with: category.title)
         emptyLabel.isHidden = true
     }
 

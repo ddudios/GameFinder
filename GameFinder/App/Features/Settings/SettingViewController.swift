@@ -14,10 +14,8 @@ enum SettingSection: Int, CaseIterable {
 
     var title: String {
         switch self {
-        case .general:
-            return "General"
-        case .support:
-            return "Support"
+        case .general: return L10n.Settings.general
+        case .support: return L10n.Settings.support
         }
     }
 }
@@ -29,23 +27,17 @@ enum SettingItem {
 
     var title: String {
         switch self {
-        case .notification:
-            return "Notifications"
-        case .language:
-            return "Language"
-        case .contact:
-            return "Contact"
+        case .notification: return L10n.notification
+        case .language: return L10n.Settings.language
+        case .contact: return L10n.Settings.contact
         }
     }
 
     var icon: String {
         switch self {
-        case .notification:
-            return "bell.fill"
-        case .language:
-            return "globe"
-        case .contact:
-            return "envelope"
+        case .notification: return "bell.fill"
+        case .language: return "globe"
+        case .contact: return "envelope"
         }
     }
 }
@@ -126,29 +118,29 @@ final class SettingViewController: BaseViewController {
         let isEnabled = UserDefaults.isGlobalNotificationEnabled
 
         let alert = UIAlertController(
-            title: "Notifications",
-            message: "Enable notifications to receive alerts for game releases.",
+            title: L10n.notification,
+            message: L10n.Settings.notiMessage,
             preferredStyle: .actionSheet
         )
 
-        let toggleTitle = isEnabled ? "Turn Off Notifications" : "Turn On Notifications"
+        let toggleTitle = isEnabled ? L10n.Settings.notiOff : L10n.Settings.notiOn
         let toggleStyle: UIAlertAction.Style = isEnabled ? .destructive : .default
 
         alert.addAction(UIAlertAction(title: toggleTitle, style: toggleStyle) { [weak self] _ in
             let newState = !isEnabled
             NotificationManager.shared.toggleGlobalNotification(enabled: newState)
 
-            let message = newState ? "Notifications enabled" : "Notifications disabled"
+            let message = newState ? L10n.Settings.notiEnabled : L10n.Settings.notiDisabled
             let confirmAlert = UIAlertController(
                 title: nil,
                 message: message,
                 preferredStyle: .alert
             )
-            confirmAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            confirmAlert.addAction(UIAlertAction(title: L10n.Alert.okButton, style: .default))
             self?.present(confirmAlert, animated: true)
         })
 
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.Alert.cancelButton, style: .cancel))
 
         if let popoverController = alert.popoverPresentationController {
             popoverController.sourceView = view
@@ -161,25 +153,25 @@ final class SettingViewController: BaseViewController {
 
     private func showPermissionDeniedAlert() {
         let alert = UIAlertController(
-            title: "Permission Required",
-            message: "Please enable notifications in Settings to receive game release alerts.",
+            title: L10n.Settings.appNotiTitle,
+            message: L10n.Settings.appNotiMessage,
             preferredStyle: .alert
         )
 
-        alert.addAction(UIAlertAction(title: "Open Settings", style: .default) { _ in
+        alert.addAction(UIAlertAction(title: L10n.Settings.appNotiSettingButton, style: .default) { _ in
             if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
                 UIApplication.shared.open(settingsUrl)
             }
         })
 
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.Alert.cancelButton, style: .cancel))
         present(alert, animated: true)
     }
 
     private func showLanguageSelection() {
         let alert = UIAlertController(
-            title: "Select Language",
-            message: "Choose your preferred language",
+            title: L10n.Settings.languageSheetTitle,
+            message: L10n.Settings.languageSheetMessage,
             preferredStyle: .actionSheet
         )
 
@@ -198,7 +190,7 @@ final class SettingViewController: BaseViewController {
             self?.changeLanguage(to: "ja")
         })
 
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.Alert.cancelButton, style: .cancel))
 
         if let popoverController = alert.popoverPresentationController {
             popoverController.sourceView = view
@@ -228,10 +220,10 @@ final class SettingViewController: BaseViewController {
 
         let alert = UIAlertController(
             title: nil,
-            message: "문의 이메일 주소가 복사되었습니다.",
+            message: L10n.Settings.contactMessage,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        alert.addAction(UIAlertAction(title: L10n.Alert.okButton, style: .default))
         present(alert, animated: true)
     }
 }

@@ -77,7 +77,7 @@ final class SearchResultViewController: BaseViewController {
     }
 
     private func setupNavigationBar() {
-        navigationItem.title = "Search Results"
+        navigationItem.title = L10n.Search.resultNavTitle
         navigationController?.navigationBar.tintColor = .secondaryLabel
         navigationItem.backButtonDisplayMode = .minimal
     }
@@ -135,9 +135,6 @@ final class SearchResultViewController: BaseViewController {
             ListSkeletonCell.self,
             forCellWithReuseIdentifier: ListSkeletonCell.identifier
         )
-
-        // Show initial skeleton loading
-        showSkeletonLoading()
     }
 
     private func createLayout() -> UICollectionViewLayout {
@@ -207,26 +204,12 @@ final class SearchResultViewController: BaseViewController {
     }
 
     // MARK: - DataSource
-    private func showSkeletonLoading() {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
-        snapshot.appendSections([0])
-
-        // 첫 번째 아이템: 헤더
-        var items: [DetailItem] = [.header(title: "Results for \"\(viewModel.query)\"", releaseDate: nil)]
-
-        // 스켈레톤 아이템들 (5개)
-        items.append(contentsOf: (1...5).map { .skeleton(id: $0) })
-
-        snapshot.appendItems(items, toSection: 0)
-        dataSource.apply(snapshot, animatingDifferences: false)
-    }
-
     private func updateDataSource(with games: [Game]) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
         snapshot.appendSections([0])
 
         // 첫 번째 아이템: 헤더
-        var items: [DetailItem] = [.header(title: "Results for \"\(viewModel.query)\"", releaseDate: nil)]
+        var items: [DetailItem] = [.header(title: "\"\(viewModel.query)\"", releaseDate: nil)]
 
         // 나머지 아이템: 게임들
         items.append(contentsOf: games.map { .game($0) })

@@ -12,6 +12,10 @@ extension String {
         return NSLocalizedString(self, comment: "fail: localize")
     }
     
+    func localized(with: String) -> String {
+        return String(format: self.localized, with)
+    }
+    
     func localized(with: String, number: Int) -> String {
         return String(format: self.localized, with, number)
     }

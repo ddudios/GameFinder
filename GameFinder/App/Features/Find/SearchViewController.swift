@@ -19,7 +19,7 @@ final class SearchViewController: BaseViewController {
     // MARK: - UI Components
     private lazy var searchBar: UISearchBar = {
         let searchBar = UISearchBar()
-        searchBar.placeholder = "Search games..."
+        searchBar.placeholder = L10n.Search.searchPlaceholder
         searchBar.searchBarStyle = .minimal
         searchBar.delegate = self
         return searchBar
@@ -48,7 +48,7 @@ final class SearchViewController: BaseViewController {
 
     // MARK: - Setup
     private func setupNavigationBar() {
-        navigationItem.title = "Search"
+        navigationItem.title = L10n.Search.navTitle
         navigationController?.navigationBar.tintColor = .secondaryLabel
         navigationItem.backButtonDisplayMode = .minimal
     }
