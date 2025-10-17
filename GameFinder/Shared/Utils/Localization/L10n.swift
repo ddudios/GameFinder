@@ -64,6 +64,7 @@ enum L10n {
         static let noData = "game_detail_no_data".localized
         
         static let genre = "game_detail_section_genre".localized
+        static let ageRating = "game_detail_section_age_rating".localized
         static let platform = "game_detail_section_platform".localized
         static let description = "game_detail_section_description".localized
         static let developer = "game_detail_section_developer".localized

@@ -14,7 +14,7 @@ final class AgeRatingCollectionViewCell: BaseCollectionViewCell {
         let label = UILabel()
         label.font = .Title.bold14
         label.textColor = .secondaryLabel
-        label.text = "연령 등급"
+        label.text = L10n.GameDetail.ageRating
         return label
     }()
 

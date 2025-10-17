@@ -691,6 +691,29 @@
         }
       }
     },
+    "game_detail_section_age_rating" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Age Rating"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "年齢区分"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "연령 등급"
+          }
+        }
+      }
+    },
     "game_detail_section_description" : {
       "extractionState" : "manual",
       "localizations" : {
