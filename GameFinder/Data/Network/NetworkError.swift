@@ -21,23 +21,25 @@ enum NetworkError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "유효하지 않은 URL입니다."
+            return L10n.Error.invalidURL
         case .invalidResponse:
-            return "서버 응답이 올바르지 않습니다."
+            return L10n.Error.invalidResponse
         case .noData:
-            return "데이터를 받지 못했습니다."
+            return L10n.Error.noData
         case .decodingFailed:
-            return "데이터 변환에 실패했습니다."
+            return L10n.Error.decodingFailed
         case .apiLimitExceeded:
-            return "API 호출 한도를 초과했습니다. 잠시 후 다시 시도해주세요."
+            return L10n.Error.apiLimitExceeded
         case .notFound:
-            return "요청한 데이터를 찾을 수 없습니다."
+            return L10n.Error.notFound
         case .serverError(let code):
-            return "서버 오류가 발생했습니다. (코드: \(code))"
+            print("서버 오류가 발생했습니다. (코드: \(code))")
+            return L10n.Error.server
         case .server(let message):
-            return "서버 오류: \(message)"
+            print("서버 오류: \(message)")
+            return L10n.Error.server
         case .unknown:
-            return "알 수 없는 오류가 발생했습니다."
+            return L10n.Error.unknown
         }
     }
 }

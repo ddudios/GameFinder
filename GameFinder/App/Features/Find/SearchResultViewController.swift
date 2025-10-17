@@ -198,7 +198,7 @@ final class SearchResultViewController: BaseViewController {
         output.errorAlertMessage
             .asDriver(onErrorJustReturn: "에러 발생")
             .drive(with: self) { owner, message in
-                owner.showAlert(message: message)
+                owner.showAlert(title: L10n.error, message: message)
             }
             .disposed(by: disposeBag)
     }
@@ -268,17 +268,6 @@ final class SearchResultViewController: BaseViewController {
         }
         return dataSource
     }()
-
-    // MARK: - Helper
-    private func showAlert(message: String) {
-        let alert = UIAlertController(
-            title: "알림",
-            message: message,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
-    }
 }
 
 // MARK: - UICollectionViewDelegate

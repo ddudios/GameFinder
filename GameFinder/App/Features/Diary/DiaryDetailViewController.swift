@@ -177,8 +177,8 @@ final class DiaryDetailViewController: BaseViewController {
     private func loadDiaryData() {
         // 날짜 포맷
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy년 MM월 dd일 EEEE"
-        dateFormatter.locale = Locale(identifier: "ko_KR")
+        dateFormatter.setLocalizedDateFormatFromTemplate("yyyyMMMMdEEEE")
+        dateFormatter.locale = Locale.current
         dateLabel.text = dateFormatter.string(from: diary.createdAt)
 
         // 제목
@@ -237,12 +237,12 @@ final class DiaryDetailViewController: BaseViewController {
 
     @objc private func deleteButtonTapped() {
         let confirmAlert = UIAlertController(
-            title: "일기 삭제",
-            message: "이 일기를 삭제하시겠습니까?",
+            title: L10n.Diary.deleteAlertTitle,
+            message: L10n.Diary.deleteLogAlertMessage,
             preferredStyle: .alert
         )
-        confirmAlert.addAction(UIAlertAction(title: "취소", style: .cancel))
-        confirmAlert.addAction(UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+        confirmAlert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
+        confirmAlert.addAction(UIAlertAction(title: L10n.delete, style: .destructive) { [weak self] _ in
             guard let self = self else { return }
             if DiaryManager.shared.deleteDiary(self.diary) {
                 self.navigationController?.popViewController(animated: true)

@@ -10,6 +10,10 @@ import Foundation
 enum L10n {
     
     static let edit = "edit".localized
+    static let save = "save".localized
+    static let cancel = "cancel".localized
+    static let delete = "delete".localized
+    static let error = "error".localized
     
     static let today = "today".localized
     static let tomorrow = "tomorrow".localized
@@ -29,6 +33,17 @@ enum L10n {
         static let third = "tab_bar_title_third".localized
     }
     
+    enum Error {
+        static let invalidURL = "error_invalidURL_message".localized
+        static let invalidResponse = "error_invalidResponse_message".localized
+        static let noData = "error_noData_message".localized
+        static let decodingFailed = "error_decodingFailed_message".localized
+        static let apiLimitExceeded = "error_apiLimitExceeded_message".localized
+        static let notFound = "error_notFound_message".localized
+        static let server = "error_server_message".localized
+        static let unknown = "error_unknown_message".localized
+    }
+    
     enum Finder {
         /// Game Finder
         static let navTitle = "nav_title_first".localized
@@ -43,6 +58,18 @@ enum L10n {
         static let popularGamesSectionHeader = "section_header_popular_games".localized
     }
     
+    enum GameDetail {
+        static let diaryDeleteAlertTitle = "game_detail_alert_title_diary_delete".localized
+        
+        static let noData = "game_detail_no_data".localized
+        
+        static let genre = "game_detail_section_genre".localized
+        static let platform = "game_detail_section_platform".localized
+        static let description = "game_detail_section_description".localized
+        static let developer = "game_detail_section_developer".localized
+        static let publisher = "game_detail_section_publisher".localized
+    }
+    
     enum Search {
         /// 검색
         static let navTitle = "nav_title_search".localized
@@ -55,6 +82,21 @@ enum L10n {
     enum Library {
         static let navTitle = "nav_title_second".localized
         static let emptyLable = "label_placeholder_empty".localized
+    }
+    
+    enum Diary {
+        static let emptyLabel = "diary_empty_label".localized
+        
+        static let deleteAlertTitle = "diary_alert_title_delete".localized
+        static let deleteLogAlertMessage = "diary_alert_message_delete_log".localized
+        
+        static let deleteFailedToast = "diary_toast_delete_failed".localized
+        
+        static let saveFailedAlertTitle = "diary_alert_title_save_fail".localized
+        static let saveFailedAlertMessage = "diary_alert_message_save_fail".localized
+        
+        static let titlePlaceholder = "diary_placeholder_title".localized
+        static let contentPlaceholder = "diary_placeholder_content".localized
     }
     
     enum Settings {
@@ -88,7 +130,6 @@ enum L10n {
     
     enum Alert {
         static let okButton = "alert_button_ok".localized
-        static let cancelButton = "alert_button_cancel".localized
 
         static let languageTitle = "alert_title_language".localized
         static let languageMessage = "alert_message_language".localized

@@ -463,7 +463,7 @@ final class GameDetailViewController: BaseViewController {
         output.errorAlertMessage
             .asDriver(onErrorJustReturn: "에러 발생")
             .drive(with: self) { owner, message in
-                owner.showAlert(message: message)
+                owner.showAlert(title: L10n.error, message: message)
             }
             .disposed(by: disposeBag)
     }
@@ -594,12 +594,12 @@ final class GameDetailViewController: BaseViewController {
                     // 이미 기록 중인 경우: 삭제 확인 alert
                     if ReadingManager.shared.isReading(gameId: gameId) {
                         let alert = UIAlertController(
-                            title: "게임 기록 삭제",
-                            message: "\(game.name)을(를) 게임 기록에서 삭제하시겠습니까?",
+                            title: L10n.GameDetail.diaryDeleteAlertTitle,
+                            message: "game_detail_alert_message_diary_delete".localized(with: game.name),
                             preferredStyle: .alert
                         )
-                        alert.addAction(UIAlertAction(title: "취소", style: .cancel))
-                        alert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
+                        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
+                        alert.addAction(UIAlertAction(title: L10n.delete, style: .destructive) { _ in
                             ReadingManager.shared.removeReading(gameId: gameId)
                         })
                         self.present(alert, animated: true)
@@ -712,17 +712,6 @@ final class GameDetailViewController: BaseViewController {
         }
         return dataSource
     }()
-
-    // MARK: - Helper
-    private func showAlert(message: String) {
-        let alert = UIAlertController(
-            title: "알림",
-            message: message,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
-    }
 }
 
 // MARK: - UICollectionViewDelegate

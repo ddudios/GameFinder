@@ -36,7 +36,7 @@ final class CreateDiaryViewController: BaseViewController {
 
     private let titleTextField = {
         let textField = UITextField()
-        textField.placeholder = "제목을 입력하세요"
+        textField.placeholder = L10n.Diary.titlePlaceholder
         textField.font = .Title.bold20
         textField.borderStyle = .none
         textField.returnKeyType = .next
@@ -85,7 +85,7 @@ final class CreateDiaryViewController: BaseViewController {
 
     private let placeholderLabel = {
         let label = UILabel()
-        label.text = "내용을 입력하세요"
+        label.text = L10n.Diary.contentPlaceholder
         label.font = .Body.regular16
         label.textColor = .placeholderText
         return label
@@ -121,14 +121,14 @@ final class CreateDiaryViewController: BaseViewController {
         navigationItem.title = dateFormatter.string(from: createdDate)
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: "취소",
+            title: L10n.cancel,
             style: .plain,
             target: self,
             action: #selector(cancelButtonTapped)
         )
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "저장",
+            title: L10n.save,
             style: .done,
             target: self,
             action: #selector(saveButtonTapped)
@@ -291,7 +291,7 @@ final class CreateDiaryViewController: BaseViewController {
 
     @objc private func saveButtonTapped() {
         guard let title = titleTextField.text, !title.isEmpty else {
-            showAlert(message: "제목을 입력해주세요.")
+            showAlert(title: L10n.Diary.saveFailedAlertTitle, message: L10n.Diary.saveFailedAlertMessage)
             return
         }
 
@@ -321,7 +321,7 @@ final class CreateDiaryViewController: BaseViewController {
                 self.onDiarySaved?()
             }
         } else {
-            showAlert(message: "저장에 실패했습니다.")
+            showAlert(title: L10n.Diary.saveFailedAlertTitle, message: nil)
         }
     }
 
@@ -338,16 +338,6 @@ final class CreateDiaryViewController: BaseViewController {
     @objc private func removeMediaItem(at index: Int) {
         mediaItems.remove(at: index)
         mediaCollectionView.reloadData()
-    }
-
-    private func showAlert(message: String) {
-        let alert = UIAlertController(
-            title: "알림",
-            message: message,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
     }
 }
 

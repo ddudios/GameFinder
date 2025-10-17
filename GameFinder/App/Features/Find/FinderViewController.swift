@@ -209,7 +209,7 @@ final class FinderViewController: BaseViewController {
         output.errorAlertMessage
             .observe(on: MainScheduler.instance)
             .bind(with: self) { owner, message in
-                owner.showErrorAlert(message: message)
+                owner.showAlert(title: L10n.error, message: message)
             }
             .disposed(by: disposeBag)
     }

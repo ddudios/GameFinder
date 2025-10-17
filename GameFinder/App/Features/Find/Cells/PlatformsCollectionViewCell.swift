@@ -14,7 +14,7 @@ final class PlatformsCollectionViewCell: BaseCollectionViewCell {
         let label = UILabel()
         label.font = .Title.bold14
         label.textColor = .secondaryLabel
-        label.text = "플랫폼"
+        label.text = L10n.GameDetail.platform
         return label
     }()
 

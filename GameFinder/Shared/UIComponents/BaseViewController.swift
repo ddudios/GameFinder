@@ -25,6 +25,17 @@ class BaseViewController: UIViewController {
     deinit {
         print("deinit: \(String(describing: type(of: self)))")
     }
+    
+    //MARK: - Alert
+    func showAlert(title: String, message: String?) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: L10n.Alert.okButton, style: .default))
+        present(alert, animated: true)
+    }
 
     // MARK: - Notification Helper
     func handleNotificationToggle(for game: Game) {

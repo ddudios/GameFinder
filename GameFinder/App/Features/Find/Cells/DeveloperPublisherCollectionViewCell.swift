@@ -21,7 +21,7 @@ final class DeveloperPublisherCollectionViewCell: BaseCollectionViewCell {
         let label = UILabel()
         label.font = .Body.regular12
         label.textColor = .secondaryLabel
-        label.text = "개발사"
+        label.text = L10n.GameDetail.developer
         return label
     }()
 
@@ -37,7 +37,7 @@ final class DeveloperPublisherCollectionViewCell: BaseCollectionViewCell {
         let label = UILabel()
         label.font = .Body.regular12
         label.textColor = .secondaryLabel
-        label.text = "퍼블리셔"
+        label.text = L10n.GameDetail.publisher
         return label
     }()
 
@@ -97,10 +97,10 @@ final class DeveloperPublisherCollectionViewCell: BaseCollectionViewCell {
 
     func configure(developers: [GameDeveloper], publishers: [GamePublisher]) {
         let developerNames = developers.map { $0.name }
-        developerValueLabel.text = developerNames.isEmpty ? "정보 없음" : developerNames.joined(separator: ", ")
+        developerValueLabel.text = developerNames.isEmpty ? L10n.GameDetail.noData : developerNames.joined(separator: ", ")
 
         let publisherNames = publishers.map { $0.name }
-        publisherValueLabel.text = publisherNames.isEmpty ? "정보 없음" : publisherNames.joined(separator: ", ")
+        publisherValueLabel.text = publisherNames.isEmpty ? L10n.GameDetail.noData : publisherNames.joined(separator: ", ")
 
         // 개발사와 퍼블리셔가 모두 없으면 숨김
         contentView.isHidden = developers.isEmpty && publishers.isEmpty

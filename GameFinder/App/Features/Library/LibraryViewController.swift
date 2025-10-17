@@ -374,16 +374,16 @@ final class LibraryCategoryViewController: BaseViewController {
         let gameName = readingGames.first(where: { $0.id == gameId })?.name ?? "이 게임"
 
         let alert = UIAlertController(
-            title: "기록 삭제",
-            message: "\"\(gameName)\"의 모든 일기와 미디어를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
+            title: L10n.Diary.deleteAlertTitle,
+            message:  "diary_alert_message_delete_game".localized(with: gameName),
             preferredStyle: .alert
         )
 
-        let deleteAction = UIAlertAction(title: "삭제", style: .destructive) { [weak self] _ in
+        let deleteAction = UIAlertAction(title: L10n.delete, style: .destructive) { [weak self] _ in
             self?.deleteGameRecord(gameId: gameId, gameName: gameName)
         }
 
-        let cancelAction = UIAlertAction(title: "취소", style: .cancel)
+        let cancelAction = UIAlertAction(title: L10n.cancel, style: .cancel)
 
         alert.addAction(cancelAction)
         alert.addAction(deleteAction)
@@ -401,11 +401,11 @@ final class LibraryCategoryViewController: BaseViewController {
         if diaryDeleted && readingRemoved {
             LogManager.userAction.info("📕 Removed game from diary: \(gameName) (id: \(gameId))")
 
-            // 성공 토스트 메시지 (선택사항)
-            showSuccessMessage("\(gameName)의 기록이 삭제되었습니다.")
+            // 성공 토스트 메시지
+            showSuccessMessage( "diary_toast_delete_succeed".localized(with: gameName))
         } else {
             // 실패 시 에러 메시지
-            showErrorMessage("기록 삭제에 실패했습니다. 다시 시도해주세요.")
+            showErrorMessage(L10n.Diary.deleteFailedToast)
         }
     }
 
@@ -420,8 +420,8 @@ final class LibraryCategoryViewController: BaseViewController {
     }
 
     private func showErrorMessage(_ message: String) {
-        let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        let alert = UIAlertController(title: L10n.error, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: L10n.Alert.okButton, style: .default))
         present(alert, animated: true)
     }
 }

@@ -14,7 +14,7 @@ final class DescriptionCollectionViewCell: BaseCollectionViewCell {
         let label = UILabel()
         label.font = .Title.bold14
         label.textColor = .secondaryLabel
-        label.text = "게임 설명"
+        label.text = L10n.GameDetail.description
         return label
     }()
 

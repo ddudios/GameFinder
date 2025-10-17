@@ -14,7 +14,7 @@ final class GenreAndTagsCollectionViewCell: BaseCollectionViewCell {
         let label = UILabel()
         label.font = .Title.bold14
         label.textColor = .secondaryLabel
-        label.text = "장르"
+        label.text = L10n.GameDetail.genre
         return label
     }()
 

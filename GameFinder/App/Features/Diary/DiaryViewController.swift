@@ -33,7 +33,7 @@ final class DiaryViewController: BaseViewController {
         label.font = .Body.regular14
         label.textColor = .secondaryLabel
         label.textAlignment = .center
-        label.text = "No diary entries yet.\nTap + to create your first entry."
+        label.text = L10n.Diary.emptyLabel
         label.numberOfLines = 0
         return label
     }()
@@ -160,16 +160,16 @@ extension DiaryViewController: UITableViewDelegate {
         let diary = diaries[indexPath.row]
 
         // 삭제 액션
-        let deleteAction = UIContextualAction(style: .destructive, title: "삭제") { [weak self] _, _, completionHandler in
+        let deleteAction = UIContextualAction(style: .destructive, title: L10n.delete) { [weak self] _, _, completionHandler in
             let confirmAlert = UIAlertController(
-                title: "일기 삭제",
-                message: "이 일기를 삭제하시겠습니까?",
+                title: L10n.Diary.deleteAlertTitle,
+                message: L10n.Diary.deleteLogAlertMessage,
                 preferredStyle: .alert
             )
-            confirmAlert.addAction(UIAlertAction(title: "취소", style: .cancel) { _ in
+            confirmAlert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel) { _ in
                 completionHandler(false)
             })
-            confirmAlert.addAction(UIAlertAction(title: "삭제", style: .destructive) { _ in
+            confirmAlert.addAction(UIAlertAction(title: L10n.delete, style: .destructive) { _ in
                 _ = DiaryManager.shared.deleteDiary(diary)
                 completionHandler(true)
             })

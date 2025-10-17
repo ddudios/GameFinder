@@ -140,7 +140,7 @@ final class SettingViewController: BaseViewController {
             self?.present(confirmAlert, animated: true)
         })
 
-        alert.addAction(UIAlertAction(title: L10n.Alert.cancelButton, style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
 
         if let popoverController = alert.popoverPresentationController {
             popoverController.sourceView = view
@@ -164,7 +164,7 @@ final class SettingViewController: BaseViewController {
             }
         })
 
-        alert.addAction(UIAlertAction(title: L10n.Alert.cancelButton, style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
         present(alert, animated: true)
     }
 
@@ -190,7 +190,7 @@ final class SettingViewController: BaseViewController {
             self?.changeLanguage(to: "ja")
         })
 
-        alert.addAction(UIAlertAction(title: L10n.Alert.cancelButton, style: .cancel))
+        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
 
         if let popoverController = alert.popoverPresentationController {
             popoverController.sourceView = view

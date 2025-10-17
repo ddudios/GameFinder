@@ -52,7 +52,7 @@ final class GameDetailViewModel: RxViewModelProtocol {
 
                 case .failure(let error):
                     LogManager.error.error("Failed to load game detail: \(self.gameId) - \(error.errorDescription ?? "unknown")")
-                    errorAlertMessage.onNext(error.errorDescription ?? "알 수 없는 오류가 발생했습니다")
+                    errorAlertMessage.onNext(error.errorDescription ?? L10n.Error.unknown)
                 }
             } onError: { error in
                 LogManager.error.error("Game detail API error: \(error.localizedDescription)")
