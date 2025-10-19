@@ -174,7 +174,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     }
 
     private func updateBadgeCount() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
                 let count = notifications.count
                 DispatchQueue.main.async {

@@ -150,24 +150,32 @@ final class NotificationManager {
             return
         }
 
-        let content = UNMutableNotificationContent()
-        content.title = L10n.Notification.title
-        content.body = String(format: L10n.Notification.body, game.name)
-        content.sound = .default
-        content.userInfo = ["gameId": game.id]
-        // 일반 게임 알림은 badge를 설정하지 않음 (delivered notifications만 badge에 영향)
+        // 현재 전달된 알림 개수 확인하여 뱃지 설정
+        notificationCenter.getDeliveredNotifications { [weak self] deliveredNotifications in
+            guard let self = self else { return }
 
-        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: oneDayBefore)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+            let content = UNMutableNotificationContent()
+            content.title = L10n.Notification.title
+            content.body = String(format: L10n.Notification.body, game.name)
+            content.sound = .default
+            content.userInfo = ["gameId": game.id]
 
-        let identifier = "game_\(game.id)"
-        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            // 뱃지를 현재 전달된 알림 개수 + 1로 설정
+            let badgeValue = deliveredNotifications.count + 1
+            content.badge = NSNumber(value: badgeValue)
 
-        notificationCenter.add(request) { error in
-            if let error = error {
-                LogManager.error.error("Failed to schedule notification for game \(game.id): \(error.localizedDescription)")
-            } else {
-                LogManager.userAction.info("🔔 Scheduled notification for game \(game.id) at \(oneDayBefore)")
+            let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: oneDayBefore)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+
+            let identifier = "game_\(game.id)"
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+
+            self.notificationCenter.add(request) { error in
+                if let error = error {
+                    LogManager.error.error("Failed to schedule notification for game \(game.id): \(error.localizedDescription)")
+                } else {
+                    LogManager.userAction.info("🔔 Scheduled notification for game \(game.id) at \(oneDayBefore) with badge \(badgeValue)")
+                }
             }
         }
     }
