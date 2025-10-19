@@ -361,7 +361,13 @@ final class LibraryCategoryViewController: BaseViewController {
         NotificationManager.shared.observeNotifications()
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] games in
-                self?.notificationGames = games
+                // 출시일이 가장 빠른 것부터 정렬 (released가 nil인 경우 뒤로)
+                let sortedGames = games.sorted { game1, game2 in
+                    guard let date1 = game1.released else { return false }
+                    guard let date2 = game2.released else { return true }
+                    return date1 < date2
+                }
+                self?.notificationGames = sortedGames
                 self?.collectionView.reloadData()
                 self?.emptyLabel.isHidden = !games.isEmpty
             })

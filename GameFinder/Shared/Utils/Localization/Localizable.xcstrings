@@ -1318,19 +1318,19 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permission Required"
+            "value" : "Notification Permissions Settings"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "通知権限の設定"
+            "value" : "通知権限設定"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "알림 권한 설정하기"
+            "state" : "needs_review",
+            "value" : "알림 권한 설정"
           }
         }
       }

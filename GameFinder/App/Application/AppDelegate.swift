@@ -116,11 +116,18 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
             return
         }
 
-        // 첫 번째 탭(Finder)으로 전환
-        tabBarController.selectedIndex = 0
+        // 현재 선택된 탭의 NavigationController 가져오기
+        let selectedIndex = tabBarController.selectedIndex
+        var navigationController: UINavigationController?
 
-        // 첫 번째 탭의 NavigationController 가져오기
-        guard let navigationController = tabBarController.viewControllers?.first as? UINavigationController else {
+        if let selectedNavController = tabBarController.viewControllers?[selectedIndex] as? UINavigationController {
+            navigationController = selectedNavController
+        } else {
+            // fallback: 첫 번째 탭(Finder)의 NavigationController 사용
+            navigationController = tabBarController.viewControllers?.first as? UINavigationController
+        }
+
+        guard let navController = navigationController else {
             LogManager.error.error("Failed to access NavigationController")
             return
         }
@@ -129,15 +136,16 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         let viewModel = GameDetailViewModel(gameId: gameId)
         let detailViewController = GameDetailViewController(viewModel: viewModel)
 
-        // 현재 스택의 최상단 뷰컨트롤러가 이미 GameDetailViewController인 경우 스택 정리
-        if let presentedVC = navigationController.topViewController?.presentedViewController {
+        // 현재 스택의 최상단 뷰컨트롤러에 presented VC가 있으면 dismiss
+        if let presentedVC = navController.topViewController?.presentedViewController {
             presentedVC.dismiss(animated: false)
         }
 
-        // 게임 상세 화면으로 push
-        navigationController.pushViewController(detailViewController, animated: true)
-
-        LogManager.userAction.info("Navigated to game detail: \(gameId)")
+        // 게임 상세 화면으로 push (약간의 딜레이를 주어 앱 전환 애니메이션과 겹치지 않도록)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            navController.pushViewController(detailViewController, animated: true)
+            LogManager.userAction.info("Navigated to game detail: \(gameId) from tab: \(selectedIndex)")
+        }
     }
     
     // Remote

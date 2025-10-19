@@ -49,14 +49,39 @@ class BaseViewController: UIViewController {
                 showToast(message: message)
             }
         } else {
-            // 알림 추가
-            // 전역 알림이 꺼져있는지 확인
-            if !UserDefaults.isGlobalNotificationEnabled {
-                showTurnOnNotificationAlert(for: game)
-            } else {
-                addNotification(for: game)
+            // 알림 추가 - 시스템 알림 권한과 앱 내 알림 설정 모두 확인
+            NotificationManager.shared.checkPermissionStatus { [weak self] isAuthorized in
+                guard let self = self else { return }
+
+                if !isAuthorized {
+                    // 시스템 알림 권한이 없음
+                    self.showSystemNotificationPermissionAlert()
+                } else if !UserDefaults.isGlobalNotificationEnabled {
+                    // 앱 내 전역 알림이 꺼져있음
+                    self.showTurnOnNotificationAlert(for: game)
+                } else {
+                    // 모두 허용된 상태 - 알림 추가
+                    self.addNotification(for: game)
+                }
             }
         }
+    }
+
+    private func showSystemNotificationPermissionAlert() {
+        let alert = UIAlertController(
+            title: L10n.Settings.appNotiTitle,
+            message: L10n.Settings.appNotiMessage,
+            preferredStyle: .alert
+        )
+
+        alert.addAction(UIAlertAction(title: L10n.Settings.appNotiSettingButton, style: .default) { _ in
+            if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                UIApplication.shared.open(settingsUrl)
+            }
+        })
+
+        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
+        present(alert, animated: true)
     }
 
     private func showTurnOnNotificationAlert(for game: Game) {
