@@ -55,12 +55,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // 앱이 포그라운드로 진입할 때 뱃지와 알림 즉시 제거
         application.applicationIconBadgeNumber = 0
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+
+        // delivered 알림이 제거되었으므로 pending 알림의 badge를 재조정
+        NotificationManager.shared.updatePendingNotificationBadges()
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // 앱이 active 될 때 뱃지와 알림 제거 (보험)
         application.applicationIconBadgeNumber = 0
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+
+        // delivered 알림이 제거되었으므로 pending 알림의 badge를 재조정
+        NotificationManager.shared.updatePendingNotificationBadges()
     }
     
     // MARK: UISceneSession Lifecycle

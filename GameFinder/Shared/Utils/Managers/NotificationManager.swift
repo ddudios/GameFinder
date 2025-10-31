@@ -127,7 +127,7 @@ final class NotificationManager {
     }
 
     // MARK: - Local Notification Scheduling
-    private func scheduleLocalNotification(for game: Game) {
+    private func scheduleLocalNotification(for game: Game, badgeNumber: Int? = nil) {
         guard let releaseDateString = game.released,
               let releaseDate = parseReleaseDate(releaseDateString) else {
             LogManager.error.error("Invalid release date for game: \(game.id)")
@@ -150,32 +150,37 @@ final class NotificationManager {
             return
         }
 
-        // 현재 전달된 알림 개수 확인하여 뱃지 설정
-        notificationCenter.getDeliveredNotifications { [weak self] deliveredNotifications in
-            guard let self = self else { return }
+        // 뱃지 번호가 지정된 경우 바로 스케줄링, 아니면 delivered count 기반으로 계산
+        if let badge = badgeNumber {
+            scheduleNotificationRequest(for: game, at: oneDayBefore, badgeValue: badge)
+        } else {
+            notificationCenter.getDeliveredNotifications { [weak self] deliveredNotifications in
+                guard let self = self else { return }
+                let badgeValue = deliveredNotifications.count + 1
+                self.scheduleNotificationRequest(for: game, at: oneDayBefore, badgeValue: badgeValue)
+            }
+        }
+    }
 
-            let content = UNMutableNotificationContent()
-            content.title = L10n.Notification.title
-            content.body = String(format: L10n.Notification.body, game.name)
-            content.sound = .default
-            content.userInfo = ["gameId": game.id]
+    private func scheduleNotificationRequest(for game: Game, at notificationDate: Date, badgeValue: Int) {
+        let content = UNMutableNotificationContent()
+        content.title = L10n.Notification.title
+        content.body = String(format: L10n.Notification.body, game.name)
+        content.sound = .default
+        content.userInfo = ["gameId": game.id]
+        content.badge = NSNumber(value: badgeValue)
 
-            // 뱃지를 현재 전달된 알림 개수 + 1로 설정
-            let badgeValue = deliveredNotifications.count + 1
-            content.badge = NSNumber(value: badgeValue)
+        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: notificationDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
 
-            let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: oneDayBefore)
-            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+        let identifier = "game_\(game.id)"
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
 
-            let identifier = "game_\(game.id)"
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-
-            self.notificationCenter.add(request) { error in
-                if let error = error {
-                    LogManager.error.error("Failed to schedule notification for game \(game.id): \(error.localizedDescription)")
-                } else {
-                    LogManager.userAction.info("🔔 Scheduled notification for game \(game.id) at \(oneDayBefore) with badge \(badgeValue)")
-                }
+        notificationCenter.add(request) { error in
+            if let error = error {
+                LogManager.error.error("Failed to schedule notification for game \(game.id): \(error.localizedDescription)")
+            } else {
+                LogManager.userAction.info("🔔 Scheduled notification for game \(game.id) at \(notificationDate) with badge \(badgeValue)")
             }
         }
     }
@@ -193,10 +198,31 @@ final class NotificationManager {
 
     private func rescheduleAllNotifications() {
         let games = getAllNotifications()
-        for game in games {
-            scheduleLocalNotification(for: game)
+
+        // 출시일 순서대로 정렬 (빠른 순)
+        let sortedGames = games.sorted { game1, game2 in
+            guard let date1String = game1.released,
+                  let date2String = game2.released,
+                  let date1 = parseReleaseDate(date1String),
+                  let date2 = parseReleaseDate(date2String) else {
+                return false
+            }
+            return date1 < date2
         }
-        LogManager.userAction.info("🔔 Rescheduled \(games.count) notifications")
+
+        // 현재 전달된 알림 개수를 기준으로 순차적으로 badge 할당
+        notificationCenter.getDeliveredNotifications { [weak self] deliveredNotifications in
+            guard let self = self else { return }
+
+            let baseCount = deliveredNotifications.count
+
+            for (index, game) in sortedGames.enumerated() {
+                let badgeNumber = baseCount + index + 1
+                self.scheduleLocalNotification(for: game, badgeNumber: badgeNumber)
+            }
+
+            LogManager.userAction.info("🔔 Rescheduled \(sortedGames.count) notifications (badge: \(baseCount + 1) ~ \(baseCount + sortedGames.count))")
+        }
     }
 
     private func parseReleaseDate(_ dateString: String) -> Date? {
@@ -205,71 +231,51 @@ final class NotificationManager {
         return formatter.date(from: dateString)
     }
 
-    // MARK: - Test Notifications (for debugging)
-    #if DEBUG
-    /// 테스트용 로컬 노티피케이션 스케줄링 (1.5초 후 발송)
-    /// - Parameters:
-    ///   - title: 알림 제목
-    ///   - body: 알림 본문
-    ///   - delay: 지연 시간(초), 기본값 1.5초
-    ///   - badgeNumber: 설정할 뱃지 번호 (nil이면 delivered count + 1 사용)
-    func scheduleTestNotification(title: String = "테스트 알림", body: String = "이것은 테스트 알림입니다", delay: TimeInterval = 1.5, badgeNumber: Int? = nil) {
-        // 현재 전달된 알림 개수 확인
-        UNUserNotificationCenter.current().getDeliveredNotifications { [weak self] deliveredNotifications in
-            guard let self = self else { return }
+    // MARK: - Update Badge for Pending Notifications
+    /// 대기 중인 알림들의 뱃지를 현재 상태에 맞게 재조정
+    /// - 앱 포그라운드 진입 시 delivered 알림이 제거되면 pending 알림의 badge를 1부터 다시 할당
+    func updatePendingNotificationBadges() {
+        // 현재 대기 중인 알림들 가져오기
+        notificationCenter.getPendingNotificationRequests { [weak self] requests in
+            guard let self = self, !requests.isEmpty else { return }
 
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.sound = .default
+            // pending 알림에서 gameId 추출
+            let gameIds = requests.compactMap { request -> Int? in
+                guard let gameId = request.content.userInfo["gameId"] as? Int else { return nil }
+                return gameId
+            }
 
-            // badge는 현재 delivered 개수 + 1 (또는 지정된 번호)
-            let badgeValue = badgeNumber ?? (deliveredNotifications.count + 1)
-            content.badge = NSNumber(value: badgeValue)
-
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
-            let identifier = "test_\(UUID().uuidString)"
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-
-            self.notificationCenter.add(request) { error in
-                if let error = error {
-                    LogManager.error.error("Failed to schedule test notification: \(error.localizedDescription)")
-                } else {
-                    LogManager.userAction.info("🔔 Test notification scheduled for \(delay) seconds later with badge \(badgeValue)")
-                    print("✅ 테스트 알림이 \(delay)초 후에 발송됩니다 (뱃지: \(badgeValue)). 앱을 백그라운드로 전환하세요.")
+            // 해당 게임들 조회 및 출시일 순서대로 정렬
+            let games = gameIds.compactMap { self.repository.findGameById($0) }
+                .map { $0.toDomain() }
+                .sorted { game1, game2 in
+                    guard let date1String = game1.released,
+                          let date2String = game2.released,
+                          let date1 = self.parseReleaseDate(date1String),
+                          let date2 = self.parseReleaseDate(date2String) else {
+                        return false
+                    }
+                    return date1 < date2
                 }
+
+            guard !games.isEmpty else { return }
+
+            // 기존 pending 알림들 모두 제거
+            let identifiers = requests.map { $0.identifier }
+            self.notificationCenter.removePendingNotificationRequests(withIdentifiers: identifiers)
+
+            // 새로운 badge 값(1부터 시작)으로 재스케줄링
+            for (index, game) in games.enumerated() {
+                let badgeNumber = index + 1
+                self.scheduleLocalNotification(for: game, badgeNumber: badgeNumber)
             }
+
+            LogManager.userAction.info("🔄 Updated badge for \(games.count) pending notifications (badge: 1 ~ \(games.count))")
         }
     }
 
-    /// 여러 개의 테스트 알림을 연속으로 스케줄링
-    /// - Parameter count: 생성할 알림 개수
-    func scheduleMultipleTestNotifications(count: Int) {
-        // 현재 전달된 알림 개수 확인
-        UNUserNotificationCenter.current().getDeliveredNotifications { [weak self] deliveredNotifications in
-            guard let self = self else { return }
-
-            let baseCount = deliveredNotifications.count
-
-            for i in 0..<count {
-                let delay = TimeInterval(1.5 + (Double(i) * 1.5)) // 1.5초, 3초, 4.5초, 6초...
-                let badgeNumber = baseCount + i + 1 // 순차적으로 증가하는 뱃지 번호
-
-                self.scheduleTestNotification(
-                    title: "테스트 알림 #\(i + 1)",
-                    body: "\(i + 1)번째 테스트 알림입니다",
-                    delay: delay,
-                    badgeNumber: badgeNumber
-                )
-            }
-
-            print("✅ \(count)개의 테스트 알림이 스케줄되었습니다.")
-            print("   전달된 알림: \(baseCount)개")
-            print("   뱃지 번호: \(baseCount + 1) ~ \(baseCount + count)")
-            print("   앱을 백그라운드로 전환하세요.")
-        }
-    }
-
+    // MARK: - Debug Utilities
+    #if DEBUG
     /// 모든 대기 중인 알림 정보 출력
     func printPendingNotifications() {
         notificationCenter.getPendingNotificationRequests { requests in
