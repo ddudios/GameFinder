@@ -273,42 +273,4 @@ final class NotificationManager {
             LogManager.userAction.info("🔄 Updated badge for \(games.count) pending notifications (badge: 1 ~ \(games.count))")
         }
     }
-
-    // MARK: - Debug Utilities
-    #if DEBUG
-    /// 모든 대기 중인 알림 정보 출력
-    func printPendingNotifications() {
-        notificationCenter.getPendingNotificationRequests { requests in
-            print("\n📋 대기 중인 알림: \(requests.count)개")
-            for (index, request) in requests.enumerated() {
-                print("  [\(index + 1)] ID: \(request.identifier)")
-                print("      제목: \(request.content.title)")
-                print("      본문: \(request.content.body)")
-                if let trigger = request.trigger as? UNCalendarNotificationTrigger,
-                   let nextDate = trigger.nextTriggerDate() {
-                    print("      발송 예정: \(nextDate)")
-                } else if let trigger = request.trigger as? UNTimeIntervalNotificationTrigger {
-                    print("      발송까지 남은 시간: \(trigger.timeInterval)초")
-                }
-                print("      뱃지: \(request.content.badge ?? 0)")
-            }
-            print("")
-        }
-    }
-
-    /// 모든 전달된 알림 정보 출력
-    func printDeliveredNotifications() {
-        UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
-            print("\n📬 전달된 알림: \(notifications.count)개")
-            for (index, notification) in notifications.enumerated() {
-                print("  [\(index + 1)] ID: \(notification.request.identifier)")
-                print("      제목: \(notification.request.content.title)")
-                print("      본문: \(notification.request.content.body)")
-                print("      뱃지: \(notification.request.content.badge ?? 0)")
-            }
-            print("현재 앱 뱃지: \(UIApplication.shared.applicationIconBadgeNumber)")
-            print("")
-        }
-    }
-    #endif
 }

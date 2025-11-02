@@ -57,6 +57,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Called as the scene transitions from the foreground to the background.
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
+
+        // 백그라운드 진입 시 pending notifications의 badge를 1부터 재계산
+        // (foreground에서 받은 알림이 제거되었으므로)
+        NotificationManager.shared.updatePendingNotificationBadges()
     }
 
 
