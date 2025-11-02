@@ -12,11 +12,19 @@ import RxSwift
 final class RealmGameRepository: GameRepository {
     typealias Item = RealmGame
 
-    private let realm: Realm
+    // 항상 현재 스레드의 Realm 인스턴스를 반환하는 computed property
+    private var realm: Realm {
+        do {
+            return try Realm()
+        } catch {
+            fatalError("Realm initialization failed: \(error)")
+        }
+    }
 
     init() {
+        // Realm 설정만 확인 (인스턴스는 사용 시점에 생성)
         do {
-            realm = try Realm()
+            _ = try Realm()
         } catch {
             fatalError("Realm initialization failed: \(error)")
         }
@@ -66,13 +74,14 @@ final class RealmGameRepository: GameRepository {
 
     // MARK: - Observe
     func observeFavorites() -> Observable<[Game]> {
-        return Observable.create { [weak self] observer in
-            guard let self = self else {
-                observer.onCompleted()
+        return Observable.create { observer in
+            // 현재 스레드에서 새로운 Realm 인스턴스 생성
+            guard let realm = try? Realm() else {
+                observer.onError(NSError(domain: "RealmError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create Realm instance"]))
                 return Disposables.create()
             }
 
-            let results = self.realm.objects(RealmGame.self)
+            let results = realm.objects(RealmGame.self)
                 .where { $0.isFavorite == true }
                 .sorted(byKeyPath: "favoriteAddedAt", ascending: false)
 
@@ -94,13 +103,14 @@ final class RealmGameRepository: GameRepository {
     }
 
     func observeNotifications() -> Observable<[Game]> {
-        return Observable.create { [weak self] observer in
-            guard let self = self else {
-                observer.onCompleted()
+        return Observable.create { observer in
+            // 현재 스레드에서 새로운 Realm 인스턴스 생성
+            guard let realm = try? Realm() else {
+                observer.onError(NSError(domain: "RealmError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create Realm instance"]))
                 return Disposables.create()
             }
 
-            let results = self.realm.objects(RealmGame.self)
+            let results = realm.objects(RealmGame.self)
                 .where { $0.isNotificationEnabled == true }
                 .sorted(byKeyPath: "notificationAddedAt", ascending: false)
 
@@ -122,13 +132,14 @@ final class RealmGameRepository: GameRepository {
     }
 
     func observeReadings() -> Observable<[Game]> {
-        return Observable.create { [weak self] observer in
-            guard let self = self else {
-                observer.onCompleted()
+        return Observable.create { observer in
+            // 현재 스레드에서 새로운 Realm 인스턴스 생성
+            guard let realm = try? Realm() else {
+                observer.onError(NSError(domain: "RealmError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to create Realm instance"]))
                 return Disposables.create()
             }
 
-            let results = self.realm.objects(RealmGame.self)
+            let results = realm.objects(RealmGame.self)
                 .where { $0.isReading == true }
                 .sorted(byKeyPath: "readingUpdatedAt", ascending: false)
 

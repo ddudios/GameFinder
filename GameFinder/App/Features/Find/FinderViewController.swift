@@ -77,6 +77,7 @@ final class FinderViewController: BaseViewController {
     private var currentUpcomingIndex = 0
     private var isAutoScrolling = false
     private var lastUpcomingScrollOffset: CGFloat = 0
+    private var upcomingScrollTimer: Timer?
     
     //MARK: - Lifecycle
     override func viewDidLoad() {
@@ -160,10 +161,12 @@ final class FinderViewController: BaseViewController {
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         stopAutoScroll()
+        upcomingScrollTimer?.invalidate()
     }
 
     deinit {
         stopAutoScroll()
+        upcomingScrollTimer?.invalidate()
     }
     
     //MARK: - Bind
@@ -552,13 +555,15 @@ extension FinderViewController {
                 section.boundarySupplementaryItems = [header]
 
                 // 스크롤 시 셀 transform, z-index, 텍스트 가시성 업데이트
-                section.visibleItemsInvalidationHandler = { visibleItems, scrollOffset, layoutEnvironment in
-                    
+                section.visibleItemsInvalidationHandler = { [weak self] visibleItems, scrollOffset, layoutEnvironment in
+                    guard let self = self else { return }
+
                     let containerWidth = layoutEnvironment.container.contentSize.width
                     let centerX = scrollOffset.x + containerWidth / 2
 
                     var closestDistance: CGFloat = .infinity
                     var closestCell: CardCollectionViewCell?
+                    var closestIndex = 0
 
                     // 먼저 가장 가운데 셀을 찾기
                     visibleItems.forEach { item in
@@ -570,6 +575,34 @@ extension FinderViewController {
                         if distanceFromCenter < closestDistance {
                             closestDistance = distanceFromCenter
                             closestCell = cell
+                            closestIndex = item.indexPath.item
+                        }
+                    }
+
+                    // 스크롤 오프셋 변화 감지 (사용자가 스크롤 중이거나 자동 스크롤 완료 시 인덱스 업데이트)
+                    if scrollOffset.x != self.lastUpcomingScrollOffset {
+                        self.lastUpcomingScrollOffset = scrollOffset.x
+
+                        // 자동 스크롤 중지 (사용자가 스크롤 시작)
+                        if !self.isAutoScrolling {
+                            self.stopAutoScroll()
+                        }
+
+                        // 기존 타이머 취소
+                        self.upcomingScrollTimer?.invalidate()
+
+                        // 스크롤이 멈추면 0.2초 후에 인덱스 업데이트 및 자동 스크롤 재시작
+                        self.upcomingScrollTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] _ in
+                            guard let self = self else { return }
+
+                            // 현재 중앙 셀의 인덱스 업데이트
+                            self.currentUpcomingIndex = closestIndex
+                            print("Updated currentUpcomingIndex to: \(closestIndex)")
+
+                            // 자동 스크롤이 아니었다면 (= 사용자가 스크롤했다면) 자동 스크롤 재시작
+                            if !self.isAutoScrolling {
+                                self.startAutoScroll()
+                            }
                         }
                     }
 

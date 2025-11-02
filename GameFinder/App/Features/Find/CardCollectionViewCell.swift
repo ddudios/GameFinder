@@ -408,7 +408,6 @@ final class CardCollectionViewCell: BaseCollectionViewCell {
 
         guard let backgroundImageString = game.backgroundImage,
               let imageURL = URL(string: backgroundImageString) else {
-            print("이미지 URL 없음: \(game.name)")
             imageView.image = UIImage(named: "noImage")
             imageView.hideSkeletonLoading()
             return
