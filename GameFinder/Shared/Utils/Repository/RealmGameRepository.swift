@@ -2,7 +2,7 @@
 //  RealmGameRepository.swift
 //  GameFinder
 //
-//  Created by Claude on 10/6/25.
+//  Created by Suji Jang on 10/6/25.
 //
 
 import Foundation

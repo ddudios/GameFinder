@@ -2,7 +2,7 @@
 //  HeaderDetailViewModel.swift
 //  GameFinder
 //
-//  Created by Claude on 10/4/25.
+//  Created by Suji Jang on 10/4/25.
 //
 
 import Foundation

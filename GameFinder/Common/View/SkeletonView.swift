@@ -2,7 +2,7 @@
 //  SkeletonView.swift
 //  GameFinder
 //
-//  Created by Claude on 10/10/25.
+//  Created by Suji Jang on 10/10/25.
 //
 
 import UIKit
