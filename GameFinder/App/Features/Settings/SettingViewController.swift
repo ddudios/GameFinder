@@ -7,6 +7,7 @@
 
 import UIKit
 import SnapKit
+import MessageUI
 
 enum SettingSection: Int, CaseIterable {
     case general
@@ -214,17 +215,45 @@ final class SettingViewController: BaseViewController {
         present(alert, animated: true)
     }
 
-    private func copyEmailToClipboard() {
-        let email = "jddudios@gmail.com"
-        UIPasteboard.general.string = email
+    private func sendEmail() {
+        guard MFMailComposeViewController.canSendMail() else {
+            // 메일 전송이 불가능한 경우 기존처럼 클립보드에 복사
+            let email = "jddudios@gmail.com"
+            UIPasteboard.general.string = email
 
-        let alert = UIAlertController(
-            title: nil,
-            message: L10n.Settings.contactMessage,
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: L10n.Alert.okButton, style: .default))
-        present(alert, animated: true)
+            let alert = UIAlertController(
+                title: nil,
+                message: L10n.Settings.contactMessage,
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: L10n.Alert.okButton, style: .default))
+            present(alert, animated: true)
+            return
+        }
+
+        // 디바이스 정보 수집
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+        let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
+        let iOSVersion = UIDevice.current.systemVersion
+        let deviceModel = getDeviceModelName()
+
+        let messageBody = """
+
+
+
+        ---
+        App Version: \(appVersion) (\(buildNumber))
+        Device: \(deviceModel)
+        iOS Version: \(iOSVersion)
+        """
+
+        let mailComposer = MFMailComposeViewController()
+        mailComposer.mailComposeDelegate = self
+        mailComposer.setToRecipients(["jddudios@gmail.com"])
+        mailComposer.setSubject("[Game Finder] 문의")
+        mailComposer.setMessageBody(messageBody, isHTML: false)
+
+        present(mailComposer, animated: true)
     }
 }
 
@@ -269,8 +298,15 @@ extension SettingViewController: UITableViewDelegate {
         case .language:
             showLanguageSelection()
         case .contact:
-            copyEmailToClipboard()
+            sendEmail()
         }
+    }
+}
+
+// MARK: - MFMailComposeViewControllerDelegate
+extension SettingViewController: MFMailComposeViewControllerDelegate {
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        controller.dismiss(animated: true)
     }
 }
 
