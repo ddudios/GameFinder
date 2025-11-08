@@ -25,6 +25,7 @@ final class HeaderDetailViewController: BaseViewController {
     private let viewWillAppearRelay = PublishRelay<Void>()
     private let loadNextPageRelay = PublishRelay<Void>()
     private var isLoading = true
+    private var loadingStartTime: Date?
 
     // MARK: - UI Components
     private let backgroundImageView = {
@@ -32,7 +33,7 @@ final class HeaderDetailViewController: BaseViewController {
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.backgroundColor = .systemBackground
-        imageView.alpha = 0  // 초기에는 숨김
+        imageView.isHidden = true  // 초기에는 완전히 숨김
         return imageView
     }()
 
@@ -52,7 +53,7 @@ final class HeaderDetailViewController: BaseViewController {
         collectionView.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.6)
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
-        collectionView.alpha = 0  // 초기에는 숨김
+        collectionView.isHidden = true  // 초기에는 완전히 숨김
         return collectionView
     }()
 
@@ -65,8 +66,8 @@ final class HeaderDetailViewController: BaseViewController {
 
     private let loadingIndicator = {
         let indicator = UIActivityIndicatorView(style: .large)
+        indicator.color = .Signature
         indicator.hidesWhenStopped = true  // 멈추면 자동으로 숨김
-        indicator.color = .label
         return indicator
     }()
 
@@ -90,14 +91,33 @@ final class HeaderDetailViewController: BaseViewController {
     }
 
     private func showLoadingIndicator() {
+        loadingStartTime = Date()  // 로딩 시작 시간 기록
         loadingIndicatorBackground.alpha = 1
         loadingIndicator.startAnimating()
     }
 
     private func hideLoadingIndicator() {
-        loadingIndicator.stopAnimating()  // 즉시 인디케이터 중지 및 숨김
-        UIView.animate(withDuration: 0.3) {
-            self.loadingIndicatorBackground.alpha = 0
+        guard let startTime = loadingStartTime else {
+            // 시작 시간이 없으면 바로 숨김
+            loadingIndicator.stopAnimating()
+            UIView.animate(withDuration: 0.3) {
+                self.loadingIndicatorBackground.alpha = 0
+            }
+            return
+        }
+
+        let elapsedTime = Date().timeIntervalSince(startTime)
+        let minimumLoadingTime: TimeInterval = 1.0
+        let remainingTime = max(0, minimumLoadingTime - elapsedTime)
+
+        // 최소 1초가 지나지 않았으면 남은 시간만큼 대기 후 숨김
+        DispatchQueue.main.asyncAfter(deadline: .now() + remainingTime) { [weak self] in
+            guard let self = self else { return }
+            self.loadingIndicator.stopAnimating()
+            UIView.animate(withDuration: 0.3) {
+                self.loadingIndicatorBackground.alpha = 0
+            }
+            self.loadingStartTime = nil
         }
     }
 
@@ -228,7 +248,9 @@ final class HeaderDetailViewController: BaseViewController {
                 owner.hideLoadingIndicator()
                 owner.updateDataSource(with: games)
 
-                // CollectionView 페이드 인
+                // CollectionView 표시 (페이드 인 효과)
+                owner.collectionView.alpha = 0
+                owner.collectionView.isHidden = false
                 UIView.animate(withDuration: 0.3) {
                     owner.collectionView.alpha = 1
                 }
@@ -244,12 +266,16 @@ final class HeaderDetailViewController: BaseViewController {
                         options: [.transition(.fade(0.3))]
                     ) { result in
                         // 이미지 로드 완료 후 페이드 인
+                        owner.backgroundImageView.alpha = 0
+                        owner.backgroundImageView.isHidden = false
                         UIView.animate(withDuration: 0.3) {
                             owner.backgroundImageView.alpha = 1
                         }
                     }
                 } else {
                     // 이미지가 없어도 배경은 표시
+                    owner.backgroundImageView.alpha = 0
+                    owner.backgroundImageView.isHidden = false
                     UIView.animate(withDuration: 0.3) {
                         owner.backgroundImageView.alpha = 1
                     }
@@ -263,7 +289,9 @@ final class HeaderDetailViewController: BaseViewController {
                 owner.isLoading = false
                 owner.hideLoadingIndicator()
 
-                // 에러 시에도 collectionView 표시
+                // 에러 시에도 collectionView 표시 (페이드 인 효과)
+                owner.collectionView.alpha = 0
+                owner.collectionView.isHidden = false
                 UIView.animate(withDuration: 0.3) {
                     owner.collectionView.alpha = 1
                 }
@@ -274,20 +302,6 @@ final class HeaderDetailViewController: BaseViewController {
     }
 
     // MARK: - DataSource
-    private func showSkeletonLoading() {
-        var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
-        snapshot.appendSections([0])
-
-        // 첫 번째 아이템: 헤더
-        var items: [DetailItem] = [.header(title: viewModel.sectionTitle, releaseDate: nil)]
-
-        // 스켈레톤 아이템들 (5개)
-        items.append(contentsOf: (1...5).map { .skeleton(id: $0) })
-
-        snapshot.appendItems(items, toSection: 0)
-        dataSource.apply(snapshot, animatingDifferences: false)
-    }
-
     private func updateDataSource(with games: [Game]) {
         var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
         snapshot.appendSections([0])

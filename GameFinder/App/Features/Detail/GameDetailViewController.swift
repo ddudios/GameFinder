@@ -72,6 +72,13 @@ final class GameDetailViewController: BaseViewController {
         return pageControl
     }()
 
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.color = .Signature
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
+
     private var screenshotCount = 0
 
     // MARK: - Initialization
@@ -112,6 +119,7 @@ final class GameDetailViewController: BaseViewController {
     override func configureHierarchy() {
         view.addSubview(collectionView)
         view.addSubview(pageControl)
+        view.addSubview(loadingIndicator)
     }
 
     override func configureLayout() {
@@ -124,12 +132,17 @@ final class GameDetailViewController: BaseViewController {
             make.top.equalTo(collectionView.snp.top).offset(screenshotHeight - 40)
             make.centerX.equalTo(collectionView)
         }
+
+        loadingIndicator.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
     }
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // pageControl을 최상위로 표시
+        // pageControl과 loadingIndicator를 최상위로 표시
         view.bringSubviewToFront(pageControl)
+        view.bringSubviewToFront(loadingIndicator)
 
         // 스크롤 오프셋에 따라 pageControl 위치 업데이트
         updatePageControlPosition()
@@ -198,8 +211,8 @@ final class GameDetailViewController: BaseViewController {
             forCellWithReuseIdentifier: ListSkeletonCell.identifier
         )
 
-        // Show initial skeleton loading
-        showSkeletonLoading()
+        // Show initial loading indicator
+        loadingIndicator.startAnimating()
     }
 
     private func createLayout() -> UICollectionViewLayout {
@@ -454,6 +467,7 @@ final class GameDetailViewController: BaseViewController {
         .drive(with: self) { owner, data in
             let (gameDetail, screenshots) = data
             owner.isLoading = false
+            owner.loadingIndicator.stopAnimating()
             owner.currentGameDetail = gameDetail
             owner.navigationItem.title = gameDetail.name
             owner.updateDataSource(with: gameDetail, screenshots: screenshots)
@@ -463,29 +477,13 @@ final class GameDetailViewController: BaseViewController {
         output.errorAlertMessage
             .asDriver(onErrorJustReturn: "에러 발생")
             .drive(with: self) { owner, message in
+                owner.loadingIndicator.stopAnimating()
                 owner.showAlert(title: L10n.error, message: message)
             }
             .disposed(by: disposeBag)
     }
 
     // MARK: - DataSource
-    private func showSkeletonLoading() {
-        var snapshot = NSDiffableDataSourceSnapshot<GameDetailSection, GameDetailItem>()
-
-        // Screenshot skeleton
-        snapshot.appendSections([.screenshots])
-        snapshot.appendItems([.screenshotSkeleton], toSection: .screenshots)
-
-        // Info skeletons (for other sections)
-        snapshot.appendSections([.releaseAndRating, .genreAndTags, .description])
-        snapshot.appendItems([.infoSkeleton(id: 1)], toSection: .releaseAndRating)
-        snapshot.appendItems([.infoSkeleton(id: 2)], toSection: .genreAndTags)
-        snapshot.appendItems([.infoSkeleton(id: 3)], toSection: .description)
-
-        dataSource.apply(snapshot, animatingDifferences: false)
-        pageControl.isHidden = true
-    }
-
     private func updateDataSource(with gameDetail: GameDetail, screenshots: [Screenshot]) {
         var snapshot = NSDiffableDataSourceSnapshot<GameDetailSection, GameDetailItem>()
 
