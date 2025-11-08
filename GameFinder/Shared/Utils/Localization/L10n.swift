@@ -123,7 +123,13 @@ enum L10n {
         static let appNotiSettingButton = "setting_app_noti_button".localized
         
         static let contactMessage = "setting_contact_message".localized
-        
+
+        // Email
+        static let emailSent = "setting_email_sent".localized
+        static let emailSaved = "setting_email_saved".localized
+        static let emailCancelled = "setting_email_cancelled".localized
+        static let emailFailed = "setting_email_failed".localized
+
         // Sheet
         static let languageSheetTitle = "setting_language_sheet_title".localized
         static let languageSheetMessage = "setting_language_sheet_message".localized

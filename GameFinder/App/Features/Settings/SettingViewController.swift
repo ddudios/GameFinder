@@ -306,7 +306,27 @@ extension SettingViewController: UITableViewDelegate {
 // MARK: - MFMailComposeViewControllerDelegate
 extension SettingViewController: MFMailComposeViewControllerDelegate {
     func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
-        controller.dismiss(animated: true)
+        controller.dismiss(animated: true) { [weak self] in
+            guard let self = self else { return }
+
+            switch result {
+            case .sent:
+                // 이메일 전송 성공
+                self.showToast(message: L10n.Settings.emailSent)
+            case .saved:
+                // 임시저장 (Mail 앱의 Drafts에 저장됨)
+                self.showToast(message: L10n.Settings.emailSaved)
+            case .cancelled:
+                // 취소 (Delete Draft 선택 시)
+                // 특별한 처리 없이 닫기
+                break
+            case .failed:
+                // 전송 실패
+                self.showToast(message: L10n.Settings.emailFailed)
+            @unknown default:
+                break
+            }
+        }
     }
 }
 
