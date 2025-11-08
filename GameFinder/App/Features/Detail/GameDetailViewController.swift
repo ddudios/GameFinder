@@ -39,7 +39,7 @@ enum GameDetailItem: Hashable {
     case infoSkeleton(id: Int)
 }
 
-final class GameDetailViewController: BaseViewController {
+final class GameDetailViewController: BaseViewController, UICollectionViewDelegate {
 
     // MARK: - Properties
     private let viewModel: GameDetailViewModel
@@ -62,13 +62,8 @@ final class GameDetailViewController: BaseViewController {
     private let pageControl = {
         let pageControl = UIPageControl()
         pageControl.currentPageIndicatorTintColor = .label
-        pageControl.pageIndicatorTintColor = .label.withAlphaComponent(0.4)
+        pageControl.pageIndicatorTintColor = .systemGray4
         pageControl.hidesForSinglePage = true
-        pageControl.isUserInteractionEnabled = false
-        if #available(iOS 14.0, *) {
-            pageControl.backgroundStyle = .minimal
-            pageControl.preferredIndicatorImage = UIImage(systemName: "circle.fill")
-        }
         return pageControl
     }()
 
@@ -118,7 +113,7 @@ final class GameDetailViewController: BaseViewController {
 
     override func configureHierarchy() {
         view.addSubview(collectionView)
-        view.addSubview(pageControl)
+        collectionView.addSubview(pageControl)
         view.addSubview(loadingIndicator)
     }
 
@@ -129,8 +124,8 @@ final class GameDetailViewController: BaseViewController {
 
         pageControl.snp.makeConstraints { make in
             let screenshotHeight = UIScreen.main.bounds.width * 9 / 16
-            make.top.equalTo(collectionView.snp.top).offset(screenshotHeight - 40)
-            make.centerX.equalTo(collectionView)
+            make.top.equalToSuperview().offset(screenshotHeight + 8)
+            make.centerX.equalToSuperview()
         }
 
         loadingIndicator.snp.makeConstraints { make in
@@ -140,25 +135,8 @@ final class GameDetailViewController: BaseViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // pageControl과 loadingIndicator를 최상위로 표시
-        view.bringSubviewToFront(pageControl)
+        // loadingIndicator를 최상위로 표시
         view.bringSubviewToFront(loadingIndicator)
-
-        // 스크롤 오프셋에 따라 pageControl 위치 업데이트
-        updatePageControlPosition()
-    }
-
-    private func updatePageControlPosition() {
-        let scrollOffset = collectionView.contentOffset.y
-
-        // 아래로 조금이라도 스크롤하면 pageControl 숨김
-        UIView.performWithoutAnimation {
-            if scrollOffset > 0 {
-                pageControl.isHidden = true
-            } else {
-                pageControl.isHidden = false
-            }
-        }
     }
 
     private func setupCollectionView() {
@@ -262,7 +240,7 @@ final class GameDetailViewController: BaseViewController {
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .paging
         section.interGroupSpacing = 0
-        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 16, trailing: 0)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 36, trailing: 0)
 
         // 스크롤 시 페이지 업데이트
         section.visibleItemsInvalidationHandler = { [weak self] visibleItems, point, environment in
@@ -710,11 +688,5 @@ final class GameDetailViewController: BaseViewController {
         }
         return dataSource
     }()
-}
 
-// MARK: - UICollectionViewDelegate
-extension GameDetailViewController: UICollectionViewDelegate {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        updatePageControlPosition()
-    }
 }
