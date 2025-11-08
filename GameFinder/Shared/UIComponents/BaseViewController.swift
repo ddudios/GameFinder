@@ -49,6 +49,19 @@ class BaseViewController: UIViewController {
                 showToast(message: message)
             }
         } else {
+            // 출시일 확인
+            if let releasedString = game.released,
+               let releaseDate = dateFromString(releasedString) {
+                let today = Calendar.current.startOfDay(for: Date())
+                let release = Calendar.current.startOfDay(for: releaseDate)
+
+                // 출시일이 오늘 또는 과거인 경우
+                if release <= today {
+                    showToast(message: L10n.Notification.discountComingSoon)
+                    return
+                }
+            }
+
             // 알림 추가 - 시스템 알림 권한과 앱 내 알림 설정 모두 확인
             NotificationManager.shared.checkPermissionStatus { [weak self] isAuthorized in
                 guard let self = self else { return }
@@ -65,6 +78,14 @@ class BaseViewController: UIViewController {
                 }
             }
         }
+    }
+
+    private func dateFromString(_ dateString: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter.date(from: dateString)
     }
 
     private func showSystemNotificationPermissionAlert() {

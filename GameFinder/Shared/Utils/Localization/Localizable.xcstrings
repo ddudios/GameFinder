@@ -1151,6 +1151,29 @@
         }
       }
     },
+    "notification_discount_coming_soon" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game discount notification feature is being updated."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ゲーム割引通知機能は更新中です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게임 할인 알림 기능이 업데이트 중입니다."
+          }
+        }
+      }
+    },
     "placeholder_search_games" : {
       "extractionState" : "manual",
       "localizations" : {
