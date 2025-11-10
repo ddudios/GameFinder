@@ -200,7 +200,7 @@ final class FinderViewController: BaseViewController {
         output.upcomingGames
             .observe(on: MainScheduler.instance)
             .subscribe(with: self) { owner, games in
-                print("upcomingGames 받음: \(games.count)개")
+                print("upcomingGames 받음 (내일부터): \(games.count)개")
                 owner.isLoadingUpcoming = false
                 owner.updateSection(.upcomingGames, with: games)
                 // 데이터 로드 후 자동 스크롤 시작

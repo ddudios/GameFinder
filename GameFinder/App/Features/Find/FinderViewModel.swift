@@ -82,13 +82,14 @@ final class FinderViewModel: RxViewModelProtocol {
         input.viewWillAppear
             .flatMap { _ in
                 let today = Date()
+                let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
                 let futureDate = Calendar.current.date(byAdding: .month, value: 3, to: today)!
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = "yyyy-MM-dd"
-                
+
                 return NetworkObservable.request(
                     router: RawgRouter.upcoming(
-                        start: dateFormatter.string(from: today),
+                        start: dateFormatter.string(from: tomorrow),
                         end: dateFormatter.string(from: futureDate),
                         page: 1,
                         pageSize: 10
