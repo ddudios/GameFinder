@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B03267412EEAD5E200ABAB0B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B03267402EEAD5E200ABAB0B /* WidgetKit.framework */; };
+		B03267432EEAD5E200ABAB0B /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B03267422EEAD5E200ABAB0B /* SwiftUI.framework */; };
+		B032674E2EEAD5E400ABAB0B /* GameFinderWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B032673E2EEAD5E200ABAB0B /* GameFinderWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B03D96942EA02DBF00F5E760 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B03D96932EA02DBF00F5E760 /* FirebaseFirestore */; };
 		B057CC522E96C65A00FEF3A5 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */; };
 		B057CC542E96C65A00FEF3A5 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC532E96C65A00FEF3A5 /* FirebaseCrashlytics */; };
@@ -21,7 +24,28 @@
 		B0C9713D2E892C2500EDC2DA /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = B0C9713A2E87DB9100EDC2DA /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		B032674C2EEAD5E400ABAB0B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B08FECF02E87B2B000488358 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B032673D2EEAD5E200ABAB0B;
+			remoteInfo = GameFinderWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
+		B03267532EEAD5E400ABAB0B /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B032674E2EEAD5E400ABAB0B /* GameFinderWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B0C971382E87DB3000EDC2DA /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -36,11 +60,21 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B032673E2EEAD5E200ABAB0B /* GameFinderWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GameFinderWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B03267402EEAD5E200ABAB0B /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		B03267422EEAD5E200ABAB0B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		B08FECF82E87B2B000488358 /* GameFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GameFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B08FEDE12E87B8F000488358 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B03267522EEAD5E400ABAB0B /* Exceptions for "GameFinderWidget" folder in "GameFinderWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B032673D2EEAD5E200ABAB0B /* GameFinderWidgetExtension */;
+		};
 		B08FED0A2E87B2B200488358 /* Exceptions for "GameFinder" folder in "GameFinder" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -51,6 +85,14 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B03267442EEAD5E200ABAB0B /* GameFinderWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B03267522EEAD5E400ABAB0B /* Exceptions for "GameFinderWidget" folder in "GameFinderWidgetExtension" target */,
+			);
+			path = GameFinderWidget;
+			sourceTree = "<group>";
+		};
 		B08FECFA2E87B2B000488358 /* GameFinder */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -62,6 +104,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		B032673B2EEAD5E200ABAB0B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B03267432EEAD5E200ABAB0B /* SwiftUI.framework in Frameworks */,
+				B03267412EEAD5E200ABAB0B /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B08FECF52E87B2B000488358 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -82,11 +133,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B032673F2EEAD5E200ABAB0B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B03267402EEAD5E200ABAB0B /* WidgetKit.framework */,
+				B03267422EEAD5E200ABAB0B /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B08FECEF2E87B2B000488358 = {
 			isa = PBXGroup;
 			children = (
 				B08FEDE12E87B8F000488358 /* .gitignore */,
 				B08FECFA2E87B2B000488358 /* GameFinder */,
+				B03267442EEAD5E200ABAB0B /* GameFinderWidget */,
+				B032673F2EEAD5E200ABAB0B /* Frameworks */,
 				B08FECF92E87B2B000488358 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -95,6 +157,7 @@
 			isa = PBXGroup;
 			children = (
 				B08FECF82E87B2B000488358 /* GameFinder.app */,
+				B032673E2EEAD5E200ABAB0B /* GameFinderWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,6 +165,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		B032673D2EEAD5E200ABAB0B /* GameFinderWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B032674F2EEAD5E400ABAB0B /* Build configuration list for PBXNativeTarget "GameFinderWidgetExtension" */;
+			buildPhases = (
+				B032673A2EEAD5E200ABAB0B /* Sources */,
+				B032673B2EEAD5E200ABAB0B /* Frameworks */,
+				B032673C2EEAD5E200ABAB0B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B03267442EEAD5E200ABAB0B /* GameFinderWidget */,
+			);
+			name = GameFinderWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = GameFinderWidgetExtension;
+			productReference = B032673E2EEAD5E200ABAB0B /* GameFinderWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		B08FECF72E87B2B000488358 /* GameFinder */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B08FED0B2E87B2B200488358 /* Build configuration list for PBXNativeTarget "GameFinder" */;
@@ -111,10 +196,12 @@
 				B08FECF62E87B2B000488358 /* Resources */,
 				B0C971382E87DB3000EDC2DA /* Embed Frameworks */,
 				B057CC612E96E0BE00FEF3A5 /* ShellScript */,
+				B03267532EEAD5E400ABAB0B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B032674D2EEAD5E400ABAB0B /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B08FECFA2E87B2B000488358 /* GameFinder */,
@@ -146,6 +233,9 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					B032673D2EEAD5E200ABAB0B = {
+						CreatedOnToolsVersion = 16.4;
+					};
 					B08FECF72E87B2B000488358 = {
 						CreatedOnToolsVersion = 16.4;
 					};
@@ -176,11 +266,19 @@
 			projectRoot = "";
 			targets = (
 				B08FECF72E87B2B000488358 /* GameFinder */,
+				B032673D2EEAD5E200ABAB0B /* GameFinderWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		B032673C2EEAD5E200ABAB0B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B08FECF62E87B2B000488358 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -217,6 +315,13 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		B032673A2EEAD5E200ABAB0B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		B08FECF42E87B2B000488358 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -226,7 +331,69 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		B032674D2EEAD5E400ABAB0B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B032673D2EEAD5E200ABAB0B /* GameFinderWidgetExtension */;
+			targetProxy = B032674C2EEAD5E400ABAB0B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		B03267502EEAD5E400ABAB0B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 27A9369F66;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GameFinderWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GameFinderWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wkdtnwl.GameFinder.GameFinderWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B03267512EEAD5E400ABAB0B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 27A9369F66;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = GameFinderWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GameFinderWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wkdtnwl.GameFinder.GameFinderWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		B08FED0C2E87B2B200488358 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReferenceAnchor = B08FECFA2E87B2B000488358 /* GameFinder */;
@@ -432,6 +599,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		B032674F2EEAD5E400ABAB0B /* Build configuration list for PBXNativeTarget "GameFinderWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B03267502EEAD5E400ABAB0B /* Debug */,
+				B03267512EEAD5E400ABAB0B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		B08FECF32E87B2B000488358 /* Build configuration list for PBXProject "GameFinder" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
