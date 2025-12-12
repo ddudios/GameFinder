@@ -2,7 +2,7 @@
 //  GameFinderWidgetBundle.swift
 //  GameFinderWidget
 //
-//  Created by Suji Jang on 12/11/25.
+//  Created by Suji Jang on 12/12/25.
 //
 
 import WidgetKit
