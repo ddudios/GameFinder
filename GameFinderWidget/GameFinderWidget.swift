@@ -63,6 +63,8 @@ struct GameFinderWidget: Widget {
             GameFinderWidgetEntryView(entry: entry)
                 .containerBackground(.fill.tertiary, for: .widget)
         }
+        .description("새롭게 출시되는 게임을 빠르게 확인할 수 있습니다.")
+        .supportedFamilies([.systemMedium])
     }
 }
 
