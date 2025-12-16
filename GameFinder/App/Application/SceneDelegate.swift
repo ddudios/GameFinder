@@ -16,11 +16,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let scene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: scene)
-        
+
         let initialViewController = AppTabBarController()
-        
+
         window?.rootViewController = initialViewController
         window?.makeKeyAndVisible()
+
+        // 앱이 처음 실행될 때 위젯에서 딥링크로 열렸는지 확인
+        if let urlContext = connectionOptions.urlContexts.first {
+            let url = urlContext.url
+
+            // gamefinder://game/{gameId} 형식 처리
+            if url.scheme == "gamefinder",
+               url.host == "game",
+               let gameId = url.pathComponents.dropFirst().first,
+               let id = Int(gameId) {
+                // UI가 완전히 로드된 후 딥링크 처리
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    self?.handleGameDeepLink(gameId: id)
+                }
+            }
+        }
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -63,6 +79,33 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         NotificationManager.shared.updatePendingNotificationBadges()
     }
 
+    // MARK: - Deep Link Handling
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else { return }
+
+        // gamefinder://game/{gameId} 형식 처리
+        if url.scheme == "gamefinder",
+           url.host == "game",
+           let gameId = url.pathComponents.dropFirst().first,
+           let id = Int(gameId) {
+            handleGameDeepLink(gameId: id)
+        }
+    }
+
+    private func handleGameDeepLink(gameId: Int) {
+        guard let tabBarController = window?.rootViewController as? AppTabBarController,
+              let navigationController = tabBarController.selectedViewController as? UINavigationController else {
+            return
+        }
+
+        // GameDetailViewController로 이동
+        let gameDetailViewModel = GameDetailViewModel(gameId: gameId)
+        let gameDetailViewController = GameDetailViewController(viewModel: gameDetailViewModel)
+        navigationController.pushViewController(gameDetailViewController, animated: true)
+
+        // TabBar를 홈으로 전환 (필요한 경우)
+        tabBarController.selectedIndex = 0
+    }
 
 }
 

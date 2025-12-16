@@ -75,6 +75,13 @@
 			);
 			target = B0224F612EEC1D0E0093DD0F /* GameFinderWidgetExtension */;
 		};
+		B0742F652EF1067E002E949B /* Exceptions for "GameFinder" folder in "GameFinderWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Shared/Utils/Extensions/Bundle+Extension.swift",
+			);
+			target = B0224F612EEC1D0E0093DD0F /* GameFinderWidgetExtension */;
+		};
 		B08FED0A2E87B2B200488358 /* Exceptions for "GameFinder" folder in "GameFinder" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -97,6 +104,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				B08FED0A2E87B2B200488358 /* Exceptions for "GameFinder" folder in "GameFinder" target */,
+				B0742F652EF1067E002E949B /* Exceptions for "GameFinder" folder in "GameFinderWidgetExtension" target */,
 			);
 			path = GameFinder;
 			sourceTree = "<group>";
@@ -342,6 +350,8 @@
 /* Begin XCBuildConfiguration section */
 		B0224F732EEC1D100093DD0F /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = B08FECFA2E87B2B000488358 /* GameFinder */;
+			baseConfigurationReferenceRelativePath = App/Config/Base.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
@@ -369,6 +379,8 @@
 		};
 		B0224F742EEC1D100093DD0F /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = B08FECFA2E87B2B000488358 /* GameFinder */;
+			baseConfigurationReferenceRelativePath = App/Config/Base.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
