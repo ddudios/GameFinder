@@ -152,9 +152,4 @@ enum L10n {
         static let turnOnButton = "notification_turn_on_button".localized
         static let discountComingSoon = "notification_discount_coming_soon".localized
     }
-    
-    enum Widget {
-        static let title = "widget_title".localized
-        static let release = "widget_release"
-    }
 }

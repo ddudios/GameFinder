@@ -7,6 +7,7 @@
 
 import UIKit
 import UserNotifications
+import WidgetKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -53,6 +54,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // 앱이 active 될 때 뱃지와 알림 제거 (보험)
         UIApplication.shared.applicationIconBadgeNumber = 0
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
+
+        // ✅ 위젯 데이터 업데이트
+        print("═══════════════════════════════════════════════════════")
+        print("🚀 [SceneDelegate] App became active - updating widget data")
+        print("═══════════════════════════════════════════════════════")
+
+        // ⚠️ 디버깅용: Mock 데이터로 먼저 테스트 (App Group 작동 확인)
+        // 실제 운영 시에는 주석 처리하고 updateWidgetData()만 사용
+        WidgetDataService.shared.testAppGroupWithMockData()
+
+        // 실제 API 데이터로 업데이트 (비동기)
+        Task {
+            // Mock 테스트 후 0.5초 대기 (로그 구분용)
+            try? await Task.sleep(nanoseconds: 500_000_000)
+
+            print("═══════════════════════════════════════════════════════")
+            print("🌐 [SceneDelegate] Starting real API data update")
+            print("═══════════════════════════════════════════════════════")
+
+            await WidgetDataService.shared.updateWidgetData()
+        }
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
@@ -77,6 +99,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // 백그라운드 진입 시 pending notifications의 badge를 1부터 재계산
         // (foreground에서 받은 알림이 제거되었으므로)
         NotificationManager.shared.updatePendingNotificationBadges()
+
+        // 앱 종료 시 위젯 타임라인 갱신 (언어 변경 등 반영)
+        print("🔄 [SceneDelegate] App entering background - reloading widget timelines")
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     // MARK: - Deep Link Handling

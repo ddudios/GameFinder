@@ -8,92 +8,244 @@
 import WidgetKit
 import SwiftUI
 
-// MARK: - Widget Game Model
-struct WidgetGame: Identifiable {
+// MARK: - Shared Widget Data Models
+/// App과 Widget 간 공유되는 게임 데이터
+struct SharedWidgetGame: Codable, Identifiable {
     let id: Int
     let title: String
-    let coverImagePath: String? // 로컬 에셋 이름
-    let imageURL: String? // 원격 이미지 URL
     let platform: String
     let genre: String
     let releaseDate: Date
+    let imageURL: String?
+    let assetImageName: String?  // Assets에 있는 이미지 이름 (snapshot용)
 
-    static var mockData: [WidgetGame] {
-        [
-            WidgetGame(id: 1, title: "Ethereal Shards", coverImagePath: "EtherealShards", imageURL: nil, platform: "PlayStation", genre: "Action, RPG", releaseDate: Date())
-        ]
+    /// App Group 컨테이너에 저장된 로컬 이미지 파일명
+    var localImageFileName: String? {
+        imageURL != nil ? "game_\(id).jpg" : nil
     }
+
+    static var mockData = SharedWidgetGame(
+        id: 1,
+        title: "Ethereal Shards",
+        platform: "PlayStation",
+        genre: "Action, RPG",
+        releaseDate: Date(),
+        imageURL: nil,
+        assetImageName: "EtherealShards"
+    )
+}
+
+/// App Group에 저장되는 전체 위젯 데이터
+struct SharedWidgetData: Codable {
+    let games: [SharedWidgetGame]
+    let lastUpdated: Date
+}
+
+// MARK: - App Group Manager
+/// App과 Widget 간 데이터 공유 관리
+final class AppGroupManager {
+    static let shared = AppGroupManager()
+
+    private let groupIdentifier = "group.com.wkdtnwl.GameFinder"
+    private let widgetDataKey = "widgetUpcomingGames"
+    private let languageKey = "widgetLanguageCode"
+
+    private init() {}
+
+    /// Shared UserDefaults
+    private var sharedDefaults: UserDefaults? {
+        UserDefaults(suiteName: groupIdentifier)
+    }
+
+    /// Shared Container URL
+    var sharedContainerURL: URL? {
+        FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: groupIdentifier
+        )
+    }
+
+    /// Widget Images Directory
+    var widgetImagesDirectory: URL? {
+        guard let container = sharedContainerURL else {
+            print("⚠️ [Widget-AppGroupManager] Shared container URL is nil")
+            return nil
+        }
+        let directory = container.appendingPathComponent("WidgetImages")
+        return directory
+    }
+
+    /// App Group에서 위젯 데이터 읽기
+    func loadWidgetData() -> SharedWidgetData? {
+        guard let sharedDefaults = sharedDefaults else {
+            print("[Widget-AppGroupManager] CRITICAL: Shared UserDefaults is nil!")
+            print("   → UserDefaults(suiteName: \"\(groupIdentifier)\") returned nil")
+            print("   → This means App Group is NOT properly configured in Widget")
+            print("   → Check Xcode: GameFinderWidgetExtension → Signing & Capabilities → App Groups")
+            return nil
+        }
+
+        guard let data = sharedDefaults.data(forKey: widgetDataKey) else {
+            print("[Widget-AppGroupManager] No data found for key '\(widgetDataKey)'")
+            print("   → Possible reasons:")
+            print("      1. App hasn't saved data yet (run the main app first)")
+            print("      2. Different App Group ID between App and Widget")
+            print("      3. Data was saved but under a different key")
+
+            // 디버깅: 저장된 모든 키 출력
+            let allKeys = Array(sharedDefaults.dictionaryRepresentation().keys)
+            print("   → All keys in UserDefaults: \(allKeys)")
+
+            return nil
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let decoded = try decoder.decode(SharedWidgetData.self, from: data)
+            
+            if let firstGame = decoded.games.first {
+                print("   → First game: \(firstGame.title)")
+            }
+            return decoded
+        } catch {
+            print("[Widget-AppGroupManager] Failed to decode: \(error)")
+            print("   → Error details: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    /// App Group에서 이미지 읽기
+    func loadImage(fileName: String) -> Data? {
+        guard let directory = widgetImagesDirectory else {
+            print("[Widget-AppGroupManager] Images directory is nil")
+            return nil
+        }
+
+        let fileURL = directory.appendingPathComponent(fileName)
+
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            print("[Widget-AppGroupManager] Image not found: \(fileName)")
+            return nil
+        }
+
+        do {
+            let data = try Data(contentsOf: fileURL)
+            return data
+        } catch {
+            print("[Widget-AppGroupManager] Failed to load image: \(error)")
+            return nil
+        }
+    }
+
+    /// App Group에서 언어 코드 읽기
+    func loadLanguage() -> String? {
+        guard let sharedDefaults = sharedDefaults else {
+            print("[Widget-AppGroupManager] Cannot load language: UserDefaults is nil")
+            return nil
+        }
+
+        return sharedDefaults.string(forKey: languageKey)
+    }
+}
+
+// MARK: - Localization Helper
+/// 특정 언어의 로컬라이징된 문자열을 가져오는 함수
+func localizedString(_ key: String, languageCode: String?) -> String {
+    guard let languageCode = languageCode,
+          let bundlePath = Bundle.main.path(forResource: languageCode, ofType: "lproj"),
+          let bundle = Bundle(path: bundlePath) else {
+        // 언어 코드가 없거나 번들을 찾을 수 없으면 시스템 언어 사용
+        return NSLocalizedString(key, comment: "")
+    }
+
+    return NSLocalizedString(key, bundle: bundle, comment: "")
 }
 
 // MARK: - Daily Shuffle Entry
 struct DailyShuffleEntry: TimelineEntry {
     let date: Date
-    let games: [WidgetGame]
+    let game: SharedWidgetGame? // App Group에서 읽은 실제 데이터
+    let languageCode: String? // 앱에서 설정한 언어 코드
     let isPlaceholder: Bool
 }
 
+// MARK: - Timeline Provider
 struct Provider: AppIntentTimelineProvider {
+
+    // MARK: Placeholder
+    /// 위젯이 처음 추가될 때 보여줄 플레이스홀더
+    /// 즉시 반환해야 함 - 네트워크 호출 금지
     func placeholder(in context: Context) -> DailyShuffleEntry {
-        DailyShuffleEntry(
+        let languageCode = AppGroupManager.shared.loadLanguage()
+        return DailyShuffleEntry(
             date: Date(),
-            games: WidgetGame.mockData,
+            game: nil, // 플레이스홀더는 빈 상태
+            languageCode: languageCode,
             isPlaceholder: true
         )
     }
 
+    // MARK: Snapshot
+    /// 위젯 갤러리에서 미리보기로 보여줄 스냅샷
+    /// 즉시 반환해야 함 - 네트워크 호출 금지
     func snapshot(for configuration: ConfigurationAppIntent, in context: Context) async -> DailyShuffleEntry {
-        DailyShuffleEntry(
+        let languageCode = AppGroupManager.shared.loadLanguage()
+        return DailyShuffleEntry(
             date: Date(),
-            games: WidgetGame.mockData,
+            game: SharedWidgetGame.mockData,
+            languageCode: languageCode,
             isPlaceholder: false
         )
     }
 
+    // MARK: Timeline
+    /// 위젯에 표시할 타임라인 생성
+    /// 네트워크 호출 금지 - App Group에서 데이터만 읽기
     func timeline(for configuration: ConfigurationAppIntent, in context: Context) async -> Timeline<DailyShuffleEntry> {
-        var games: [WidgetGame] = []
+        var entries: [DailyShuffleEntry] = []
 
-        do {
-            // API에서 출시 예정 게임 가져오기
-            let upcomingGames = try await WidgetNetworkManager.shared.fetchUpcomingGames()
+        // App Group에서 언어 코드 읽기
+        let languageCode = AppGroupManager.shared.loadLanguage()
 
-            // 랜덤으로 1개 선택
-            if var randomGame = upcomingGames.randomElement() {
-                // 이미지가 있으면 다운로드하여 로컬에 저장
-                if let imageURL = randomGame.imageURL {
-                    let localPath = await WidgetNetworkManager.shared.downloadAndSaveImage(
-                        from: imageURL,
-                        gameId: randomGame.id
+        // App Group에서 저장된 데이터 읽기 (로컬 읽기만 - 네트워크 호출 없음)
+        if let sharedData = AppGroupManager.shared.loadWidgetData() {
+            // 오늘부터 7일간의 타임라인 생성
+            let calendar = Calendar.current
+            let now = Date()
+
+            for dayOffset in 0..<7 {
+                if let entryDate = calendar.date(byAdding: .day, value: dayOffset, to: now),
+                   let startOfDay = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: entryDate),
+                   let randomGame = sharedData.games.randomElement() {
+
+                    let entry = DailyShuffleEntry(
+                        date: startOfDay,
+                        game: randomGame,
+                        languageCode: languageCode,
+                        isPlaceholder: false
                     )
-                    // 로컬 경로를 coverImagePath에 저장
-                    randomGame = WidgetGame(
-                        id: randomGame.id,
-                        title: randomGame.title,
-                        coverImagePath: localPath,
-                        imageURL: randomGame.imageURL,
-                        platform: randomGame.platform,
-                        genre: randomGame.genre,
-                        releaseDate: randomGame.releaseDate
-                    )
+                    entries.append(entry)
                 }
-                games = [randomGame]
             }
-        } catch {
-            print("Failed to fetch upcoming games: \(error)")
-            // 에러 발생 시 빈 배열 사용
-            games = []
+        } else {
+            print("[Widget] No data found in App Group - showing empty state")
         }
 
-        let entry = DailyShuffleEntry(
-            date: Date(),
-            games: games,
-            isPlaceholder: false
-        )
+        // 데이터가 없으면 빈 상태 표시
+        if entries.isEmpty {
+            entries.append(DailyShuffleEntry(
+                date: Date(),
+                game: nil,
+                languageCode: languageCode,
+                isPlaceholder: false
+            ))
+        }
 
-        // 매일 자정에 업데이트
+        // 다음 업데이트: 내일 자정
         let nextUpdate = Calendar.current.startOfDay(for: Date())
             .addingTimeInterval(60 * 60 * 24)
 
-        return Timeline(entries: [entry], policy: .after(nextUpdate))
+        return Timeline(entries: entries, policy: .after(nextUpdate))
     }
 }
 
@@ -102,12 +254,12 @@ struct GameFinderWidgetEntryView : View {
 
     var body: some View {
         Group {
-            if entry.games.isEmpty && !entry.isPlaceholder {
-                // 데이터가 없을 때 (로딩 실패)
-                emptyStateView
+            if let game = entry.game {
+                // App Group에서 읽은 데이터가 있을 때
+                contentView(game: game)
             } else {
-                // 데이터가 있을 때 또는 placeholder일 때
-                contentView
+                // 데이터가 없을 때 (앱을 아직 실행하지 않은 경우)
+                emptyStateView
             }
         }
         .redacted(reason: entry.isPlaceholder ? .placeholder : [])
@@ -122,81 +274,80 @@ struct GameFinderWidgetEntryView : View {
                 .overlay(Color.black.opacity(0.4))
 
             VStack(alignment: .leading, spacing: 8) {
-                Text(L10n.Widget.title)
+                Text(localizedString("widget_title", languageCode: entry.languageCode))
                     .font(.headline)
                     .foregroundColor(.white)
 
                 Divider()
                     .background(Color.white)
 
-                Text("새로운 게임을 찾아 보세요!")
+                Text(localizedString("widget_empty_message", languageCode: entry.languageCode))
                     .foregroundColor(.white)
             }
             .padding(24)
         }
     }
 
-    private var contentView: some View {
-        Link(destination: URL(string: "gamefinder://game/\(entry.games.first?.id ?? 0)")!) {
+    private func contentView(game: SharedWidgetGame) -> some View {
+        Link(destination: URL(string: "gamefinder://game/\(game.id)")!) {
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(L10n.Widget.title)
+                    Text(localizedString("widget_title", languageCode: entry.languageCode))
                         .font(.headline)
                     Divider()
 
-                    ForEach(entry.games) { game in
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(game.title)
-                                .font(.body)
-                                .lineLimit(1)
-                            Text({
-                                let formatter = DateFormatter()
-                                formatter.dateStyle = .long
-                                formatter.timeStyle = .none
-                                let dateString = formatter.string(from: game.releaseDate)
-                                return L10n.Widget.release.localized(with: dateString)
-                            }())
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(game.title)
+                            .font(.body)
+                            .lineLimit(1)
+
+                        Text({
+                            let formatter = DateFormatter()
+                            formatter.dateStyle = .medium
+                            formatter.timeStyle = .none
+                            let dateString = formatter.string(from: game.releaseDate)
+                            let releasePrefix = localizedString("widget_release_prefix", languageCode: entry.languageCode)
+                            return "\(releasePrefix) \(dateString)"
+                        }())
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+
+                        // 플랫폼이 Unknown이 아닐 때만 표시
+                        if game.platform != "Unknown" {
+                            Text(game.platform)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                                .lineLimit(2)
+                                .lineLimit(1)
+                        }
 
-                            // 플랫폼이 Unknown이 아닐 때만 표시
-                            if game.platform != "Unknown" {
-                                Text(game.platform)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                            }
-
-                            // 장르가 Unknown이 아닐 때만 표시
-                            if game.genre != "Unknown" {
-                                Text(game.genre)
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                            }
+                        // 장르가 Unknown이 아닐 때만 표시
+                        if game.genre != "Unknown" {
+                            Text(game.genre)
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
                         }
                     }
                 }
                 .padding(.leading, 24)
 
-                // 이미지 표시: 로컬 파일 경로 -> 로컬 에셋 -> noImage 순서
+                // 이미지 로드 우선순위: Assets → App Group → noImage
                 Group {
-                    if let coverImagePath = entry.games.first?.coverImagePath,
-                       FileManager.default.fileExists(atPath: coverImagePath),
-                       let uiImage = UIImage(contentsOfFile: coverImagePath) {
-                        // 로컬에 저장된 이미지 파일 사용
+                    if let assetName = game.assetImageName {
+                        // 1. Assets에 있는 이미지 (snapshot용)
+                        Image(assetName)
+                            .resizable()
+                            .scaledToFill()
+                    } else if let fileName = game.localImageFileName,
+                              let imageData = AppGroupManager.shared.loadImage(fileName: fileName),
+                              let uiImage = UIImage(data: imageData) {
+                        // 2. App Group에 저장된 다운로드 이미지
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFill()
-                    } else if let coverImagePath = entry.games.first?.coverImagePath,
-                              !coverImagePath.contains("/") {
-                        // Assets에 있는 이미지 사용 (경로가 아닌 이름만 있는 경우)
-                        Image(coverImagePath)
-                            .resizable()
-                            .scaledToFill()
                     } else {
-                        // 기본 이미지
+                        // 3. 기본 이미지
                         Image("noImage")
                             .resizable()
                             .scaledToFill()
@@ -226,5 +377,18 @@ struct GameFinderWidget: Widget {
 #Preview(as: .systemMedium) {
     GameFinderWidget()
 } timeline: {
-    DailyShuffleEntry(date: .now, games: WidgetGame.mockData, isPlaceholder: false)
+    DailyShuffleEntry(
+        date: .now,
+        game: SharedWidgetGame(
+            id: 1,
+            title: "Ethereal Shards",
+            platform: "PlayStation",
+            genre: "Action, RPG",
+            releaseDate: Date(),
+            imageURL: nil,
+            assetImageName: "EtherealShards"
+        ),
+        languageCode: "ko",
+        isPlaceholder: false
+    )
 }

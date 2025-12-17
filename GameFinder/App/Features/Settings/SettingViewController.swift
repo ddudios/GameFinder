@@ -206,6 +206,9 @@ final class SettingViewController: BaseViewController {
         UserDefaults.standard.set([languageCode], forKey: "AppleLanguages")
         UserDefaults.standard.synchronize()
 
+        // App Group에 언어 저장 (위젯이 읽을 수 있도록)
+        AppGroupManager.shared.saveLanguage(languageCode)
+
         let alert = UIAlertController(
             title: L10n.Alert.languageTitle,
             message: L10n.Alert.languageMessage,

@@ -60,6 +60,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B00618CF2EF28A240077AC83 /* GameFinderWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GameFinderWidgetExtension.entitlements; sourceTree = "<group>"; };
 		B0224F622EEC1D0E0093DD0F /* GameFinderWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GameFinderWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B03267402EEAD5E200ABAB0B /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		B03267422EEAD5E200ABAB0B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -79,8 +80,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Shared/Utils/Extensions/Bundle+Extension.swift",
-				"Shared/Utils/Extensions/String+Extension.swift",
-				Shared/Utils/Localization/L10n.swift,
 				Shared/Utils/Localization/Localizable.xcstrings,
 			);
 			target = B0224F612EEC1D0E0093DD0F /* GameFinderWidgetExtension */;
@@ -156,6 +155,7 @@
 		B08FECEF2E87B2B000488358 = {
 			isa = PBXGroup;
 			children = (
+				B00618CF2EF28A240077AC83 /* GameFinderWidgetExtension.entitlements */,
 				B08FEDE12E87B8F000488358 /* .gitignore */,
 				B08FECFA2E87B2B000488358 /* GameFinder */,
 				B0224F652EEC1D0E0093DD0F /* GameFinderWidget */,
@@ -358,6 +358,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = GameFinderWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 27A9369F66;
@@ -387,6 +388,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = GameFinderWidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 27A9369F66;
