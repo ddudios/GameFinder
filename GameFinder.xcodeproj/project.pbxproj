@@ -79,6 +79,9 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Shared/Utils/Extensions/Bundle+Extension.swift",
+				"Shared/Utils/Extensions/String+Extension.swift",
+				Shared/Utils/Localization/L10n.swift,
+				Shared/Utils/Localization/Localizable.xcstrings,
 			);
 			target = B0224F612EEC1D0E0093DD0F /* GameFinderWidgetExtension */;
 		};

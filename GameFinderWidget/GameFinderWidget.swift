@@ -122,14 +122,14 @@ struct GameFinderWidgetEntryView : View {
                 .overlay(Color.black.opacity(0.4))
 
             VStack(alignment: .leading, spacing: 8) {
-                Text("Game Finder")
+                Text(L10n.Widget.title)
                     .font(.headline)
                     .foregroundColor(.white)
 
                 Divider()
                     .background(Color.white)
 
-                Text("새롭게 시작할 게임을 찾아 보세요!")
+                Text("새로운 게임을 찾아 보세요!")
                     .foregroundColor(.white)
             }
             .padding(24)
@@ -140,7 +140,7 @@ struct GameFinderWidgetEntryView : View {
         Link(destination: URL(string: "gamefinder://game/\(entry.games.first?.id ?? 0)")!) {
             HStack(spacing: 8) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Game Finder")
+                    Text(L10n.Widget.title)
                         .font(.headline)
                     Divider()
 
@@ -149,17 +149,23 @@ struct GameFinderWidgetEntryView : View {
                             Text(game.title)
                                 .font(.body)
                                 .lineLimit(1)
-                            Text(game.releaseDate, style: .date)
+                            Text({
+                                let formatter = DateFormatter()
+                                formatter.dateStyle = .long
+                                formatter.timeStyle = .none
+                                let dateString = formatter.string(from: game.releaseDate)
+                                return L10n.Widget.release.localized(with: dateString)
+                            }())
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                                .lineLimit(1)
+                                .lineLimit(2)
 
                             // 플랫폼이 Unknown이 아닐 때만 표시
                             if game.platform != "Unknown" {
                                 Text(game.platform)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
-                                    .lineLimit(2)
+                                    .lineLimit(1)
                             }
 
                             // 장르가 Unknown이 아닐 때만 표시
@@ -212,7 +218,7 @@ struct GameFinderWidget: Widget {
                 .containerBackground(.fill.tertiary, for: .widget)
         }
         .contentMarginsDisabled()
-        .description("새롭게 출시되는 게임을 빠르게 확인할 수 있습니다.")
+        .description("출시 예정 게임을 추천받습니다.")
         .supportedFamilies([.systemMedium])
     }
 }

@@ -90,8 +90,8 @@ final class WidgetNetworkManager {
             throw URLError(.badURL)
         }
 
-        // 일주일 후부터 6개월간의 출시 예정 게임
-        let startDate = Calendar.current.date(byAdding: .month, value: 1, to: Date())!
+        // 3개월 후부터 6개월간의 출시 예정 게임
+        let startDate = Calendar.current.date(byAdding: .month, value: 3, to: Date())!
         let endDate = Calendar.current.date(byAdding: .month, value: 6, to: startDate)!
 
         let dateFormatter = DateFormatter()

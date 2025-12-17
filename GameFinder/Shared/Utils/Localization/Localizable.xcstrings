@@ -829,6 +829,28 @@
         }
       }
     },
+    "Get another game recommendation" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get another game recommendation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別のゲームをおすすめしてもらう"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 게임 추천받기"
+          }
+        }
+      }
+    },
     "label_placeholder_empty" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1036,6 +1058,29 @@
         }
       }
     },
+    "notification_discount_coming_soon" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game discount notification feature is being updated."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ゲーム割引通知機能は更新中です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게임 할인 알림 기능이 업데이트 중입니다."
+          }
+        }
+      }
+    },
     "notification_removed" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1147,29 +1192,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "알림이 꺼져있습니다"
-          }
-        }
-      }
-    },
-    "notification_discount_coming_soon" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Game discount notification feature is being updated."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ゲーム割引通知機能は更新中です。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "게임 할인 알림 기능이 업데이트 중입니다."
           }
         }
       }
@@ -1427,52 +1449,6 @@
         }
       }
     },
-    "setting_email_sent" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email sent successfully."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "メールが送信されました。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이메일이 전송되었습니다."
-          }
-        }
-      }
-    },
-    "setting_email_saved" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Email saved to drafts."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "メールが下書きに保存されました。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이메일이 임시저장되었습니다."
-          }
-        }
-      }
-    },
     "setting_email_cancelled" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1515,6 +1491,52 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이메일 전송에 실패했습니다."
+          }
+        }
+      }
+    },
+    "setting_email_saved" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email saved to drafts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メールが下書きに保存されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이메일이 임시저장되었습니다."
+          }
+        }
+      }
+    },
+    "setting_email_sent" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email sent successfully."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メールが送信されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이메일이 전송되었습니다."
           }
         }
       }
@@ -1837,6 +1859,140 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "내일"
+          }
+        }
+      }
+    },
+    "widget_release" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Release on %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ リリース予定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 출시 예정"
+          }
+        }
+      }
+    },
+    "widget_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Game Finder"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ゲームファインダー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게임 탐색기"
+          }
+        }
+      }
+    },
+    "매일 새로운 게임을 추천받습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get a new game recommendation every day."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "毎日新しいゲームをおすすめします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매일 새로운 게임을 추천받습니다."
+          }
+        }
+      }
+    },
+    "새로운 게임을 찾아 보세요!" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discover new games!"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "新しいゲームを探してみましょう！"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새로운 게임을 찾아 보세요!"
+          }
+        }
+      }
+    },
+    "출시 예정 게임 추천" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upcoming Game Recommendations"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "発売予定ゲームおすすめ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출시 예정 게임 추천"
+          }
+        }
+      }
+    },
+    "출시 예정 게임을 추천받습니다." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Get recommendations for upcoming games."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "発売予定ゲームをおすすめします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "출시 예정 게임을 추천받습니다."
           }
         }
       }
