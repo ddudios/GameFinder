@@ -115,8 +115,7 @@ final class AppGroupManager {
             let encoded = try encoder.encode(data)
 
             sharedDefaults.set(encoded, forKey: widgetDataKey)
-            let syncResult = sharedDefaults.synchronize()
-            
+
         } catch {
             print("[App-AppGroupManager] Failed to encode: \(error)")
             print("   → Error details: \(error.localizedDescription)")
@@ -181,7 +180,7 @@ final class AppGroupManager {
         }
     }
 
-    func resizeImage(_ image: UIImage, targetWidth: CGFloat = 400) -> UIImage? {
+    func resizeImage(_ image: UIImage, targetWidth: CGFloat = 280) -> UIImage? {
         let scale = targetWidth / image.size.width
         let targetHeight = image.size.height * scale
         let targetSize = CGSize(width: targetWidth, height: targetHeight)
@@ -202,8 +201,6 @@ final class AppGroupManager {
         }
 
         sharedDefaults.set(languageCode, forKey: languageKey)
-        sharedDefaults.synchronize()
-        print("✅ [App-AppGroupManager] Language saved: \(languageCode)")
     }
 
     /// App Group에서 언어 코드 읽기
@@ -229,7 +226,7 @@ final class WidgetDataService {
         print("🧪 [WidgetDataService] Testing App Group with Mock data...")
 
         // App Group 접근 가능 여부 확인
-        guard let containerURL = AppGroupManager.shared.sharedContainerURL else {
+        guard AppGroupManager.shared.sharedContainerURL != nil else {
             print("[WidgetDataService] CRITICAL: App Group container is nil!")
             print("   → Check if App Groups capability is enabled")
             print("   → Check if group ID matches: group.com.wkdtnwl.GameFinder")
@@ -285,8 +282,8 @@ final class WidgetDataService {
     /// - Note: 이 메서드는 메인 앱에서만 호출해야 함 (위젯에서는 절대 네트워크 호출 금지)
     func updateWidgetData() async {
         // App Group 접근 가능 여부 먼저 확인
-        guard let containerURL = AppGroupManager.shared.sharedContainerURL else {
-            print("❌ [WidgetDataService] CRITICAL: App Group container is nil!")
+        guard AppGroupManager.shared.sharedContainerURL != nil else {
+            print("[WidgetDataService] CRITICAL: App Group container is nil!")
             print("   → Cannot proceed without App Group access")
             return
         }
@@ -297,7 +294,7 @@ final class WidgetDataService {
             // 2. SharedWidgetGame으로 변환
             var sharedGames: [SharedWidgetGame] = []
 
-            for game in upcomingGames.prefix(20) { // 최대 20개만 저장
+            for game in upcomingGames.prefix(10) { // 최대 10개만 저장 (메모리 절약)
                 let sharedGame = SharedWidgetGame.from(dto: game)
                 sharedGames.append(sharedGame)
 
@@ -320,7 +317,7 @@ final class WidgetDataService {
             WidgetCenter.shared.reloadAllTimelines()
 
         } catch {
-            print("❌ [WidgetDataService] Failed to update widget data: \(error)")
+            print("[WidgetDataService] Failed to update widget data: \(error)")
             print("   → Error details: \(error.localizedDescription)")
         }
     }
@@ -374,14 +371,16 @@ final class WidgetDataService {
             }
 
             // 위젯 크기에 맞게 리사이즈 (메모리 절약)
-            guard let resizedImage = AppGroupManager.shared.resizeImage(originalImage, targetWidth: 400),
+            guard let resizedImage = AppGroupManager.shared.resizeImage(originalImage, targetWidth: 280),
                   let compressedData = resizedImage.jpegData(compressionQuality: 0.8) else {
                 print("[WidgetDataService] Failed to resize image: \(fileName)")
                 return
             }
 
             // App Group 컨테이너에 저장
-            let saved = AppGroupManager.shared.saveImage(compressedData, fileName: fileName)
+            if !AppGroupManager.shared.saveImage(compressedData, fileName: fileName) {
+                print("[WidgetDataService] Failed to save image: \(fileName)")
+            }
         } catch {
             print("[WidgetDataService] Failed to download image: \(error)")
         }

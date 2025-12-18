@@ -19,13 +19,16 @@ final class WebsiteCollectionViewCell: BaseCollectionViewCell {
     }()
 
     private let linkButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("웹사이트 방문하기", for: .normal)
+        var config = UIButton.Configuration.plain()
+        config.title = "웹사이트 방문하기"
+        config.image = UIImage(systemName: "arrow.up.right.square")
+        config.imagePlacement = .trailing
+        config.imagePadding = 8
+        config.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
+
+        let button = UIButton(configuration: config)
+        button.contentHorizontalAlignment = .leading
         button.titleLabel?.font = .Body.regular14
-        button.contentHorizontalAlignment = .left
-        button.setImage(UIImage(systemName: "arrow.up.right.square"), for: .normal)
-        button.semanticContentAttribute = .forceRightToLeft
-        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 0)
         return button
     }()
 

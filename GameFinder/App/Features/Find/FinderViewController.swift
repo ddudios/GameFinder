@@ -89,7 +89,7 @@ final class FinderViewController: BaseViewController {
 
 //        CustomFont.debugPrintInstalledFonts()
         let realm = try! Realm()
-        print(realm.configuration.fileURL)
+        print(realm.configuration.fileURL?.absoluteString ?? "nil")
     }
 
     override func viewDidLayoutSubviews() {
@@ -407,12 +407,10 @@ final class FinderViewController: BaseViewController {
                 for: indexPath
             )
 
-            if let headerView = header as? SectionHeaderView {
-                let section = Section.allCases[indexPath.section]
-                headerView.onTap = { [weak self] in
-                    guard let self else { return }
-                    self.navigateToHeaderDetail(section: section)
-                }
+            let section = Section.allCases[indexPath.section]
+            header.onTap = { [weak self] in
+                guard let self else { return }
+                self.navigateToHeaderDetail(section: section)
             }
 
             return header

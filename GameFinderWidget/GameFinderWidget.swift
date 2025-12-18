@@ -17,7 +17,7 @@ struct SharedWidgetGame: Codable, Identifiable {
     let genre: String
     let releaseDate: Date
     let imageURL: String?
-    let assetImageName: String?  // Assets에 있는 이미지 이름 (snapshot용)
+    let assetImageName: String?
 
     /// App Group 컨테이너에 저장된 로컬 이미지 파일명
     var localImageFileName: String? {
@@ -161,6 +161,28 @@ func localizedString(_ key: String, languageCode: String?) -> String {
     return NSLocalizedString(key, bundle: bundle, comment: "")
 }
 
+// MARK: - Date Formatter (메모리 절약을 위해 재사용)
+private let widgetDateFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .long  // 긴 날짜 형식
+    formatter.timeStyle = .none
+    return formatter
+}()
+
+/// 날짜를 언어별 긴 형식으로 포맷팅
+/// - en: "April 1, 2025"
+/// - ko: "2025년 4월 1일"
+/// - ja: "2025年4月1日"
+func formatReleaseDate(_ date: Date, languageCode: String?) -> String {
+    // 언어에 맞는 locale 설정
+    if let languageCode = languageCode {
+        widgetDateFormatter.locale = Locale(identifier: languageCode)
+    } else {
+        widgetDateFormatter.locale = Locale.current
+    }
+    return widgetDateFormatter.string(from: date)
+}
+
 // MARK: - Daily Shuffle Entry
 struct DailyShuffleEntry: TimelineEntry {
     let date: Date
@@ -209,23 +231,20 @@ struct Provider: AppIntentTimelineProvider {
 
         // App Group에서 저장된 데이터 읽기 (로컬 읽기만 - 네트워크 호출 없음)
         if let sharedData = AppGroupManager.shared.loadWidgetData() {
-            // 오늘부터 7일간의 타임라인 생성
+            // 오늘의 타임라인 생성 (메모리 절약을 위해 1개만)
             let calendar = Calendar.current
             let now = Date()
 
-            for dayOffset in 0..<7 {
-                if let entryDate = calendar.date(byAdding: .day, value: dayOffset, to: now),
-                   let startOfDay = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: entryDate),
-                   let randomGame = sharedData.games.randomElement() {
+            if let startOfDay = calendar.date(bySettingHour: 0, minute: 0, second: 0, of: now),
+               let randomGame = sharedData.games.randomElement() {
 
-                    let entry = DailyShuffleEntry(
-                        date: startOfDay,
-                        game: randomGame,
-                        languageCode: languageCode,
-                        isPlaceholder: false
-                    )
-                    entries.append(entry)
-                }
+                let entry = DailyShuffleEntry(
+                    date: startOfDay,
+                    game: randomGame,
+                    languageCode: languageCode,
+                    isPlaceholder: false
+                )
+                entries.append(entry)
             }
         } else {
             print("[Widget] No data found in App Group - showing empty state")
@@ -302,10 +321,7 @@ struct GameFinderWidgetEntryView : View {
                             .lineLimit(1)
 
                         Text({
-                            let formatter = DateFormatter()
-                            formatter.dateStyle = .medium
-                            formatter.timeStyle = .none
-                            let dateString = formatter.string(from: game.releaseDate)
+                            let dateString = formatReleaseDate(game.releaseDate, languageCode: entry.languageCode)
                             let releasePrefix = localizedString("widget_release_prefix", languageCode: entry.languageCode)
                             return "\(releasePrefix) \(dateString)"
                         }())

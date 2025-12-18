@@ -21,6 +21,7 @@ final class ReadingManager {
     }
 
     // MARK: - Add Reading
+    @discardableResult
     func addReading(_ game: Game) -> Bool {
         guard repository.saveOrUpdateGame(game) else {
             LogManager.error.error("Failed to save game for reading: \(game.id)")
@@ -40,6 +41,7 @@ final class ReadingManager {
     }
 
     // MARK: - Remove Reading
+    @discardableResult
     func removeReading(gameId: Int) -> Bool {
         guard repository.updateReading(gameId: gameId, isReading: false) else {
             LogManager.error.error("Failed to remove reading: \(gameId)")

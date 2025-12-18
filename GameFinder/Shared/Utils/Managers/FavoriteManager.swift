@@ -74,6 +74,7 @@ final class FavoriteManager {
     }
 
     // MARK: - Toggle Favorite
+    @discardableResult
     func toggleFavorite(_ game: Game) -> Bool {
         if isFavorite(gameId: game.id) {
             return removeFavorite(gameId: game.id)

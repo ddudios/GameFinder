@@ -14,4 +14,7 @@ struct ConfigurationAppIntent: WidgetConfigurationIntent {
 
     @Parameter(title: "Get another game recommendation", default: "🎮")
     var shuffle: String
+    func perform() async throws -> some IntentResult {
+        return .result()
+    }
 }

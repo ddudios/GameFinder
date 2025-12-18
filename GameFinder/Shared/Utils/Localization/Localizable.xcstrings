@@ -632,29 +632,6 @@
         }
       }
     },
-    "Game Finder" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Game Finder"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ゲームファインダー"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "게임 탐색기"
-          }
-        }
-      }
-    },
     "game_detail_alert_message_diary_delete" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1248,29 +1225,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "게임 검색"
-          }
-        }
-      }
-    },
-    "Release on %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Release on %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%@ リリース予定"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%@ 출시 예정"
           }
         }
       }
@@ -2006,29 +1960,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "매일 새로운 게임을 추천받습니다."
-          }
-        }
-      }
-    },
-    "새로운 게임을 찾아 보세요!" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Discover new games!"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "新しいゲームを探してみましょう！"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "새로운 게임을 찾아 보세요!"
           }
         }
       }
