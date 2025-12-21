@@ -25,12 +25,15 @@ enum L10n {
     enum TabBar {
         /// Finder
         static let first = "tab_bar_title_first".localized
-        
+
         /// Library
         static let second = "tab_bar_title_second".localized
-        
+
         /// Settings
         static let third = "tab_bar_title_third".localized
+
+        /// Calendar
+        static let fourth = "tab_bar_title_fourth".localized
     }
     
     enum Error {

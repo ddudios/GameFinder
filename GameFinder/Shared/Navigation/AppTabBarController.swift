@@ -11,29 +11,33 @@ enum TabBarItem: Int, CaseIterable {
     case first
     case second
     case third
-    
+    case fourth
+
     var title: String {
         switch self {
         case .first: return L10n.TabBar.first
         case .second: return L10n.TabBar.second
         case .third: return L10n.TabBar.third
+        case .fourth: return L10n.TabBar.fourth
         }
     }
-    
+
     var image: String {
         switch self {
         case .first: return "gamecontroller"
         case .second: return "rectangle.stack"
         case .third: return "gearshape"
+        case .fourth: return "calendar"
         }
     }
-    
+
     func viewController() -> UIViewController {
         let viewController: UIViewController
         switch self {
         case .first: viewController = FinderViewController()
         case .second: viewController = LibraryViewController()
         case .third: viewController = SettingViewController()
+        case .fourth: viewController = CalendarViewController()
         }
         return UINavigationController(rootViewController: viewController)
     }
@@ -46,29 +50,20 @@ final class AppTabBarController: UITabBarController {
         configureTabBarController()
         configureTabBarAppearance()
 
-        // ⚠️ CRITICAL FIX: 위젯 데이터 강제 저장
+        // CRITICAL FIX: 위젯 데이터 강제 저장
         // 앱이 로드되자마자 Mock 데이터를 App Group에 저장
         testWidgetDataSaving()
     }
 
-    /// 🔥 긴급 수정: 위젯 데이터 저장 테스트
+    /// 긴급 수정: 위젯 데이터 저장 테스트
     /// 이 메서드가 호출되면 반드시 App Group에 데이터가 저장됨
     private func testWidgetDataSaving() {
-        print("═══════════════════════════════════════════════════════")
-        print("🔥 [AppTabBarController] FORCING widget data save")
-        print("═══════════════════════════════════════════════════════")
-
         // Mock 데이터로 테스트
         WidgetDataService.shared.testAppGroupWithMockData()
 
         // 0.5초 후 실제 API 데이터로 업데이트
         Task {
             try? await Task.sleep(nanoseconds: 500_000_000)
-
-            print("═══════════════════════════════════════════════════════")
-            print("🌐 [AppTabBarController] Starting API data update")
-            print("═══════════════════════════════════════════════════════")
-
             await WidgetDataService.shared.updateWidgetData()
         }
     }

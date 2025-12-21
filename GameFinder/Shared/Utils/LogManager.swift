@@ -37,7 +37,7 @@ final class LogManager {
     ///   - parameters: 이벤트 파라미터
     static func logEvent(_ name: String, parameters: [String: Any]? = nil) {
         #if DEBUG
-        network.debug("📊 Analytics Event: \(name), parameters: \(String(describing: parameters))")
+        network.debug("Analytics Event: \(name), parameters: \(String(describing: parameters))")
         #endif
         Analytics.logEvent(name, parameters: parameters)
     }
@@ -50,7 +50,7 @@ final class LogManager {
             AnalyticsParameterScreenClass: screenClass ?? screenName
         ]
         logEvent(AnalyticsEventScreenView, parameters: parameters)
-        ui.info("🖥️ Screen View: \(screenName)")
+        ui.info("Screen View: \(screenName)")
     }
 
     /// 게임 조회 이벤트 로깅
@@ -72,7 +72,7 @@ final class LogManager {
             AnalyticsParameterSearchTerm: query
         ]
         logEvent(AnalyticsEventSearch, parameters: parameters)
-        userAction.info("🔍 Search: \(query)")
+        userAction.info("Search: \(query)")
     }
 
     /// API 에러 로깅
@@ -85,7 +85,7 @@ final class LogManager {
             "error_message": errorMessage
         ]
         logEvent("api_error", parameters: parameters)
-        error.error("❌ API Error: \(endpoint) - \(errorMessage)")
+        error.error("API Error: \(endpoint) - \(errorMessage)")
     }
 
     // MARK: - Favorites
@@ -96,7 +96,7 @@ final class LogManager {
             "game_name": gameName
         ]
         logEvent("add_favorite", parameters: parameters)
-        userAction.info("❤️ Add Favorite: \(gameName) (id: \(gameId))")
+        userAction.info("Add Favorite: \(gameName) (id: \(gameId))")
     }
 
     static func logRemoveFavorite(gameId: Int) {
@@ -104,7 +104,7 @@ final class LogManager {
             "game_id": gameId
         ]
         logEvent("remove_favorite", parameters: parameters)
-        userAction.info("💔 Remove Favorite: (id: \(gameId))")
+        userAction.info("Remove Favorite: (id: \(gameId))")
     }
 
     // MARK: - Notifications
@@ -115,7 +115,7 @@ final class LogManager {
             "game_name": gameName
         ]
         logEvent("add_notification", parameters: parameters)
-        userAction.info("🔔 Add Notification: \(gameName) (id: \(gameId))")
+        userAction.info("Add Notification: \(gameName) (id: \(gameId))")
     }
 
     static func logRemoveNotification(gameId: Int) {
@@ -123,7 +123,7 @@ final class LogManager {
             "game_id": gameId
         ]
         logEvent("remove_notification", parameters: parameters)
-        userAction.info("🔕 Remove Notification: (id: \(gameId))")
+        userAction.info("Remove Notification: (id: \(gameId))")
     }
 
     // MARK: - Reading (Diary)
@@ -134,7 +134,7 @@ final class LogManager {
             "game_name": gameName
         ]
         logEvent("add_reading", parameters: parameters)
-        userAction.info("📖 Add Reading: \(gameName) (id: \(gameId))")
+        userAction.info("Add Reading: \(gameName) (id: \(gameId))")
     }
 
     static func logRemoveReading(gameId: Int) {
@@ -142,7 +142,7 @@ final class LogManager {
             "game_id": gameId
         ]
         logEvent("remove_reading", parameters: parameters)
-        userAction.info("📕 Remove Reading: (id: \(gameId))")
+        userAction.info("Remove Reading: (id: \(gameId))")
     }
 
     // MARK: - Diary
@@ -154,7 +154,7 @@ final class LogManager {
             "media_count": mediaCount
         ]
         logEvent("create_diary", parameters: parameters)
-        userAction.info("✍️ Create Diary: \(gameName) (id: \(gameId)), media: \(mediaCount)")
+        userAction.info("Create Diary: \(gameName) (id: \(gameId)), media: \(mediaCount)")
     }
 
     static func logUpdateDiary(gameId: Int, mediaCount: Int) {
@@ -163,7 +163,7 @@ final class LogManager {
             "media_count": mediaCount
         ]
         logEvent("update_diary", parameters: parameters)
-        userAction.info("✏️ Update Diary: (id: \(gameId)), media: \(mediaCount)")
+        userAction.info("Update Diary: (id: \(gameId)), media: \(mediaCount)")
     }
 
     static func logDeleteDiary(gameId: Int) {
@@ -171,6 +171,6 @@ final class LogManager {
             "game_id": gameId
         ]
         logEvent("delete_diary", parameters: parameters)
-        userAction.info("🗑️ Delete Diary: (id: \(gameId))")
+        userAction.info("Delete Diary: (id: \(gameId))")
     }
 }
