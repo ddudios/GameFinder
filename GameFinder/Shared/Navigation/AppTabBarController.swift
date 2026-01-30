@@ -10,8 +10,8 @@ import UIKit
 enum TabBarItem: Int, CaseIterable {
     case first
     case second
-    case third
     case fourth
+    case third
 
     var title: String {
         switch self {

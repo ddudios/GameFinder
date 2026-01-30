@@ -1850,6 +1850,29 @@
         }
       }
     },
+    "calendar_empty_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No upcoming games on this date."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日には発売予定のゲームがありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출시 예정 게임이 없습니다."
+          }
+        }
+      }
+    },
     "today" : {
       "extractionState" : "manual",
       "localizations" : {

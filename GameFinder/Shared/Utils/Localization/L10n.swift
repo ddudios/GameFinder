@@ -155,4 +155,8 @@ enum L10n {
         static let turnOnButton = "notification_turn_on_button".localized
         static let discountComingSoon = "notification_discount_coming_soon".localized
     }
+
+    enum Calendar {
+        static let emptyMessage = "calendar_empty_message".localized
+    }
 }

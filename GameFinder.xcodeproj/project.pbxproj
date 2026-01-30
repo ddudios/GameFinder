@@ -11,6 +11,7 @@
 		B0224F642EEC1D0E0093DD0F /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B03267422EEAD5E200ABAB0B /* SwiftUI.framework */; };
 		B0224F712EEC1D100093DD0F /* GameFinderWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0224F622EEC1D0E0093DD0F /* GameFinderWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B03D96942EA02DBF00F5E760 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B03D96932EA02DBF00F5E760 /* FirebaseFirestore */; };
+		B047D0172F28D8AA0070AC87 /* FSCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = B047D0162F28D8AA0070AC87 /* FSCalendar */; };
 		B057CC522E96C65A00FEF3A5 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */; };
 		B057CC542E96C65A00FEF3A5 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC532E96C65A00FEF3A5 /* FirebaseCrashlytics */; };
 		B057CC562E96C65A00FEF3A5 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B057CC552E96C65A00FEF3A5 /* FirebaseMessaging */; };
@@ -137,6 +138,7 @@
 				B057CC542E96C65A00FEF3A5 /* FirebaseCrashlytics in Frameworks */,
 				B057CC522E96C65A00FEF3A5 /* FirebaseAnalyticsCore in Frameworks */,
 				B08FEE052E87D03600488358 /* SnapKit in Frameworks */,
+				B047D0172F28D8AA0070AC87 /* FSCalendar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,8 +208,8 @@
 				B08FECF52E87B2B000488358 /* Frameworks */,
 				B08FECF62E87B2B000488358 /* Resources */,
 				B0C971382E87DB3000EDC2DA /* Embed Frameworks */,
-				B057CC612E96E0BE00FEF3A5 /* ShellScript */,
 				B03267532EEAD5E400ABAB0B /* Embed Foundation Extensions */,
+				B057CC612E96E0BE00FEF3A5 /* Run Script */,
 			);
 			buildRules = (
 			);
@@ -229,6 +231,7 @@
 				B057CC532E96C65A00FEF3A5 /* FirebaseCrashlytics */,
 				B057CC552E96C65A00FEF3A5 /* FirebaseMessaging */,
 				B03D96932EA02DBF00F5E760 /* FirebaseFirestore */,
+				B047D0162F28D8AA0070AC87 /* FSCalendar */,
 			);
 			productName = GameFinder;
 			productReference = B08FECF82E87B2B000488358 /* GameFinder.app */;
@@ -270,6 +273,7 @@
 				B08FEE482E87D19200488358 /* XCRemoteSwiftPackageReference "RxSwift" */,
 				B0C971392E87DB9100EDC2DA /* XCRemoteSwiftPackageReference "realm-swift" */,
 				B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				B047D0152F28D8AA0070AC87 /* XCRemoteSwiftPackageReference "FSCalendar" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B08FECF92E87B2B000488358 /* Products */;
@@ -301,7 +305,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		B057CC612E96E0BE00FEF3A5 /* ShellScript */ = {
+		B057CC612E96E0BE00FEF3A5 /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -315,6 +319,7 @@
 				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
 				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
 			);
+			name = "Run Script";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -451,7 +456,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.wkdtnwl$(BUNDLE_ID_SUFFIX)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -490,7 +495,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 2.0.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.wkdtnwl$(BUNDLE_ID_SUFFIX)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -662,6 +667,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		B047D0152F28D8AA0070AC87 /* XCRemoteSwiftPackageReference "FSCalendar" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/WenchaoD/FSCalendar.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.4;
+			};
+		};
 		B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
@@ -717,6 +730,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B057CC502E96C65A00FEF3A5 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
+		};
+		B047D0162F28D8AA0070AC87 /* FSCalendar */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B047D0152F28D8AA0070AC87 /* XCRemoteSwiftPackageReference "FSCalendar" */;
+			productName = FSCalendar;
 		};
 		B057CC512E96C65A00FEF3A5 /* FirebaseAnalyticsCore */ = {
 			isa = XCSwiftPackageProductDependency;
