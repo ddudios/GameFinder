@@ -31,6 +31,7 @@ final class SearchViewController: BaseViewController {
         collectionView.backgroundColor = .clear
         collectionView.delegate = self
         collectionView.dataSource = self
+        collectionView.scrollIndicatorInsets = .zero
         return collectionView
     }()
 
@@ -48,7 +49,15 @@ final class SearchViewController: BaseViewController {
 
     // MARK: - Setup
     private func setupNavigationBar() {
-        navigationItem.title = L10n.Search.navTitle
+        let containerView = UIView()
+        containerView.addSubview(searchBar)
+
+        searchBar.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.height.equalTo(44)
+        }
+
+        navigationItem.titleView = containerView
         navigationController?.navigationBar.tintColor = .secondaryLabel
         navigationItem.backButtonDisplayMode = .minimal
     }
@@ -61,20 +70,14 @@ final class SearchViewController: BaseViewController {
     }
 
     override func configureHierarchy() {
-        view.addSubview(searchBar)
         view.addSubview(collectionView)
     }
 
     override func configureLayout() {
-        searchBar.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
-            make.horizontalEdges.equalToSuperview().inset(16)
-        }
-
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(searchBar.snp.bottom).offset(16)
-            make.horizontalEdges.equalToSuperview().inset(16)
-            make.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.horizontalEdges.equalToSuperview()
+            make.bottom.equalToSuperview()
         }
     }
 
@@ -98,10 +101,10 @@ final class SearchViewController: BaseViewController {
         let section = NSCollectionLayoutSection(group: group)
         section.interGroupSpacing = 16
         section.contentInsets = NSDirectionalEdgeInsets(
-            top: 0,
-            leading: 0,
-            bottom: 20,
-            trailing: 0
+            top: 16,
+            leading: 16,
+            bottom: 16,
+            trailing: 16
         )
 
         return UICollectionViewCompositionalLayout(section: section)

@@ -283,7 +283,7 @@ final class FinderViewController: BaseViewController {
     //MARK: - Layout
     private func configureNavigationBar() {
         navigationItem.title = L10n.Finder.navTitle
-        navigationItem.backButtonTitle = L10n.Finder.navTitle
+        navigationItem.backButtonTitle = ""
 
         let searchButton = UIBarButtonItem(
             image: UIImage(systemName: "magnifyingglass"),
