@@ -595,7 +595,6 @@ extension FinderViewController {
 
                             // 현재 중앙 셀의 인덱스 업데이트
                             self.currentUpcomingIndex = closestIndex
-                            print("Updated currentUpcomingIndex to: \(closestIndex)")
 
                             // 자동 스크롤이 아니었다면 (= 사용자가 스크롤했다면) 자동 스크롤 재시작
                             if !self.isAutoScrolling {
