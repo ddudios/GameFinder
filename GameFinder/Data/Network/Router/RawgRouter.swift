@@ -15,7 +15,7 @@ enum RawgRouter: URLRequestConvertible {
     case popular(page: Int = 1, pageSize: Int = 10)
     case freeToPlay(page: Int = 1, pageSize: Int = 10)
 
-    case search(query: String, page: Int = 1)      // 검색: /games?search=
+    case search(query: String, page: Int = 1, platformIds: String? = nil)      // 검색: /games?search=
     case upcoming(start: String, end: String,
                   page: Int = 1, pageSize: Int = 20) // 기간 내 출시: /games?dates=YYYY-MM-DD,YYYY-MM-DD
     case platform(platformName: String, page: Int = 1, pageSize: Int = 20) // 플랫폼별 게임
@@ -63,12 +63,16 @@ enum RawgRouter: URLRequestConvertible {
                 "page_size": pageSize
             ]
 
-        case let .search(query, page):
-            return [
+        case let .search(query, page, platformIds):
+            var params: [String: Any] = [
                 "search": query,
                 "page": page,
                 "page_size": 20
             ]
+            if let platformIds, !platformIds.isEmpty {
+                params["platforms"] = platformIds
+            }
+            return params
 
         case let .upcoming(start, end, page, pageSize):
             return [

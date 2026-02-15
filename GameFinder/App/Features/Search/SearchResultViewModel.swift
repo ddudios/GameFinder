@@ -10,9 +10,51 @@ import RxSwift
 import RxCocoa
 
 final class SearchResultViewModel: RxViewModelProtocol {
+    enum PlatformFilter: CaseIterable {
+        case all
+        case steam
+        case mobile
+        case nintendo
+        case playStation
+        case pc
+
+        var title: String {
+            switch self {
+            case .all:
+                return "전체"
+            case .steam:
+                return "Steam"
+            case .mobile:
+                return "Mobile"
+            case .nintendo:
+                return "Nintendo"
+            case .playStation:
+                return "PlayStation"
+            case .pc:
+                return "PC"
+            }
+        }
+
+        var platformIds: String? {
+            switch self {
+            case .all:
+                return nil
+            case .steam, .pc:
+                return "4"
+            case .mobile:
+                return "21,3"
+            case .nintendo:
+                return "7,8,9"
+            case .playStation:
+                return "187,18,16"
+            }
+        }
+    }
+
     struct Input {
         let viewWillAppear: PublishRelay<Void>
         let loadNextPage: PublishRelay<Void>
+        let filterChanged: PublishRelay<PlatformFilter>
     }
 
     struct Output {
@@ -24,6 +66,7 @@ final class SearchResultViewModel: RxViewModelProtocol {
     let query: String
     private var currentPage = 1
     private var isLoading = false
+    private var currentFilter: PlatformFilter = .all
 
     init(query: String) {
         self.query = query
@@ -33,18 +76,27 @@ final class SearchResultViewModel: RxViewModelProtocol {
         let games = BehaviorRelay<[Game]>(value: [])
         let errorAlertMessage = PublishSubject<String>()
 
-        // 초기 로드
-        input.viewWillAppear
-            .do(onNext: { [weak self] in
+        let reloadTrigger = Observable.merge(
+            input.viewWillAppear.map { [weak self] _ in self?.currentFilter ?? .all },
+            input.filterChanged.asObservable()
+        )
+
+        reloadTrigger
+            .do(onNext: { [weak self] filter in
+                self?.currentFilter = filter
                 self?.currentPage = 1
                 self?.isLoading = true
             })
-            .flatMap { [weak self] _ -> Observable<Result<GameListDTO, NetworkError>> in
+            .flatMapLatest { [weak self] _ -> Observable<Result<GameListDTO, NetworkError>> in
                 guard let self = self else {
                     return Observable.just(.failure(.noData))
                 }
                 return NetworkObservable.request(
-                    router: RawgRouter.search(query: self.query, page: self.currentPage),
+                    router: RawgRouter.search(
+                        query: self.query,
+                        page: self.currentPage,
+                        platformIds: self.currentFilter.platformIds
+                    ),
                     as: GameListDTO.self
                 ).asObservable()
             }
@@ -75,7 +127,11 @@ final class SearchResultViewModel: RxViewModelProtocol {
                     return Observable.just(.failure(.noData))
                 }
                 return NetworkObservable.request(
-                    router: RawgRouter.search(query: self.query, page: self.currentPage),
+                    router: RawgRouter.search(
+                        query: self.query,
+                        page: self.currentPage,
+                        platformIds: self.currentFilter.platformIds
+                    ),
                     as: GameListDTO.self
                 ).asObservable()
             }

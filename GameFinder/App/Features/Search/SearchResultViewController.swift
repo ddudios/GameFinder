@@ -18,7 +18,9 @@ final class SearchResultViewController: BaseViewController {
     private let disposeBag = DisposeBag()
     private let viewWillAppearRelay = PublishRelay<Void>()
     private let loadNextPageRelay = PublishRelay<Void>()
+    private let filterChangedRelay = PublishRelay<SearchResultViewModel.PlatformFilter>()
     private var isLoading = true
+    private var selectedFilter: SearchResultViewModel.PlatformFilter = .all
 
     // MARK: - UI Components
     private let backgroundImageView = {
@@ -80,6 +82,38 @@ final class SearchResultViewController: BaseViewController {
         navigationItem.title = L10n.Search.resultNavTitle
         navigationController?.navigationBar.tintColor = .secondaryLabel
         navigationItem.backButtonDisplayMode = .minimal
+        navigationItem.rightBarButtonItem = makeFilterBarButtonItem()
+    }
+
+    private func makeFilterBarButtonItem() -> UIBarButtonItem {
+        let item = UIBarButtonItem(
+            title: selectedFilter.title,
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        item.menu = makeFilterMenu()
+        return item
+    }
+
+    private func makeFilterMenu() -> UIMenu {
+        let actions = SearchResultViewModel.PlatformFilter.allCases.map { filter in
+            UIAction(
+                title: filter.title,
+                state: filter == selectedFilter ? .on : .off
+            ) { [weak self] _ in
+                self?.didSelectFilter(filter)
+            }
+        }
+
+        return UIMenu(title: "", options: .singleSelection, children: actions)
+    }
+
+    private func didSelectFilter(_ filter: SearchResultViewModel.PlatformFilter) {
+        guard selectedFilter != filter else { return }
+        selectedFilter = filter
+        navigationItem.rightBarButtonItem = makeFilterBarButtonItem()
+        filterChangedRelay.accept(filter)
     }
 
     // MARK: - Setup
@@ -172,7 +206,8 @@ final class SearchResultViewController: BaseViewController {
     private func bind() {
         let input = SearchResultViewModel.Input(
             viewWillAppear: viewWillAppearRelay,
-            loadNextPage: loadNextPageRelay
+            loadNextPage: loadNextPageRelay,
+            filterChanged: filterChangedRelay
         )
 
         let output = viewModel.transform(input: input)
