@@ -12,26 +12,35 @@ import RxCocoa
 final class SearchResultViewModel: RxViewModelProtocol {
     enum PlatformFilter: CaseIterable {
         case all
-        case steam
-        case mobile
-        case nintendo
+        case windows
+        case macOS
+        case linux
+        case xbox
         case playStation
-        case pc
+        case nintendo
+        case iOS
+        case android
 
         var title: String {
             switch self {
             case .all:
-                return "전체"
-            case .steam:
-                return "Steam"
-            case .mobile:
-                return "Mobile"
-            case .nintendo:
-                return "Nintendo"
+                return L10n.Search.filterAll
+            case .windows:
+                return L10n.Search.filterWindows
+            case .macOS:
+                return L10n.Search.filterMacOS
+            case .linux:
+                return L10n.Search.filterLinux
+            case .xbox:
+                return L10n.Search.filterXbox
             case .playStation:
-                return "PlayStation"
-            case .pc:
-                return "PC"
+                return L10n.Search.filterPlayStation
+            case .nintendo:
+                return L10n.Search.filterNintendo
+            case .iOS:
+                return L10n.Search.filterIOS
+            case .android:
+                return L10n.Search.filterAndroid
             }
         }
 
@@ -39,14 +48,22 @@ final class SearchResultViewModel: RxViewModelProtocol {
             switch self {
             case .all:
                 return nil
-            case .steam, .pc:
+            case .windows:
                 return "4"
-            case .mobile:
-                return "21,3"
-            case .nintendo:
-                return "7,8,9"
+            case .macOS:
+                return "5"
+            case .linux:
+                return "6"
+            case .xbox:
+                return "186,1,14"
             case .playStation:
-                return "187,18,16"
+                return "187,18,16,15,27,19,17"
+            case .nintendo:
+                return "7,8,9,10,11,13"
+            case .iOS:
+                return "3"
+            case .android:
+                return "21"
             }
         }
     }

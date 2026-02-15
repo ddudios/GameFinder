@@ -14,7 +14,7 @@ final class SearchViewController: BaseViewController {
 
     // MARK: - Properties
     private let disposeBag = DisposeBag()
-    private let platforms = ["Steam", "Mobile", "Nintendo", "PlayStation", "PC"]
+    private let platforms = ["Xbox", "Mobile", "Nintendo", "PlayStation", "PC"]
 
     // MARK: - UI Components
     private lazy var searchBar: UISearchBar = {

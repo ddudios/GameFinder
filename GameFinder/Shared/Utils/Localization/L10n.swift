@@ -81,6 +81,16 @@ enum L10n {
         
         /// 게임 검색
         static let searchPlaceholder = "placeholder_search_games".localized
+
+        static let filterAll = "search_filter_all".localized
+        static let filterWindows = "search_filter_windows".localized
+        static let filterMacOS = "search_filter_macos".localized
+        static let filterLinux = "search_filter_linux".localized
+        static let filterXbox = "search_filter_xbox".localized
+        static let filterPlayStation = "search_filter_playstation".localized
+        static let filterNintendo = "search_filter_nintendo".localized
+        static let filterIOS = "search_filter_ios".localized
+        static let filterAndroid = "search_filter_android".localized
     }
     
     enum Library {
