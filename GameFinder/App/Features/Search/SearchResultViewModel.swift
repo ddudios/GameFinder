@@ -72,6 +72,7 @@ final class SearchResultViewModel: RxViewModelProtocol {
         let viewWillAppear: PublishRelay<Void>
         let loadNextPage: PublishRelay<Void>
         let filterChanged: PublishRelay<PlatformFilter>
+        let queryChanged: PublishRelay<String>
     }
 
     struct Output {
@@ -80,7 +81,7 @@ final class SearchResultViewModel: RxViewModelProtocol {
     }
 
     private let disposeBag = DisposeBag()
-    let query: String
+    private(set) var query: String
     private var currentPage = 1
     private var isLoading = false
     private var currentFilter: PlatformFilter = .all
@@ -95,7 +96,11 @@ final class SearchResultViewModel: RxViewModelProtocol {
 
         let reloadTrigger = Observable.merge(
             input.viewWillAppear.map { [weak self] _ in self?.currentFilter ?? .all },
-            input.filterChanged.asObservable()
+            input.filterChanged.asObservable(),
+            input.queryChanged.map { [weak self] query in
+                self?.query = query
+                return self?.currentFilter ?? .all
+            }
         )
 
         reloadTrigger

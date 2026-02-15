@@ -81,6 +81,7 @@ enum L10n {
         
         /// 게임 검색
         static let searchPlaceholder = "placeholder_search_games".localized
+        static let emptyResultMessage = "search_result_empty_message"
 
         static let filterAll = "search_filter_all".localized
         static let filterWindows = "search_filter_windows".localized

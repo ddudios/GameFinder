@@ -19,10 +19,21 @@ final class SearchResultViewController: BaseViewController {
     private let viewWillAppearRelay = PublishRelay<Void>()
     private let loadNextPageRelay = PublishRelay<Void>()
     private let filterChangedRelay = PublishRelay<SearchResultViewModel.PlatformFilter>()
+    private let queryChangedRelay = PublishRelay<String>()
     private var isLoading = true
     private var selectedFilter: SearchResultViewModel.PlatformFilter = .all
+    private var defaultCollectionTopInset: CGFloat = 0
 
     // MARK: - UI Components
+    private lazy var searchBar: UISearchBar = {
+        let searchBar = UISearchBar()
+        searchBar.placeholder = L10n.Search.searchPlaceholder
+        searchBar.searchBarStyle = .minimal
+        searchBar.delegate = self
+        searchBar.text = viewModel.query
+        return searchBar
+    }()
+
     private let backgroundImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -47,6 +58,16 @@ final class SearchResultViewController: BaseViewController {
         collectionView.showsVerticalScrollIndicator = false
         collectionView.delegate = self
         return collectionView
+    }()
+
+    private let emptyResultLabel: UILabel = {
+        let label = UILabel()
+        label.font = .Body.regular14
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.isHidden = true
+        return label
     }()
 
     // MARK: - Initialization
@@ -79,7 +100,14 @@ final class SearchResultViewController: BaseViewController {
     }
 
     private func setupNavigationBar() {
-        navigationItem.title = L10n.Search.resultNavTitle
+        let containerView = UIView()
+        containerView.addSubview(searchBar)
+        searchBar.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.height.equalTo(44)
+        }
+
+        navigationItem.titleView = containerView
         navigationController?.navigationBar.tintColor = .secondaryLabel
         navigationItem.backButtonDisplayMode = .minimal
         navigationItem.rightBarButtonItem = makeFilterBarButtonItem()
@@ -121,12 +149,14 @@ final class SearchResultViewController: BaseViewController {
         view.addSubview(backgroundImageView)
         backgroundImageView.layer.addSublayer(gradientLayer)
         view.addSubview(collectionView)
+        view.addSubview(emptyResultLabel)
     }
 
     override func configureLayout() {
         let screenWidth = view.frame.width
         let backgroundHeight = screenWidth * 3 / 4  // 4:3 비율
         let collectionStartPoint = backgroundHeight * 1 / 4  // 배경 이미지 1/4 지점
+        defaultCollectionTopInset = collectionStartPoint
 
         backgroundImageView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
@@ -137,6 +167,13 @@ final class SearchResultViewController: BaseViewController {
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide)
             make.leading.trailing.bottom.equalToSuperview()
+        }
+
+        emptyResultLabel.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview()
+            make.leading.greaterThanOrEqualToSuperview().inset(24)
+            make.trailing.lessThanOrEqualToSuperview().inset(24)
         }
 
         // 컬렉션뷰 contentInset을 배경 이미지 1/4 지점부터 시작하도록 설정
@@ -207,7 +244,8 @@ final class SearchResultViewController: BaseViewController {
         let input = SearchResultViewModel.Input(
             viewWillAppear: viewWillAppearRelay,
             loadNextPage: loadNextPageRelay,
-            filterChanged: filterChangedRelay
+            filterChanged: filterChangedRelay,
+            queryChanged: queryChangedRelay
         )
 
         let output = viewModel.transform(input: input)
@@ -216,16 +254,30 @@ final class SearchResultViewController: BaseViewController {
             .asDriver()
             .drive(with: self) { owner, games in
                 owner.isLoading = false
+                owner.emptyResultLabel.isHidden = !games.isEmpty
+                owner.emptyResultLabel.text = L10n.Search.emptyResultMessage.localized(with: owner.viewModel.query)
+                owner.backgroundImageView.isHidden = games.isEmpty
+                owner.collectionView.contentInset = UIEdgeInsets(
+                    top: games.isEmpty ? 0 : owner.defaultCollectionTopInset,
+                    left: 0,
+                    bottom: 0,
+                    right: 0
+                )
                 owner.updateDataSource(with: games)
 
-                // 첫 번째 게임의 배경 이미지 설정
-                if let firstGame = games.first,
-                   let backgroundImageString = firstGame.backgroundImage,
-                   !backgroundImageString.isEmpty,
-                   let imageURL = URL(string: backgroundImageString) {
-                    owner.backgroundImageView.kf.setImage(with: imageURL, placeholder: UIImage(named: "noImage"))
+                if games.isEmpty {
+                    owner.backgroundImageView.kf.cancelDownloadTask()
+                    owner.backgroundImageView.image = nil
                 } else {
-                    owner.backgroundImageView.image = UIImage(named: "noImage")
+                    // 첫 번째 게임의 배경 이미지 설정
+                    if let firstGame = games.first,
+                       let backgroundImageString = firstGame.backgroundImage,
+                       !backgroundImageString.isEmpty,
+                       let imageURL = URL(string: backgroundImageString) {
+                        owner.backgroundImageView.kf.setImage(with: imageURL, placeholder: UIImage(named: "noImage"))
+                    } else {
+                        owner.backgroundImageView.image = UIImage(named: "noImage")
+                    }
                 }
             }
             .disposed(by: disposeBag)
@@ -243,8 +295,15 @@ final class SearchResultViewController: BaseViewController {
         var snapshot = NSDiffableDataSourceSnapshot<Int, DetailItem>()
         snapshot.appendSections([0])
 
+        guard !games.isEmpty else {
+            dataSource.apply(snapshot, animatingDifferences: true)
+            return
+        }
+
+        let headerTitle = "\"\(viewModel.query)\""
+
         // 첫 번째 아이템: 헤더
-        var items: [DetailItem] = [.header(title: "\"\(viewModel.query)\"", releaseDate: nil)]
+        var items: [DetailItem] = [.header(title: headerTitle, releaseDate: nil)]
 
         // 나머지 아이템: 게임들
         items.append(contentsOf: games.map { .game($0) })
@@ -333,5 +392,16 @@ extension SearchResultViewController: UICollectionViewDelegate {
         let viewModel = GameDetailViewModel(gameId: gameId)
         let detailVC = GameDetailViewController(viewModel: viewModel)
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+}
+
+// MARK: - UISearchBarDelegate
+extension SearchResultViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let query = searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !query.isEmpty else { return }
+        searchBar.resignFirstResponder()
+        queryChangedRelay.accept(query)
+        LogManager.logSearch(query: query)
     }
 }

@@ -953,6 +953,29 @@
         }
       }
     },
+    "search_result_empty_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No search results found for\n\"%@\"."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」\nに対する検索結果がありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\"\n에 대한 검색 결과가 없습니다."
+          }
+        }
+      }
+    },
     "nav_title_second" : {
       "extractionState" : "manual",
       "localizations" : {
