@@ -49,7 +49,7 @@ extension UIFont {
     enum IlsangItalic {
         static let regular12 = CustomFont.IlsangItalic.of(size: 12)
     }
-    
+
     struct Heading {
         private init() { }
         static let heavy24 = UIFont.systemFont(ofSize: 24, weight: .heavy)

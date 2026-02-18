@@ -26,6 +26,10 @@ final class HeaderDetailViewController: BaseViewController {
     private let loadNextPageRelay = PublishRelay<Void>()
     private var isLoading = true
     private var loadingStartTime: Date?
+    private var previousStandardAppearance: UINavigationBarAppearance?
+    private var previousScrollEdgeAppearance: UINavigationBarAppearance?
+    private var previousCompactAppearance: UINavigationBarAppearance?
+    private var previousTintColor: UIColor?
 
     // MARK: - UI Components
     private let backgroundImageView = {
@@ -44,6 +48,16 @@ final class HeaderDetailViewController: BaseViewController {
             UIColor.systemBackground.cgColor
         ]
         layer.locations = [0.3, 1.0]
+        return layer
+    }()
+
+    private let topGradientLayer: CAGradientLayer = {
+        let layer = CAGradientLayer()
+        layer.colors = [
+            UIColor.systemBackground.cgColor,
+            UIColor.clear.cgColor
+        ]
+        layer.locations = [0.0, 0.3]
         return layer
     }()
 
@@ -124,6 +138,7 @@ final class HeaderDetailViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(false, animated: true)
+        applyTransparentNavigationBarAppearance()
 
         // Screen View 로깅
         LogManager.logScreenView("HeaderDetail", screenClass: "HeaderDetailViewController")
@@ -131,15 +146,64 @@ final class HeaderDetailViewController: BaseViewController {
         viewWillAppearRelay.accept(())
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        restoreNavigationBarAppearance()
+    }
+
     private func setupNavigationBar() {
         navigationController?.navigationBar.tintColor = .secondaryLabel
         navigationItem.backButtonDisplayMode = .minimal
+    }
+
+    private func applyTransparentNavigationBarAppearance() {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+
+        previousStandardAppearance = navigationBar.standardAppearance.copy() as? UINavigationBarAppearance
+        previousScrollEdgeAppearance = navigationBar.scrollEdgeAppearance?.copy() as? UINavigationBarAppearance
+        previousCompactAppearance = navigationBar.compactAppearance?.copy() as? UINavigationBarAppearance
+        previousTintColor = navigationBar.tintColor
+
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = .clear
+        appearance.shadowColor = .clear
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
+
+        let buttonAppearance = UIBarButtonItemAppearance(style: .plain)
+        buttonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
+        buttonAppearance.highlighted.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
+        appearance.buttonAppearance = buttonAppearance
+
+        navigationBar.standardAppearance = appearance
+        navigationBar.scrollEdgeAppearance = appearance
+        navigationBar.compactAppearance = appearance
+        navigationBar.tintColor = .secondaryLabel
+    }
+
+    private func restoreNavigationBarAppearance() {
+        guard let navigationBar = navigationController?.navigationBar else { return }
+
+        if let previousStandardAppearance {
+            navigationBar.standardAppearance = previousStandardAppearance
+        }
+
+        if let previousScrollEdgeAppearance {
+            navigationBar.scrollEdgeAppearance = previousScrollEdgeAppearance
+        } else {
+            navigationBar.scrollEdgeAppearance = navigationBar.standardAppearance
+        }
+
+        navigationBar.compactAppearance = previousCompactAppearance
+        navigationBar.tintColor = previousTintColor ?? .secondaryLabel
     }
 
     // MARK: - Setup
     override func configureHierarchy() {
         view.addSubview(backgroundImageView)
         backgroundImageView.layer.addSublayer(gradientLayer)
+        backgroundImageView.layer.addSublayer(topGradientLayer)
         view.addSubview(collectionView)
         view.addSubview(loadingIndicatorBackground)
         view.addSubview(loadingIndicator)
@@ -147,17 +211,18 @@ final class HeaderDetailViewController: BaseViewController {
 
     override func configureLayout() {
         let screenWidth = view.frame.width
-        let backgroundHeight = screenWidth * 3 / 4  // 4:3 비율
+        let backgroundHeight = screenWidth * 3 / 4
+        let backgroundTopOffset: CGFloat = 40
         let collectionStartPoint = backgroundHeight * 1 / 4  // 배경 이미지 1/4 지점
 
         backgroundImageView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.top.equalToSuperview().offset(backgroundTopOffset)
             make.horizontalEdges.equalToSuperview()
             make.height.equalTo(backgroundHeight)
         }
 
         collectionView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide)
+            make.top.equalToSuperview()
             make.leading.trailing.bottom.equalToSuperview()
         }
 
@@ -178,6 +243,7 @@ final class HeaderDetailViewController: BaseViewController {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         gradientLayer.frame = backgroundImageView.bounds
+        topGradientLayer.frame = backgroundImageView.bounds
         CATransaction.commit()
     }
 

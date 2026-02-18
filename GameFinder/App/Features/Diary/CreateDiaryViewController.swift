@@ -23,17 +23,9 @@ final class CreateDiaryViewController: BaseViewController {
     private var mediaItems: [MediaItem] = []
     private let createdDate: Date
     var onDiarySaved: (() -> Void)?
+    private var contentTextViewBottomConstraint: Constraint?
 
     // MARK: - UI Components
-    private let scrollView = {
-        let scrollView = UIScrollView()
-        scrollView.showsVerticalScrollIndicator = false
-        scrollView.keyboardDismissMode = .interactive
-        return scrollView
-    }()
-
-    private let contentView = UIView()
-
     private let titleTextField = {
         let textField = UITextField()
         textField.placeholder = L10n.Diary.titlePlaceholder
@@ -77,6 +69,8 @@ final class CreateDiaryViewController: BaseViewController {
         textView.font = .Body.regular16
         textView.textColor = .label
         textView.backgroundColor = .clear
+        textView.isScrollEnabled = true
+        textView.keyboardDismissMode = .interactive
         textView.returnKeyType = .default
         textView.textContainerInset = .zero
         textView.textContainer.lineFragmentPadding = 0
@@ -143,57 +137,45 @@ final class CreateDiaryViewController: BaseViewController {
     }
 
     override func configureHierarchy() {
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
-
-        contentView.addSubview(titleTextField)
-        contentView.addSubview(titleSeparator)
-        contentView.addSubview(mediaCollectionView)
-        contentView.addSubview(addMediaButton)
-        contentView.addSubview(contentTextView)
-        contentView.addSubview(placeholderLabel)
+        view.addSubview(titleTextField)
+        view.addSubview(titleSeparator)
+        view.addSubview(mediaCollectionView)
+        view.addSubview(addMediaButton)
+        view.addSubview(contentTextView)
+        view.addSubview(placeholderLabel)
     }
 
     override func configureLayout() {
-        scrollView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
-        }
-
-        contentView.snp.makeConstraints { make in
-            make.edges.equalTo(scrollView)
-            make.width.equalTo(scrollView)
-        }
-
         titleTextField.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(20)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.height.equalTo(40)
         }
 
         titleSeparator.snp.makeConstraints { make in
             make.top.equalTo(titleTextField.snp.bottom).offset(8)
-            make.leading.trailing.equalToSuperview().inset(20)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.height.equalTo(1)
         }
 
         addMediaButton.snp.makeConstraints { make in
             make.top.equalTo(titleSeparator.snp.bottom).offset(16)
-            make.leading.equalToSuperview().offset(20)
+            make.leading.equalTo(view.safeAreaLayoutGuide).offset(20)
             make.size.equalTo(100)
         }
 
         mediaCollectionView.snp.makeConstraints { make in
             make.leading.equalTo(addMediaButton.snp.trailing).offset(8)
-            make.trailing.equalToSuperview().inset(20)
+            make.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
             make.centerY.equalTo(addMediaButton)
             make.height.equalTo(100)
         }
 
         contentTextView.snp.makeConstraints { make in
             make.top.equalTo(addMediaButton.snp.bottom).offset(20)
-            make.leading.trailing.equalToSuperview().inset(20)
-            make.height.greaterThanOrEqualTo(300)
-            make.bottom.equalToSuperview().inset(20)
+            make.leading.trailing.equalTo(view.safeAreaLayoutGuide).inset(20)
+            make.height.greaterThanOrEqualTo(120)
+            contentTextViewBottomConstraint = make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).constraint
         }
 
         placeholderLabel.snp.makeConstraints { make in
@@ -255,29 +237,33 @@ final class CreateDiaryViewController: BaseViewController {
     private func setupKeyboardHandling() {
         NotificationCenter.default.addObserver(
             self,
-            selector: #selector(keyboardWillShow),
-            name: UIResponder.keyboardWillShowNotification,
-            object: nil
-        )
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(keyboardWillHide),
-            name: UIResponder.keyboardWillHideNotification,
+            selector: #selector(keyboardWillChangeFrame),
+            name: UIResponder.keyboardWillChangeFrameNotification,
             object: nil
         )
     }
 
-    @objc private func keyboardWillShow(_ notification: Notification) {
-        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-        let keyboardHeight = keyboardFrame.height
+    @objc private func keyboardWillChangeFrame(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
 
-        scrollView.contentInset.bottom = keyboardHeight
-        scrollView.verticalScrollIndicatorInsets.bottom = keyboardHeight
-    }
+        let keyboardFrameInView = view.convert(keyboardFrame, from: nil)
+        let intersection = view.bounds.intersection(keyboardFrameInView)
+        let keyboardOverlap = max(0, intersection.height - view.safeAreaInsets.bottom)
 
-    @objc private func keyboardWillHide(_ notification: Notification) {
-        scrollView.contentInset.bottom = 0
-        scrollView.verticalScrollIndicatorInsets.bottom = 0
+        let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double ?? 0.25
+        let curveRawValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt ?? 0
+        let curve = UIView.AnimationOptions(rawValue: curveRawValue << 16)
+
+        UIView.animate(withDuration: duration, delay: 0, options: [curve, .beginFromCurrentState]) { [weak self] in
+            guard let self = self else { return }
+            self.contentTextViewBottomConstraint?.update(offset: -keyboardOverlap)
+            self.view.layoutIfNeeded()
+        }
+
+        if contentTextView.isFirstResponder {
+            contentTextView.scrollRangeToVisible(contentTextView.selectedRange)
+        }
     }
 
     // MARK: - Actions
@@ -356,9 +342,7 @@ extension CreateDiaryViewController: UITextViewDelegate {
     }
 
     func textViewDidBeginEditing(_ textView: UITextView) {
-        // 텍스트뷰가 키보드에 가려지지 않도록 스크롤 조정
-        let textViewRect = textView.convert(textView.bounds, to: scrollView)
-        scrollView.scrollRectToVisible(textViewRect, animated: true)
+        textView.scrollRangeToVisible(textView.selectedRange)
     }
 }
 

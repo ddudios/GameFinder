@@ -44,7 +44,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         // 메시지 대리자 설정: Firebase가 APNs 대신에 Message를 보낼 수 있도록 설정
         Messaging.messaging().delegate = self
-        
+
         return true
     }
 

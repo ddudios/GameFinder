@@ -76,7 +76,7 @@ final class LibraryViewController: BaseViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: true)
+        navigationController?.setNavigationBarHidden(true, animated: true)
 
         // Screen View 로깅
         LogManager.logScreenView("Library", screenClass: "LibraryViewController")
@@ -84,16 +84,16 @@ final class LibraryViewController: BaseViewController {
         viewWillAppearRelay.accept(())
     }
 
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: true)
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         CATransaction.commit()
-    }
-
-    // MARK: - Setup
-    private func setNavigationBar() {
-        navigationItem.title = L10n.Library.navTitle
     }
 
     override func configureHierarchy() {
@@ -117,13 +117,12 @@ final class LibraryViewController: BaseViewController {
         categoryPageViewController.view.snp.makeConstraints { make in
             make.top.equalTo(categoryButtonsStackView.snp.bottom).offset(10)
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide)
+            make.bottom.equalToSuperview()
         }
     }
 
     override func configureView() {
         super.configureView()
-        setNavigationBar()
     }
 
     // MARK: - Category Buttons
