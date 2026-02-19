@@ -20,103 +20,156 @@ final class FinderViewModel: RxViewModelProtocol {
         let upcomingGames: BehaviorRelay<[Game]>
         let errorAlertMessage: PublishSubject<String>
     }
-    
+
     private let disposeBag = DisposeBag()
-    
+    private let cacheRepository: FinderCacheRepository
+    private let calendar: Calendar
+    private let dateFormatter: DateFormatter
+
+    init(
+        cacheRepository: FinderCacheRepository = RealmFinderCacheRepository(),
+        calendar: Calendar = .current
+    ) {
+        self.cacheRepository = cacheRepository
+        self.calendar = calendar
+
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        self.dateFormatter = formatter
+    }
+
     func transform(input: Input) -> Output {
-        
-        // Hashable - 더이상 인덱스로 데이터를 판단하지 않고 모델 기반으로 데이터를 판단하기 때문에, 어느 한 부분이라도 데이터가 달라야 한다
-            // diffable로 사용한다는 것은 인덱스 기준으로 데이터를 조회하지 않는 것을 의미한다
-            // 그래서 만약에 diffable로 작성 중에 itemIdentifier 등을 사용하는 위치에서 list[indexPath.row] 등으로 접근한다면 애플이 만들어 놓은 기술의 대전제가 틀리는 것이라서 코드의 의도 여부를 떠나서 잘 모르고 사용하고 있구나
 
         let popularGames = BehaviorRelay<[Game]>(value: [])
         let freeGames = BehaviorRelay<[Game]>(value: [])
         let upcomingGames = BehaviorRelay<[Game]>(value: [])
         let errorAlertMessage = PublishSubject<String>()
-        
-        // MARK: - 인기 게임 로드
-        input.viewWillAppear
-            .flatMap { _ in
-                NetworkObservable.request(
-                    router: RawgRouter.popular(page: 1, pageSize: 10),
-                    as: GameListDTO.self
-                )
-            }
-            .subscribe(with: self) { owner, popularResult in
-                
-                switch popularResult {
-                    
-                case .success(let gameListDTO):
-                    // DTO → Domain 변환
-                    let games = gameListDTO.results.map { Game(from: $0) }
-                    popularGames.accept(games)
-                case .failure(let networkError):
-                    errorAlertMessage.onNext(networkError.errorDescription ?? "인기 게임 로드 실패")
-                }
-            }
-            .disposed(by: disposeBag)
-        
-        // MARK: - 무료 게임 로드
-        input.viewWillAppear
-            .flatMap { _ in
-                NetworkObservable.request(
-                    router: RawgRouter.freeToPlay(page: 1, pageSize: 15),
-                    as: GameListDTO.self
-                )
-            }
-            .subscribe(with: self) { owner, freeResult in
-                
-                switch freeResult {
-                    
-                case .success(let gameListDTO):
-                    let games = gameListDTO.results.map { Game(from: $0) }
-                    freeGames.accept(games)
-                    
-                case .failure(let networkError):
-                    errorAlertMessage.onNext(networkError.errorDescription ?? "무료 게임 로드 실패")
-                }
-            }
-            .disposed(by: disposeBag)
-        
-        // MARK: - 출시 예정 게임 로드
-        input.viewWillAppear
-            .flatMap { _ in
-                let today = Date()
-                let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: today)!
-                let futureDate = Calendar.current.date(byAdding: .month, value: 3, to: today)!
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyy-MM-dd"
 
-                return NetworkObservable.request(
-                    router: RawgRouter.upcoming(
-                        start: dateFormatter.string(from: tomorrow),
-                        end: dateFormatter.string(from: futureDate),
-                        page: 1,
-                        pageSize: 10
-                    ),
-                    as: GameListDTO.self
-                )
-            }
-            .subscribe(with: self) { owner, upcomingResult in
-                
-                switch upcomingResult {
-                    
-                case .success(let gameListDTO):
-                    let games = gameListDTO.results.map { Game(from: $0) }
-                    upcomingGames.accept(games)
-                    
-                case .failure(let networkError):
-                    errorAlertMessage.onNext(networkError.errorDescription ?? "출시 예정 게임 로드 실패")
-                    print("출시 예정 게임 로드 실패: \(networkError)")
-                }
+        input.viewWillAppear
+            .subscribe(with: self) { owner, _ in
+                owner.loadPopularGames(into: popularGames, errorAlertMessage: errorAlertMessage)
+                owner.loadFreeGames(into: freeGames, errorAlertMessage: errorAlertMessage)
+                owner.loadUpcomingGames(into: upcomingGames, errorAlertMessage: errorAlertMessage)
             }
             .disposed(by: disposeBag)
-        
+
         return Output(
             popularGames: popularGames,
             freeGames: freeGames,
             upcomingGames: upcomingGames,
             errorAlertMessage: errorAlertMessage
         )
+    }
+
+    private func loadPopularGames(
+        into relay: BehaviorRelay<[Game]>,
+        errorAlertMessage: PublishSubject<String>
+    ) {
+        loadSection(
+            section: .popularGames,
+            failureMessage: "인기 게임 로드 실패",
+            relay: relay,
+            errorAlertMessage: errorAlertMessage,
+            router: { RawgRouter.popular(page: 1, pageSize: FinderCacheSection.popularGames.maxItemCount) }
+        )
+    }
+
+    private func loadFreeGames(
+        into relay: BehaviorRelay<[Game]>,
+        errorAlertMessage: PublishSubject<String>
+    ) {
+        loadSection(
+            section: .freeGames,
+            failureMessage: "무료 게임 로드 실패",
+            relay: relay,
+            errorAlertMessage: errorAlertMessage,
+            router: { RawgRouter.freeToPlay(page: 1, pageSize: FinderCacheSection.freeGames.maxItemCount) }
+        )
+    }
+
+    private func loadUpcomingGames(
+        into relay: BehaviorRelay<[Game]>,
+        errorAlertMessage: PublishSubject<String>
+    ) {
+        loadSection(
+            section: .upcomingGames,
+            failureMessage: "출시 예정 게임 로드 실패",
+            relay: relay,
+            errorAlertMessage: errorAlertMessage,
+            shouldForceRefresh: shouldForceRefreshUpcoming(cachedGames:),
+            router: makeUpcomingRouter
+        )
+    }
+
+    private func loadSection(
+        section: FinderCacheSection,
+        failureMessage: String,
+        relay: BehaviorRelay<[Game]>,
+        errorAlertMessage: PublishSubject<String>,
+        shouldForceRefresh: (([Game]) -> Bool)? = nil,
+        router: @escaping () -> RawgRouter
+    ) {
+        let now = Date()
+        let cachedGames = cacheRepository.load(section: section)
+        let hasCachedGames = !cachedGames.isEmpty
+
+        if hasCachedGames {
+            relay.accept(cachedGames)
+        }
+
+        let isFresh = hasCachedGames && cacheRepository.isFresh(section: section, now: now)
+        let forceRefresh = hasCachedGames && (shouldForceRefresh?(cachedGames) ?? false)
+        let shouldFetch = !hasCachedGames || !isFresh || forceRefresh
+
+        guard shouldFetch else { return }
+
+        NetworkObservable.request(
+            router: router(),
+            as: GameListDTO.self
+        )
+        .subscribe(with: self) { owner, result in
+            switch result {
+            case .success(let gameListDTO):
+                let games = Array(gameListDTO.results.map { Game(from: $0) }.prefix(section.maxItemCount))
+                owner.cacheRepository.save(section: section, games: games, fetchedAt: Date())
+                relay.accept(games)
+            case .failure(let networkError):
+                if !hasCachedGames {
+                    errorAlertMessage.onNext(networkError.errorDescription ?? failureMessage)
+                } else {
+                    LogManager.network.warning("Using cached finder data for \(section.rawValue). Fetch error: \(networkError.localizedDescription)")
+                }
+            }
+        }
+        .disposed(by: disposeBag)
+    }
+
+    private func makeUpcomingRouter() -> RawgRouter {
+        let today = Date()
+        let tomorrow = calendar.date(byAdding: .day, value: 1, to: today) ?? today
+        let futureDate = calendar.date(byAdding: .month, value: 3, to: today) ?? today
+
+        return RawgRouter.upcoming(
+            start: dateFormatter.string(from: tomorrow),
+            end: dateFormatter.string(from: futureDate),
+            page: 1,
+            pageSize: FinderCacheSection.upcomingGames.maxItemCount
+        )
+    }
+
+    private func shouldForceRefreshUpcoming(cachedGames: [Game]) -> Bool {
+        guard let firstReleased = cachedGames.first?.released else {
+            return false
+        }
+
+        guard let releaseDate = dateFormatter.date(from: firstReleased) else {
+            // 출시일 파싱 실패 시 안전하게 재호출
+            return true
+        }
+
+        let todayStart = calendar.startOfDay(for: Date())
+        let releaseDayStart = calendar.startOfDay(for: releaseDate)
+        return releaseDayStart <= todayStart
     }
 }
