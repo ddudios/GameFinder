@@ -83,13 +83,16 @@ final class ActionButtonsCollectionViewCell: BaseCollectionViewCell {
         }
     }
 
-    func configure(with gameId: Int) {
+    func configure(with gameId: Int, showsNotificationButton: Bool) {
         currentGameId = gameId
+        notificationButton.isHidden = !showsNotificationButton
 
         // 버튼 상태 설정
         bookmarkButton.isSelected = ReadingManager.shared.isReading(gameId: gameId)
         favoriteButton.isSelected = FavoriteManager.shared.isFavorite(gameId: gameId)
-        notificationButton.isSelected = NotificationManager.shared.isNotificationEnabled(gameId: gameId)
+        notificationButton.isSelected = showsNotificationButton
+            ? NotificationManager.shared.isNotificationEnabled(gameId: gameId)
+            : false
 
         // 실시간 동기화: 게임 기록 상태 변경 구독
         ReadingManager.shared.readingStatusChanged
@@ -110,17 +113,20 @@ final class ActionButtonsCollectionViewCell: BaseCollectionViewCell {
             .disposed(by: disposeBag)
 
         // 실시간 동기화: 알림 상태 변경 구독
-        NotificationManager.shared.notificationStatusChanged
-            .filter { [weak self] (id, _) in id == self?.currentGameId }
-            .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] (_, isEnabled) in
-                self?.notificationButton.isSelected = isEnabled
-            })
-            .disposed(by: disposeBag)
+        if showsNotificationButton {
+            NotificationManager.shared.notificationStatusChanged
+                .filter { [weak self] (id, _) in id == self?.currentGameId }
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] (_, isEnabled) in
+                    self?.notificationButton.isSelected = isEnabled
+                })
+                .disposed(by: disposeBag)
+        }
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        notificationButton.isHidden = false
         disposeBag = DisposeBag()
     }
 

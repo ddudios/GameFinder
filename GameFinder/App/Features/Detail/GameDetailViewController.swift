@@ -15,6 +15,7 @@ enum GameDetailSection: Int, CaseIterable {
     case screenshots
     case releaseAndRating
     case actionButtons
+    case gameTitle
     case genreAndTags
     case ageRating
     case platforms
@@ -28,6 +29,7 @@ enum GameDetailItem: Hashable {
     case screenshot(String)
     case releaseAndRating(String?, Double?, Int?)
     case actionButtons(Int)
+    case gameTitle(String)
     case genreAndTags([GameGenre], [GameTag])
     case ageRating(GameESRBRating?)
     case platforms([GamePlatform])
@@ -45,9 +47,17 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
     private let viewModel: GameDetailViewModel
     private let disposeBag = DisposeBag()
     private let viewWillAppearRelay = PublishRelay<Void>()
+    private let calendar = Calendar.current
+    private let releaseDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 
     private var currentGameDetail: GameDetail?
     private var isLoading = true
+    private var currentSectionOrder: [GameDetailSection] = GameDetailSection.allCases
 
     // MARK: - UI Components
     private lazy var collectionView: UICollectionView = {
@@ -75,6 +85,26 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
     }()
 
     private var screenshotCount = 0
+    private lazy var bookmarkBarButtonItem: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "bookmark"),
+            style: .plain,
+            target: self,
+            action: #selector(bookmarkNavigationButtonTapped)
+        )
+        item.tintColor = .Signature
+        return item
+    }()
+    private lazy var favoriteBarButtonItem: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "heart"),
+            style: .plain,
+            target: self,
+            action: #selector(favoriteNavigationButtonTapped)
+        )
+        item.tintColor = .systemRed
+        return item
+    }()
 
     // MARK: - Initialization
     init(viewModel: GameDetailViewModel) {
@@ -153,6 +183,10 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
             forCellWithReuseIdentifier: ActionButtonsCollectionViewCell.identifier
         )
         collectionView.register(
+            GameTitleCollectionViewCell.self,
+            forCellWithReuseIdentifier: GameTitleCollectionViewCell.identifier
+        )
+        collectionView.register(
             GenreAndTagsCollectionViewCell.self,
             forCellWithReuseIdentifier: GenreAndTagsCollectionViewCell.identifier
         )
@@ -195,29 +229,34 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
 
     private func createLayout() -> UICollectionViewLayout {
         let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, layoutEnvironment in
-            guard let section = GameDetailSection(rawValue: sectionIndex) else { return nil }
+            guard let self = self else { return nil }
+            guard sectionIndex < self.currentSectionOrder.count else { return nil }
+
+            let section = self.currentSectionOrder[sectionIndex]
 
             switch section {
             case .screenshots:
-                return self?.createScreenshotsSection()
+                return self.createScreenshotsSection()
             case .releaseAndRating:
-                return self?.createReleaseAndRatingSection()
+                return self.createReleaseAndRatingSection()
             case .actionButtons:
-                return self?.createActionButtonsSection()
+                return self.createActionButtonsSection()
+            case .gameTitle:
+                return self.createGameTitleSection()
             case .genreAndTags:
-                return self?.createGenreAndTagsSection()
+                return self.createGenreAndTagsSection()
             case .ageRating:
-                return self?.createAgeRatingSection()
+                return self.createAgeRatingSection()
             case .platforms:
-                return self?.createPlatformsSection()
+                return self.createPlatformsSection()
             case .description:
-                return self?.createDescriptionSection()
+                return self.createDescriptionSection()
             case .website:
-                return self?.createWebsiteSection()
+                return self.createWebsiteSection()
             case .systemRequirements:
-                return self?.createSystemRequirementsSection()
+                return self.createSystemRequirementsSection()
             case .developerPublisher:
-                return self?.createDeveloperPublisherSection()
+                return self.createDeveloperPublisherSection()
             }
         }
         return layout
@@ -307,6 +346,25 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
 
         let section = NSCollectionLayoutSection(group: group)
         section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16)
+
+        return section
+    }
+
+    private func createGameTitleSection() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(1)
+        )
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1.0),
+            heightDimension: .estimated(1)
+        )
+        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 8, trailing: 16)
 
         return section
     }
@@ -459,6 +517,24 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
                 owner.showAlert(title: L10n.error, message: message)
             }
             .disposed(by: disposeBag)
+
+        FavoriteManager.shared.favoriteStatusChanged
+            .observe(on: MainScheduler.instance)
+            .subscribe(with: self) { owner, event in
+                let (gameId, _) = event
+                guard owner.currentGameDetail?.id == gameId else { return }
+                owner.updateNavigationActionButtonImages(gameId: gameId)
+            }
+            .disposed(by: disposeBag)
+
+        ReadingManager.shared.readingStatusChanged
+            .observe(on: MainScheduler.instance)
+            .subscribe(with: self) { owner, event in
+                let (gameId, _) = event
+                guard owner.currentGameDetail?.id == gameId else { return }
+                owner.updateNavigationActionButtonImages(gameId: gameId)
+            }
+            .disposed(by: disposeBag)
     }
 
     // MARK: - DataSource
@@ -490,9 +566,20 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
             snapshot.appendItems([.releaseAndRating(gameDetail.released, gameDetail.rating, gameDetail.ratingsCount)], toSection: .releaseAndRating)
         }
 
-        // Action Buttons section - 항상 표시
-        snapshot.appendSections([.actionButtons])
-        snapshot.appendItems([.actionButtons(gameDetail.id)], toSection: .actionButtons)
+        let showsNotificationButton = shouldShowNotificationButton(releasedString: gameDetail.released)
+        if showsNotificationButton {
+            snapshot.appendSections([.actionButtons])
+            snapshot.appendItems([.actionButtons(gameDetail.id)], toSection: .actionButtons)
+            navigationItem.rightBarButtonItems = nil
+        } else {
+            navigationItem.rightBarButtonItems = [favoriteBarButtonItem, bookmarkBarButtonItem]
+            updateNavigationActionButtonImages(gameId: gameDetail.id)
+        }
+
+        if !gameDetail.name.isEmpty {
+            snapshot.appendSections([.gameTitle])
+            snapshot.appendItems([.gameTitle(gameDetail.name)], toSection: .gameTitle)
+        }
 
         // Genre and Tags section - 장르나 태그가 하나라도 있을 때만 추가
         if !gameDetail.genres.isEmpty || !gameDetail.tags.isEmpty {
@@ -524,6 +611,7 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
             snapshot.appendItems([.developerPublisher(gameDetail.developers, gameDetail.publishers)], toSection: .developerPublisher)
         }
 
+        currentSectionOrder = snapshot.sectionIdentifiers
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 
@@ -559,41 +647,25 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
                 ) as? ActionButtonsCollectionViewCell else {
                     return UICollectionViewCell()
                 }
-                cell.configure(with: gameId)
+                cell.configure(with: gameId, showsNotificationButton: true)
 
-                cell.onBookmarkButtonTapped = { [weak self] gameId in
+                cell.onBookmarkButtonTapped = { [weak self] _ in
                     guard let self = self,
                           let gameDetail = self.currentGameDetail else { return }
 
                     let game = gameDetail.toGame()
-
-                    // 이미 기록 중인 경우: 삭제 확인 alert
-                    if ReadingManager.shared.isReading(gameId: gameId) {
-                        let alert = UIAlertController(
-                            title: L10n.GameDetail.diaryDeleteAlertTitle,
-                            message: "game_detail_alert_message_diary_delete".localized(with: game.name),
-                            preferredStyle: .alert
-                        )
-                        alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
-                        alert.addAction(UIAlertAction(title: L10n.delete, style: .destructive) { _ in
-                            ReadingManager.shared.removeReading(gameId: gameId)
-                        })
-                        self.present(alert, animated: true)
-                    } else {
-                        // 기록 추가
-                        ReadingManager.shared.addReading(game)
-                    }
+                    self.toggleBookmark(for: game)
                 }
 
-                cell.onFavoriteButtonTapped = { [weak self] gameId in
+                cell.onFavoriteButtonTapped = { [weak self] _ in
                     guard let self = self,
                           let gameDetail = self.currentGameDetail else { return }
 
                     let game = gameDetail.toGame()
-                    FavoriteManager.shared.toggleFavorite(game)
+                    self.toggleFavorite(for: game)
                 }
 
-                cell.onNotificationButtonTapped = { [weak self] gameId in
+                cell.onNotificationButtonTapped = { [weak self] _ in
                     guard let self = self,
                           let gameDetail = self.currentGameDetail else { return }
 
@@ -601,6 +673,16 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
                     self.handleNotificationToggle(for: game)
                 }
 
+                return cell
+
+            case .gameTitle(let title):
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: GameTitleCollectionViewCell.identifier,
+                    for: indexPath
+                ) as? GameTitleCollectionViewCell else {
+                    return UICollectionViewCell()
+                }
+                cell.configure(with: title)
                 return cell
 
             case .genreAndTags(let genres, let tags):
@@ -689,4 +771,54 @@ final class GameDetailViewController: BaseViewController, UICollectionViewDelega
         return dataSource
     }()
 
+    private func shouldShowNotificationButton(releasedString: String?) -> Bool {
+        guard let releasedString,
+              let releasedDate = releaseDateFormatter.date(from: releasedString) else {
+            return false
+        }
+
+        let releasedDay = calendar.startOfDay(for: releasedDate)
+        let today = calendar.startOfDay(for: Date())
+        return releasedDay > today
+    }
+
+    private func updateNavigationActionButtonImages(gameId: Int) {
+        bookmarkBarButtonItem.image = UIImage(
+            systemName: ReadingManager.shared.isReading(gameId: gameId) ? "bookmark.fill" : "bookmark"
+        )
+        favoriteBarButtonItem.image = UIImage(
+            systemName: FavoriteManager.shared.isFavorite(gameId: gameId) ? "heart.fill" : "heart"
+        )
+    }
+
+    private func toggleBookmark(for game: Game) {
+        if ReadingManager.shared.isReading(gameId: game.id) {
+            let alert = UIAlertController(
+                title: L10n.GameDetail.diaryDeleteAlertTitle,
+                message: "game_detail_alert_message_diary_delete".localized(with: game.name),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: L10n.cancel, style: .cancel))
+            alert.addAction(UIAlertAction(title: L10n.delete, style: .destructive) { _ in
+                ReadingManager.shared.removeReading(gameId: game.id)
+            })
+            present(alert, animated: true)
+        } else {
+            ReadingManager.shared.addReading(game)
+        }
+    }
+
+    private func toggleFavorite(for game: Game) {
+        FavoriteManager.shared.toggleFavorite(game)
+    }
+
+    @objc private func bookmarkNavigationButtonTapped() {
+        guard let gameDetail = currentGameDetail else { return }
+        toggleBookmark(for: gameDetail.toGame())
+    }
+
+    @objc private func favoriteNavigationButtonTapped() {
+        guard let gameDetail = currentGameDetail else { return }
+        toggleFavorite(for: gameDetail.toGame())
+    }
 }
