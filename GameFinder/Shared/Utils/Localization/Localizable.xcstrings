@@ -8,6 +8,18 @@
             "state" : "new",
             "value" : "%1$@ %2$@"
           }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@"
+          }
         }
       }
     },
@@ -80,6 +92,29 @@
         }
       }
     },
+    "calendar_empty_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No upcoming games on this date."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日には発売予定のゲームがありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출시 예정 게임이 없습니다."
+          }
+        }
+      }
+    },
     "cancel" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -91,13 +126,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "キャンセル"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "취소"
           }
         }
@@ -160,13 +195,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "「%@」のすべての記録とメディアを削除します。この操作は元に戻せません。"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "“%@”의 모든 기록과 미디어를 삭제합니다. 이 작업은 되돌릴 수 없습니다."
           }
         }
@@ -189,7 +224,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "기록을 삭제합니다. 삭제하면 복구가 불가능합니다."
           }
         }
@@ -229,13 +264,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "記録削除"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "기록 삭제"
           }
         }
@@ -252,13 +287,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "保存に失敗しました"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "저장 실패"
           }
         }
@@ -275,13 +310,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "日記が空です。+ をタップして記録してみてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "다이어리가 비어있습니다. + 를 탭하여 기록해보세요."
           }
         }
@@ -304,7 +339,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "내용을 입력하세요"
           }
         }
@@ -321,13 +356,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "タイトルを入力してください"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "제목을 입력하세요"
           }
         }
@@ -367,13 +402,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "「%@」の記録が削除されました。"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "\"%@\"의 기록이 삭제되었습니다."
           }
         }
@@ -442,7 +477,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "API 호출 한도를 초과했습니다. 잠시 후 다시 시도해주세요."
           }
         }
@@ -459,13 +494,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "データ変換に失敗しました。もう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "데이터 변환에 실패했습니다. 다시 시도해주세요."
           }
         }
@@ -488,7 +523,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "서버 응답이 올바르지 않습니다. 다시 시도해주세요."
           }
         }
@@ -505,13 +540,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "無効なURLです。もう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "유효하지 않은 URL입니다. 다시 시도해주세요."
           }
         }
@@ -534,7 +569,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "데이터를 받지 못했습니다. 다시 시도해주세요."
           }
         }
@@ -551,13 +586,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "要求されたデータが見つかりません。もう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "요청한 데이터를 찾을 수 없습니다. 다시 시도해주세요."
           }
         }
@@ -580,7 +615,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "서버 오류가 발생했습니다. 다시 시도해주세요."
           }
         }
@@ -597,13 +632,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "エラーが発生しました。もう一度お試しください。"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "오류가 발생했습니다. 다시 시도해주세요."
           }
         }
@@ -649,7 +684,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "“%@” 다이어리에 작성된 기록과 미디어가 삭제됩니다. 삭제하면 복구가 불가능합니다."
           }
         }
@@ -689,13 +724,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "情報なし"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "정보 없음"
           }
         }
@@ -712,13 +747,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "年齢区分"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "연령 등급"
           }
         }
@@ -735,13 +770,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "ゲームの説明"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "게임 설명"
           }
         }
@@ -764,7 +799,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "개발사"
           }
         }
@@ -810,7 +845,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "플랫폼"
           }
         }
@@ -833,7 +868,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "퍼블리셔"
           }
         }
@@ -949,29 +984,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "검색 결과"
-          }
-        }
-      }
-    },
-    "search_result_empty_message" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No search results found for\n\"%@\"."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "「%@」\nに対する検索結果がありません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "\"%@\"\n에 대한 검색 결과가 없습니다."
           }
         }
       }
@@ -1240,13 +1252,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "ゲーム検索"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "게임 검색"
           }
         }
@@ -1482,6 +1494,29 @@
         }
       }
     },
+    "search_result_empty_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No search results found for\n\"%@\"."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」\nに対する検索結果がありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "\"%@\"\n에 대한 검색 결과가 없습니다."
+          }
+        }
+      }
+    },
     "section_header_free_games" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1614,7 +1649,7 @@
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "알림 권한 설정"
           }
         }
@@ -1662,29 +1697,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "언어"
-          }
-        }
-      }
-    },
-    "setting_contact_message" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The inquiry email address has been copied."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "お問い合わせメールアドレスがコピーされました。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "문의 이메일 주소가 복사되었습니다."
           }
         }
       }
@@ -2011,6 +2023,29 @@
         }
       }
     },
+    "tab_bar_title_fourth" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calendar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カレンダー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "캘린더"
+          }
+        }
+      }
+    },
     "tab_bar_title_second" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2053,52 +2088,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "설정"
-          }
-        }
-      }
-    },
-    "tab_bar_title_fourth" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Calendar"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "カレンダー"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "캘린더"
-          }
-        }
-      }
-    },
-    "calendar_empty_message" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No upcoming games on this date."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "この日には発売予定のゲームがありません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "출시 예정 게임이 없습니다."
           }
         }
       }
@@ -2228,7 +2217,7 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "毎日新しいゲームをおすすめします。"
           }
         },
@@ -2250,7 +2239,7 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "発売予定ゲームおすすめ"
           }
         },
@@ -2272,13 +2261,13 @@
         },
         "ja" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "発売予定ゲームをおすすめします。"
           }
         },
         "ko" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "출시 예정 게임을 추천받습니다."
           }
         }

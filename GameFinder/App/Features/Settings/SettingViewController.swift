@@ -220,17 +220,11 @@ final class SettingViewController: BaseViewController {
 
     private func sendEmail() {
         guard MFMailComposeViewController.canSendMail() else {
-            // 메일 전송이 불가능한 경우 기존처럼 클립보드에 복사
+            // 메일 전송이 불가능한 경우 이메일 주소를 클립보드에 복사
             let email = "jddudios@gmail.com"
             UIPasteboard.general.string = email
 
-            let alert = UIAlertController(
-                title: nil,
-                message: L10n.Settings.contactMessage,
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: L10n.Alert.okButton, style: .default))
-            present(alert, animated: true)
+            showToast(message: email)
             return
         }
 

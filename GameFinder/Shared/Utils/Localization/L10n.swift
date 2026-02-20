@@ -136,8 +136,6 @@ enum L10n {
         static let appNotiMessage = "setting_app_noti_message".localized
         static let appNotiSettingButton = "setting_app_noti_button".localized
         
-        static let contactMessage = "setting_contact_message".localized
-
         // Email
         static let emailSent = "setting_email_sent".localized
         static let emailSaved = "setting_email_saved".localized
