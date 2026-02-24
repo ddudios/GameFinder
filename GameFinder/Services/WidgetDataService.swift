@@ -218,10 +218,13 @@ final class AppGroupManager {
 final class WidgetDataService {
     static let shared = WidgetDataService()
 
+    private let legacyMockGameIDs: Set<Int> = [9999, 8888]
+
     private init() {}
 
     // MARK: - Test App Group with Mock Data
     /// 디버깅용: App Group이 정상 작동하는지 Mock 데이터로 테스트
+#if DEBUG
     func testAppGroupWithMockData() {
         print("🧪 [WidgetDataService] Testing App Group with Mock data...")
 
@@ -276,6 +279,7 @@ final class WidgetDataService {
         // 위젯 새로고침
         WidgetCenter.shared.reloadAllTimelines()
     }
+#endif
 
     // MARK: - Update Widget Data
     /// 앱에서 API를 호출하여 위젯용 데이터를 준비하고 App Group에 저장
@@ -287,6 +291,9 @@ final class WidgetDataService {
             print("   → Cannot proceed without App Group access")
             return
         }
+
+        // 과거 테스트 목데이터가 남아 있으면 정리
+        purgeLegacyMockWidgetDataIfNeeded()
 
         do {
             // 1. API에서 출시 예정 게임 가져오기
@@ -320,6 +327,24 @@ final class WidgetDataService {
             print("[WidgetDataService] Failed to update widget data: \(error)")
             print("   → Error details: \(error.localizedDescription)")
         }
+    }
+
+    /// 과거 디버깅용 테스트 데이터(9999/8888)가 저장되어 있으면 제거
+    private func purgeLegacyMockWidgetDataIfNeeded() {
+        guard let existingData = AppGroupManager.shared.loadWidgetData() else { return }
+
+        let filteredGames = existingData.games.filter { !legacyMockGameIDs.contains($0.id) }
+        guard filteredGames.count != existingData.games.count else { return }
+
+        let cleanedData = SharedWidgetData(
+            games: filteredGames,
+            lastUpdated: Date()
+        )
+        AppGroupManager.shared.saveWidgetData(cleanedData)
+        WidgetCenter.shared.reloadAllTimelines()
+
+        print("[WidgetDataService] Removed legacy mock games from App Group")
+        print("   → Before: \(existingData.games.count), After: \(filteredGames.count)")
     }
 
     // MARK: - Fetch Upcoming Games from API

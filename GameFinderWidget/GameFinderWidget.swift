@@ -7,6 +7,7 @@
 
 import WidgetKit
 import SwiftUI
+import UIKit
 
 // MARK: - Shared Widget Data Models
 /// App과 Widget 간 공유되는 게임 데이터
@@ -285,26 +286,33 @@ struct GameFinderWidgetEntryView : View {
     }
 
     private var emptyStateView: some View {
-        ZStack {
-            Image("appIcon_v2")
-                .resizable()
-                .scaledToFill()
-                .scaleEffect(2.3)
-                .overlay(Color.black.opacity(0.4))
+        let backgroundImageName = UIImage(named: "appIcon_v2") != nil ? "appIcon_v2" : "appIcon_nu"
 
-            VStack(alignment: .leading, spacing: 8) {
+        return ZStack {
+            Image(backgroundImageName)
+            .resizable()
+            .scaledToFill()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            .overlay(Color.black.opacity(0.42))
+
+            VStack(alignment: .leading, spacing: 10) {
                 Text(localizedString("widget_title", languageCode: entry.languageCode))
-                    .font(.headline)
+                    .font(.system(size: 22, weight: .semibold))
                     .foregroundColor(.white)
 
                 Divider()
-                    .background(Color.white)
+                    .background(Color.white.opacity(0.65))
 
                 Text(localizedString("widget_empty_message", languageCode: entry.languageCode))
+                    .font(.system(size: 18, weight: .regular))
                     .foregroundColor(.white)
             }
-            .padding(24)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func contentView(game: SharedWidgetGame) -> some View {

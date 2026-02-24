@@ -49,23 +49,6 @@ final class AppTabBarController: UITabBarController {
         super.viewDidLoad()
         configureTabBarController()
         configureTabBarAppearance()
-
-        // CRITICAL FIX: 위젯 데이터 강제 저장
-        // 앱이 로드되자마자 Mock 데이터를 App Group에 저장
-        testWidgetDataSaving()
-    }
-
-    /// 긴급 수정: 위젯 데이터 저장 테스트
-    /// 이 메서드가 호출되면 반드시 App Group에 데이터가 저장됨
-    private func testWidgetDataSaving() {
-        // Mock 데이터로 테스트
-        WidgetDataService.shared.testAppGroupWithMockData()
-
-        // 0.5초 후 실제 API 데이터로 업데이트
-        Task {
-            try? await Task.sleep(nanoseconds: 500_000_000)
-            await WidgetDataService.shared.updateWidgetData()
-        }
     }
     
     private func configureTabBarController() {

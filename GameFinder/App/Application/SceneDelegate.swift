@@ -55,20 +55,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         UIApplication.shared.applicationIconBadgeNumber = 0
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
 
-        // ✅ 위젯 데이터 업데이트
+        // 위젯 데이터 업데이트
         print("═══════════════════════════════════════════════════════")
         print("🚀 [SceneDelegate] App became active - updating widget data")
         print("═══════════════════════════════════════════════════════")
 
-        // ⚠️ 디버깅용: Mock 데이터로 먼저 테스트 (App Group 작동 확인)
-        // 실제 운영 시에는 주석 처리하고 updateWidgetData()만 사용
-        WidgetDataService.shared.testAppGroupWithMockData()
-
         // 실제 API 데이터로 업데이트 (비동기)
         Task {
-            // Mock 테스트 후 0.5초 대기 (로그 구분용)
-            try? await Task.sleep(nanoseconds: 500_000_000)
-
             print("═══════════════════════════════════════════════════════")
             print("🌐 [SceneDelegate] Starting real API data update")
             print("═══════════════════════════════════════════════════════")
@@ -134,4 +127,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
 }
-
