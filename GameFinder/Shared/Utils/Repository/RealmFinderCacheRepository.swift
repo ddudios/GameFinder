@@ -68,12 +68,19 @@ final class RealmFinderCacheRepository: FinderCacheRepository {
                     realm.add(item, update: .modified)
                 }
 
-                let meta = realm.object(ofType: RealmFinderSectionCacheMeta.self, forPrimaryKey: sectionKey)
-                    ?? RealmFinderSectionCacheMeta()
-                meta.sectionKey = sectionKey
-                meta.fetchedAt = fetchedAt
-                meta.ttlSeconds = Int(section.ttl)
-                realm.add(meta, update: .modified)
+                if let existingMeta = realm.object(
+                    ofType: RealmFinderSectionCacheMeta.self,
+                    forPrimaryKey: sectionKey
+                ) {
+                    existingMeta.fetchedAt = fetchedAt
+                    existingMeta.ttlSeconds = Int(section.ttl)
+                } else {
+                    let meta = RealmFinderSectionCacheMeta()
+                    meta.sectionKey = sectionKey
+                    meta.fetchedAt = fetchedAt
+                    meta.ttlSeconds = Int(section.ttl)
+                    realm.add(meta)
+                }
             }
 
             LogManager.database.debug("Saved finder cache section: \(section.rawValue), count: \(limitedGames.count)")
