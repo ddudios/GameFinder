@@ -18,6 +18,7 @@ final class FinderViewModel: RxViewModelProtocol {
         let popularGames: BehaviorRelay<[Game]>
         let freeGames: BehaviorRelay<[Game]>
         let upcomingGames: BehaviorRelay<[Game]>
+        let discountDeals: BehaviorRelay<[DiscountDeal]>
         let errorAlertMessage: PublishSubject<String>
     }
 
@@ -25,13 +26,16 @@ final class FinderViewModel: RxViewModelProtocol {
     private let cacheRepository: FinderCacheRepository
     private let calendar: Calendar
     private let dateFormatter: DateFormatter
+    private let discountPageSize: Int
 
     init(
         cacheRepository: FinderCacheRepository = RealmFinderCacheRepository(),
-        calendar: Calendar = .current
+        calendar: Calendar = .current,
+        discountPageSize: Int = 12
     ) {
         self.cacheRepository = cacheRepository
         self.calendar = calendar
+        self.discountPageSize = discountPageSize
 
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -44,6 +48,7 @@ final class FinderViewModel: RxViewModelProtocol {
         let popularGames = BehaviorRelay<[Game]>(value: [])
         let freeGames = BehaviorRelay<[Game]>(value: [])
         let upcomingGames = BehaviorRelay<[Game]>(value: [])
+        let discountDeals = BehaviorRelay<[DiscountDeal]>(value: [])
         let errorAlertMessage = PublishSubject<String>()
 
         input.viewWillAppear
@@ -51,6 +56,7 @@ final class FinderViewModel: RxViewModelProtocol {
                 owner.loadPopularGames(into: popularGames, errorAlertMessage: errorAlertMessage)
                 owner.loadFreeGames(into: freeGames, errorAlertMessage: errorAlertMessage)
                 owner.loadUpcomingGames(into: upcomingGames, errorAlertMessage: errorAlertMessage)
+                owner.loadDiscountDeals(into: discountDeals, errorAlertMessage: errorAlertMessage)
             }
             .disposed(by: disposeBag)
 
@@ -58,6 +64,7 @@ final class FinderViewModel: RxViewModelProtocol {
             popularGames: popularGames,
             freeGames: freeGames,
             upcomingGames: upcomingGames,
+            discountDeals: discountDeals,
             errorAlertMessage: errorAlertMessage
         )
     }
@@ -100,6 +107,26 @@ final class FinderViewModel: RxViewModelProtocol {
             shouldForceRefresh: shouldForceRefreshUpcoming(cachedGames:),
             router: makeUpcomingRouter
         )
+    }
+
+    private func loadDiscountDeals(
+        into relay: BehaviorRelay<[DiscountDeal]>,
+        errorAlertMessage: PublishSubject<String>
+    ) {
+        NetworkObservable.request(
+            router: CheapSharkRouter.deals(pageNumber: 0, pageSize: discountPageSize),
+            as: [CheapSharkDealDTO].self
+        )
+        .subscribe(with: self) { _, result in
+            switch result {
+            case .success(let dealDTOs):
+                let deals = dealDTOs.compactMap(DiscountDeal.init(from:))
+                relay.accept(deals)
+            case .failure(let networkError):
+                errorAlertMessage.onNext(networkError.errorDescription ?? "할인 게임팩 로드 실패")
+            }
+        }
+        .disposed(by: disposeBag)
     }
 
     private func loadSection(

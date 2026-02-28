@@ -123,6 +123,8 @@ final class HeaderDetailViewModel: RxViewModelProtocol {
                 ),
                 as: GameListDTO.self
             ).asObservable()
+        case .discountDeals:
+            return Observable.just(.failure(.noData))
         }
     }
 }

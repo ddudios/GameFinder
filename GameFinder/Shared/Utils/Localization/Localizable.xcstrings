@@ -1517,6 +1517,29 @@
         }
       }
     },
+    "section_header_discount_deals" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DISCOUNT DEALS"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "割引ゲームパック"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "할인 게임팩"
+          }
+        }
+      }
+    },
     "section_header_free_games" : {
       "extractionState" : "manual",
       "localizations" : {

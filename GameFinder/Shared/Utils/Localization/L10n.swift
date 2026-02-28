@@ -56,6 +56,9 @@ enum L10n {
         
         /// 무료 게임
         static let freeGamesSectionHeader = "section_header_free_games".localized
+
+        /// 할인 게임팩
+        static let discountDealsSectionHeader = "section_header_discount_deals".localized
         
         /// 인기 게임
         static let popularGamesSectionHeader = "section_header_popular_games".localized
