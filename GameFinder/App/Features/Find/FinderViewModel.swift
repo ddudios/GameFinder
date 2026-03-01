@@ -114,13 +114,19 @@ final class FinderViewModel: RxViewModelProtocol {
         errorAlertMessage: PublishSubject<String>
     ) {
         NetworkObservable.request(
-            router: CheapSharkRouter.deals(pageNumber: 0, pageSize: discountPageSize),
+            router: CheapSharkRouter.deals(
+                pageNumber: 0,
+                pageSize: discountPageSize,
+                onSaleOnly: true
+            ),
             as: [CheapSharkDealDTO].self
         )
         .subscribe(with: self) { _, result in
             switch result {
             case .success(let dealDTOs):
-                let deals = dealDTOs.compactMap(DiscountDeal.init(from:))
+                let deals = dealDTOs
+                    .compactMap(DiscountDeal.init(from:))
+                    .filter(\.isDiscounted)
                 relay.accept(deals)
             case .failure(let networkError):
                 errorAlertMessage.onNext(networkError.errorDescription ?? "할인 게임팩 로드 실패")

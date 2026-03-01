@@ -24,6 +24,10 @@ struct DiscountDeal: Hashable {
         salePrice > 0 || normalPrice > 0
     }
 
+    var isDiscounted: Bool {
+        salePrice < normalPrice || savingsPercent > 0
+    }
+
     init?(from dto: CheapSharkDealDTO) {
         guard !dto.dealID.isEmpty, !dto.title.isEmpty else {
             return nil

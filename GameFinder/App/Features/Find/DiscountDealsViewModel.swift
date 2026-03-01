@@ -65,7 +65,11 @@ final class DiscountDealsViewModel: RxViewModelProtocol {
         let requestPage = currentPage + 1
 
         NetworkObservable.request(
-            router: CheapSharkRouter.deals(pageNumber: requestPage, pageSize: pageSize),
+            router: CheapSharkRouter.deals(
+                pageNumber: requestPage,
+                pageSize: pageSize,
+                onSaleOnly: true
+            ),
             as: [CheapSharkDealDTO].self
         )
         .subscribe(with: self) { owner, result in
@@ -73,7 +77,9 @@ final class DiscountDealsViewModel: RxViewModelProtocol {
 
             switch result {
             case .success(let dealDTOs):
-                let newDeals = dealDTOs.compactMap(DiscountDeal.init(from:))
+                let newDeals = dealDTOs
+                    .compactMap(DiscountDeal.init(from:))
+                    .filter(\.isDiscounted)
 
                 if newDeals.isEmpty {
                     if requestPage == 0 {

@@ -9,7 +9,13 @@ import Foundation
 import Alamofire
 
 enum CheapSharkRouter: URLRequestConvertible {
-    case deals(pageNumber: Int, pageSize: Int, sortBy: String = "Savings", descending: Bool = true)
+    case deals(
+        pageNumber: Int,
+        pageSize: Int,
+        sortBy: String = "Savings",
+        descending: Bool = true,
+        onSaleOnly: Bool = false
+    )
 
     private var baseURL: URL {
         URL(string: "https://www.cheapshark.com/api/1.0")!
@@ -26,12 +32,13 @@ enum CheapSharkRouter: URLRequestConvertible {
 
     private var parameters: [String: Any] {
         switch self {
-        case let .deals(pageNumber, pageSize, sortBy, descending):
+        case let .deals(pageNumber, pageSize, sortBy, descending, onSaleOnly):
             return [
                 "pageNumber": pageNumber,
                 "pageSize": pageSize,
                 "sortBy": sortBy,
-                "desc": descending ? 1 : 0
+                "desc": descending ? 1 : 0,
+                "onSale": onSaleOnly ? 1 : 0
             ]
         }
     }
