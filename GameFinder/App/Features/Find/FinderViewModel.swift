@@ -127,6 +127,7 @@ final class FinderViewModel: RxViewModelProtocol {
                 let deals = dealDTOs
                     .compactMap(DiscountDeal.init(from:))
                     .filter(\.isDiscounted)
+                    .sorted { $0.effectiveSavingsPercent > $1.effectiveSavingsPercent }
                 relay.accept(deals)
             case .failure(let networkError):
                 errorAlertMessage.onNext(networkError.errorDescription ?? "할인 게임팩 로드 실패")

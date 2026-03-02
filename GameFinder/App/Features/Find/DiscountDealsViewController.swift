@@ -154,9 +154,13 @@ final class DiscountDealsViewController: BaseViewController {
     }
 
     private func applyDealsSnapshot(_ deals: [DiscountDeal]) {
+        let discountedDeals = deals
+            .filter(\.isDiscounted)
+            .sorted { $0.effectiveSavingsPercent > $1.effectiveSavingsPercent }
+
         var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
         snapshot.appendSections([.main])
-        snapshot.appendItems(deals.map { .deal($0) }, toSection: .main)
+        snapshot.appendItems(discountedDeals.map { .deal($0) }, toSection: .main)
         dataSource.apply(snapshot, animatingDifferences: true)
     }
 

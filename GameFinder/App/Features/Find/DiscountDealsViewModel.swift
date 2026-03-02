@@ -92,7 +92,8 @@ final class DiscountDealsViewModel: RxViewModelProtocol {
                 owner.currentPage = requestPage
 
                 let mergedDeals = owner.mergeWithoutDuplicates(current: relay.value, incoming: newDeals)
-                relay.accept(mergedDeals)
+                let sortedDeals = mergedDeals.sorted { $0.effectiveSavingsPercent > $1.effectiveSavingsPercent }
+                relay.accept(sortedDeals)
 
             case .failure(let networkError):
                 errorAlertMessage.onNext(networkError.errorDescription ?? "할인 게임팩 로드 실패")

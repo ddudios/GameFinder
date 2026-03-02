@@ -138,8 +138,7 @@ final class DiscountDealCollectionViewCell: BaseCollectionViewCell {
         )
         normalPriceLabel.attributedText = attributed
 
-        let roundedSaving = Int(deal.savingsPercent.rounded())
-        savingsBadge.text = "  -\(roundedSaving)%  "
+        savingsBadge.text = "  -\(deal.displaySavingsPercent)%  "
 
         if let thumbURL = deal.thumbURL,
            let url = URL(string: thumbURL) {
