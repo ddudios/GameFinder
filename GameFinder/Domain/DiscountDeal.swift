@@ -10,6 +10,7 @@ import Foundation
 struct DiscountDeal: Hashable {
     let dealID: String
     let storeID: String
+    let storeName: String?
     let title: String
     let salePrice: Double
     let normalPrice: Double
@@ -20,6 +21,10 @@ struct DiscountDeal: Hashable {
 
     var redirectURL: URL? {
         URL(string: "https://www.cheapshark.com/redirect?dealID=\(dealID)")
+    }
+
+    var displayStoreName: String {
+        storeName ?? "Store \(storeID)"
     }
 
     var hasValidPrice: Bool {
@@ -45,13 +50,14 @@ struct DiscountDeal: Hashable {
         return max(1, Int(effectiveSavingsPercent.rounded()))
     }
 
-    init?(from dto: CheapSharkDealDTO) {
+    init?(from dto: CheapSharkDealDTO, storeName: String? = nil) {
         guard !dto.dealID.isEmpty, !dto.title.isEmpty else {
             return nil
         }
 
         self.dealID = dto.dealID
         self.storeID = dto.storeID
+        self.storeName = storeName
         self.title = dto.title
         self.salePrice = Double(dto.salePrice) ?? 0
         self.normalPrice = Double(dto.normalPrice) ?? 0

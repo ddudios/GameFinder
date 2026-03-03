@@ -27,6 +27,9 @@ final class FinderViewModel: RxViewModelProtocol {
     private let calendar: Calendar
     private let dateFormatter: DateFormatter
     private let discountPageSize: Int
+    private var storeNamesByID: [String: String] = [:]
+    private var hasFetchedStoreNames = false
+    private var isLoadingStoreNames = false
 
     init(
         cacheRepository: FinderCacheRepository = RealmFinderCacheRepository(),
@@ -113,6 +116,11 @@ final class FinderViewModel: RxViewModelProtocol {
         into relay: BehaviorRelay<[DiscountDeal]>,
         errorAlertMessage: PublishSubject<String>
     ) {
+        if !hasFetchedStoreNames {
+            fetchStoreNamesIfNeeded(into: relay, errorAlertMessage: errorAlertMessage)
+            return
+        }
+
         NetworkObservable.request(
             router: CheapSharkRouter.deals(
                 pageNumber: 0,
@@ -121,17 +129,47 @@ final class FinderViewModel: RxViewModelProtocol {
             ),
             as: [CheapSharkDealDTO].self
         )
-        .subscribe(with: self) { _, result in
+        .subscribe(with: self) { owner, result in
             switch result {
             case .success(let dealDTOs):
                 let deals = dealDTOs
-                    .compactMap(DiscountDeal.init(from:))
+                    .compactMap { DiscountDeal(from: $0, storeName: owner.storeNamesByID[$0.storeID]) }
                     .filter(\.isDiscounted)
                     .sorted { $0.effectiveSavingsPercent > $1.effectiveSavingsPercent }
                 relay.accept(deals)
             case .failure(let networkError):
                 errorAlertMessage.onNext(networkError.errorDescription ?? "할인 게임팩 로드 실패")
             }
+        }
+        .disposed(by: disposeBag)
+    }
+
+    private func fetchStoreNamesIfNeeded(
+        into relay: BehaviorRelay<[DiscountDeal]>,
+        errorAlertMessage: PublishSubject<String>
+    ) {
+        guard !isLoadingStoreNames else { return }
+        isLoadingStoreNames = true
+
+        NetworkObservable.request(
+            router: CheapSharkRouter.stores,
+            as: [CheapSharkStoreDTO].self
+        )
+        .subscribe(with: self) { owner, result in
+            owner.isLoadingStoreNames = false
+            owner.hasFetchedStoreNames = true
+
+            switch result {
+            case .success(let storeDTOs):
+                owner.storeNamesByID = storeDTOs.reduce(into: [String: String]()) { partialResult, store in
+                    guard !store.storeID.isEmpty else { return }
+                    partialResult[store.storeID] = store.storeName
+                }
+            case .failure:
+                owner.storeNamesByID = [:]
+            }
+
+            owner.loadDiscountDeals(into: relay, errorAlertMessage: errorAlertMessage)
         }
         .disposed(by: disposeBag)
     }

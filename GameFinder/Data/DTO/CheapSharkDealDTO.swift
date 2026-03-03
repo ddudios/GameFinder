@@ -16,3 +16,8 @@ struct CheapSharkDealDTO: Decodable {
     let savings: String
     let thumb: String?
 }
+
+struct CheapSharkStoreDTO: Decodable {
+    let storeID: String
+    let storeName: String
+}

@@ -16,6 +16,7 @@ enum CheapSharkRouter: URLRequestConvertible {
         descending: Bool = true,
         onSaleOnly: Bool = false
     )
+    case stores
 
     private var baseURL: URL {
         URL(string: "https://www.cheapshark.com/api/1.0")!
@@ -27,6 +28,8 @@ enum CheapSharkRouter: URLRequestConvertible {
         switch self {
         case .deals:
             return "/deals"
+        case .stores:
+            return "/stores"
         }
     }
 
@@ -40,6 +43,8 @@ enum CheapSharkRouter: URLRequestConvertible {
                 "desc": descending ? 1 : 0,
                 "onSale": onSaleOnly ? 1 : 0
             ]
+        case .stores:
+            return [:]
         }
     }
 

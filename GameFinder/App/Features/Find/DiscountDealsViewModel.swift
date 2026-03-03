@@ -23,7 +23,10 @@ final class DiscountDealsViewModel: RxViewModelProtocol {
     private let disposeBag = DisposeBag()
     private var currentPage = -1
     private var isLoading = false
+    private var isLoadingStoreNames = false
     private var hasReachedEnd = false
+    private var hasFetchedStoreNames = false
+    private var storeNamesByID: [String: String] = [:]
 
     private let pageSize: Int
 
@@ -61,6 +64,11 @@ final class DiscountDealsViewModel: RxViewModelProtocol {
     ) {
         guard !isLoading, !hasReachedEnd else { return }
 
+        if !hasFetchedStoreNames {
+            fetchStoreNamesIfNeeded(into: relay, errorAlertMessage: errorAlertMessage)
+            return
+        }
+
         isLoading = true
         let requestPage = currentPage + 1
 
@@ -78,7 +86,7 @@ final class DiscountDealsViewModel: RxViewModelProtocol {
             switch result {
             case .success(let dealDTOs):
                 let newDeals = dealDTOs
-                    .compactMap(DiscountDeal.init(from:))
+                    .compactMap { DiscountDeal(from: $0, storeName: owner.storeNamesByID[$0.storeID]) }
                     .filter(\.isDiscounted)
 
                 if newDeals.isEmpty {
@@ -98,6 +106,36 @@ final class DiscountDealsViewModel: RxViewModelProtocol {
             case .failure(let networkError):
                 errorAlertMessage.onNext(networkError.errorDescription ?? "할인 게임팩 로드 실패")
             }
+        }
+        .disposed(by: disposeBag)
+    }
+
+    private func fetchStoreNamesIfNeeded(
+        into relay: BehaviorRelay<[DiscountDeal]>,
+        errorAlertMessage: PublishSubject<String>
+    ) {
+        guard !isLoadingStoreNames else { return }
+        isLoadingStoreNames = true
+
+        NetworkObservable.request(
+            router: CheapSharkRouter.stores,
+            as: [CheapSharkStoreDTO].self
+        )
+        .subscribe(with: self) { owner, result in
+            owner.isLoadingStoreNames = false
+            owner.hasFetchedStoreNames = true
+
+            switch result {
+            case .success(let storeDTOs):
+                owner.storeNamesByID = storeDTOs.reduce(into: [String: String]()) { partialResult, store in
+                    guard !store.storeID.isEmpty else { return }
+                    partialResult[store.storeID] = store.storeName
+                }
+            case .failure:
+                owner.storeNamesByID = [:]
+            }
+
+            owner.fetchNextPage(into: relay, errorAlertMessage: errorAlertMessage)
         }
         .disposed(by: disposeBag)
     }

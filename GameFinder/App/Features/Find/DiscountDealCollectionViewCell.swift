@@ -125,7 +125,7 @@ final class DiscountDealCollectionViewCell: BaseCollectionViewCell {
 
     func configure(with deal: DiscountDeal) {
         titleLabel.text = deal.title
-        storeLabel.text = "Store \(deal.storeID)"
+        storeLabel.text = deal.displayStoreName
         salePriceLabel.text = Self.currencyFormatter.string(from: NSNumber(value: deal.salePrice)) ?? "$\(deal.salePrice)"
 
         let normalPriceText = Self.currencyFormatter.string(from: NSNumber(value: deal.normalPrice)) ?? "$\(deal.normalPrice)"
