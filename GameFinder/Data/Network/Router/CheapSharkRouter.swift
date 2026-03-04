@@ -13,7 +13,7 @@ enum CheapSharkRouter: URLRequestConvertible {
         pageNumber: Int,
         pageSize: Int,
         sortBy: String = "Savings",
-        descending: Bool = true,
+        descending: Bool = false,
         onSaleOnly: Bool = false
     )
     case stores

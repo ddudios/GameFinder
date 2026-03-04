@@ -76,6 +76,7 @@ final class DiscountDealsViewModel: RxViewModelProtocol {
             router: CheapSharkRouter.deals(
                 pageNumber: requestPage,
                 pageSize: pageSize,
+                descending: false,
                 onSaleOnly: true
             ),
             as: [CheapSharkDealDTO].self

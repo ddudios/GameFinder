@@ -125,6 +125,7 @@ final class FinderViewModel: RxViewModelProtocol {
             router: CheapSharkRouter.deals(
                 pageNumber: 0,
                 pageSize: discountPageSize,
+                descending: false,
                 onSaleOnly: true
             ),
             as: [CheapSharkDealDTO].self
