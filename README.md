@@ -1,10 +1,10 @@
-<img width="100" height="132" alt="GameFinder" src="YOUR_LOGO_IMAGE_URL" />
+<img width="100" height="100" alt="GameFinder" src="https://github.com/user-attachments/assets/e4b8274e-7595-4ae8-bef8-8ce2f685f542" />
 
 # GameFinder
 
 게임 탐색, 일정 관리, 다이어리 기록, 알림, 위젯 연동을 하나의 흐름으로 연결한 앱입니다.
 
-|<img width="200" alt="SCREEN_1" src="YOUR_SCREENSHOT_URL_1" />|<img width="200" alt="SCREEN_2" src="YOUR_SCREENSHOT_URL_2" />|<img width="200" alt="SCREEN_3" src="YOUR_SCREENSHOT_URL_3" />|<img width="200" alt="SCREEN_4" src="YOUR_SCREENSHOT_URL_4" />|
+|<img width="200" alt="IMG_3889" src="https://github.com/user-attachments/assets/c17d36cf-38aa-4d01-b3dc-9479c7d99541" />|<img width="200"  alt="IMG_3890" src="https://github.com/user-attachments/assets/fccfeee6-8441-4046-8fb4-a00e8ac6c542" />|<img width="200" alt="IMG_3884" src="https://github.com/user-attachments/assets/b58163c9-5147-421a-8fa1-cc9f48cc0aea" />|<img width="200" alt="IMG_3887" src="https://github.com/user-attachments/assets/eb3d603c-a63c-4ce9-8078-ff571f58a31d" />|
 |:-:|:-:|:-:|:-:|
 
 |구분|내용|
@@ -45,8 +45,6 @@
 
 ### 아키텍처
 
-<img width="719" height="435" alt="ARCHITECTURE_DIAGRAM" src="YOUR_ARCHITECTURE_IMAGE_URL" />
-
 - 화면 로직은 `ViewController + ViewModel(MVVM)`로 분리
 - 비동기 이벤트/상태 바인딩은 `RxSwift/RxCocoa`로 처리
 - 네트워크 통신은 `Router + NetworkManager(Alamofire)`로 캡슐화
@@ -66,7 +64,7 @@
 
 ### 홈/탐색 (Finder)
 
-|<img width="200" alt="FINDER_1" src="YOUR_FINDER_SCREENSHOT_URL_1" />|<img width="200" alt="FINDER_2" src="YOUR_FINDER_SCREENSHOT_URL_2" />|
+|<img width="200" alt="IMG_3901" src="https://github.com/user-attachments/assets/a4b9b310-f6f0-40e2-9551-3fe8d4994e47" />|<img width="200" alt="IMG_3890" src="https://github.com/user-attachments/assets/6c871070-1dab-4c98-aa6f-046cdc5b1bff" />|
 |:-:|:-:|
 
 - 인기 게임, 무료 게임, 출시 예정 게임, 할인 딜 섹션 제공
@@ -76,7 +74,7 @@
 
 ### 검색 (Search)
 
-|<img width="200" alt="SEARCH_1" src="YOUR_SEARCH_SCREENSHOT_URL_1" />|<img width="200" alt="SEARCH_2" src="YOUR_SEARCH_SCREENSHOT_URL_2" />|
+|<img width="200" alt="IMG_3882" src="https://github.com/user-attachments/assets/fcf3b823-970c-4779-961b-da94903cd26b" />|<img width="200" alt="Screenshot 2026-03-06 at 10 05 56 AM" src="https://github.com/user-attachments/assets/f92488e8-87f8-4700-b2a0-5b17ac1786ec" />|
 |:-:|:-:|
 
 - 키워드 기반 게임 검색 지원
@@ -85,8 +83,8 @@
 
 ### 게임 상세 (Detail)
 
-|<img width="200" alt="DETAIL_1" src="YOUR_DETAIL_SCREENSHOT_URL_1" />|<img width="200" alt="DETAIL_2" src="YOUR_DETAIL_SCREENSHOT_URL_2" />|
-|:-:|:-:|
+|<img width="200" alt="IMG_3911" src="https://github.com/user-attachments/assets/44d260ef-a99d-4753-b152-09e94dd92471" />|
+|:-:|
 
 - 게임 기본 정보(제목/출시일/평점/장르/태그) 조회
 - 스크린샷/플랫폼/개발사/퍼블리셔/공식 사이트 정보 제공
@@ -94,7 +92,7 @@
 
 ### 다이어리 (Diary)
 
-|<img width="200" alt="DIARY_1" src="YOUR_DIARY_SCREENSHOT_URL_1" />|<img width="200" alt="DIARY_2" src="YOUR_DIARY_SCREENSHOT_URL_2" />|
+|<img width="200" alt="IMG_3897" src="https://github.com/user-attachments/assets/c2e9efa9-4003-4640-b1bf-fc1b93f82453" />|<img width="200" alt="IMG_4154" src="https://github.com/user-attachments/assets/0f51528d-5af0-491d-924d-6fb29d28b43a" />|
 |:-:|:-:|
 
 - 게임별 플레이 다이어리 작성/수정/삭제 지원
@@ -104,8 +102,8 @@
 
 ### 라이브러리 (Library)
 
-|<img width="200" alt="LIBRARY_1" src="YOUR_LIBRARY_SCREENSHOT_URL_1" />|<img width="200" alt="LIBRARY_2" src="YOUR_LIBRARY_SCREENSHOT_URL_2" />|
-|:-:|:-:|
+|<img width="200" alt="IMG_4156" src="https://github.com/user-attachments/assets/3d657383-a20f-4988-9190-b5c31ea4216d" />|
+|:-:|
 
 - 다이어리/즐겨찾기/알림을 카테고리별로 통합 조회
 - PageView 기반 카테고리 전환 UI 구성
@@ -113,8 +111,8 @@
 
 ### 캘린더 (Calendar)
 
-|<img width="200" alt="CALENDAR_1" src="YOUR_CALENDAR_SCREENSHOT_URL_1" />|<img width="200" alt="CALENDAR_2" src="YOUR_CALENDAR_SCREENSHOT_URL_2" />|
-|:-:|:-:|
+|<img width="200" alt="IMG_3884" src="https://github.com/user-attachments/assets/fef5e3eb-0f46-4077-ad55-ade38ded0796" />|
+|:-:|
 
 - FSCalendar 기반 월간 출시일 탐색
 - 날짜 선택 시 해당 일자의 출시 게임 목록 표시
@@ -122,8 +120,8 @@
 
 ### 알림/푸시
 
-|<img width="200" alt="NOTI_1" src="YOUR_NOTIFICATION_SCREENSHOT_URL_1" />|<img width="200" alt="NOTI_2" src="YOUR_NOTIFICATION_SCREENSHOT_URL_2" />|
-|:-:|:-:|
+||
+|:-:|
 
 - 출시 하루 전 로컬 알림 스케줄링
 - 게임별 알림 on/off 및 전역 알림 토글 지원
@@ -132,7 +130,7 @@
 
 ### 위젯/딥링크
 
-|<img width="200" alt="WIDGET_1" src="YOUR_WIDGET_SCREENSHOT_URL_1" />|<img width="200" alt="WIDGET_2" src="YOUR_WIDGET_SCREENSHOT_URL_2" />|
+|<img width="200" alt="스크린샷 2026-03-06 오전 10 34 53" src="https://github.com/user-attachments/assets/f57268df-8706-4edd-a0f7-bdb8190adfc7" />|<img width="200" alt="스크린샷 2026-03-06 오전 10 33 51" src="https://github.com/user-attachments/assets/3369975c-ae9b-4f4b-9119-95e1f183d1ed" />
 |:-:|:-:|
 
 - WidgetKit Extension으로 출시 예정 게임 정보 노출
@@ -141,7 +139,7 @@
 
 ### 설정
 
-|<img width="200" alt="SETTINGS_1" src="YOUR_SETTINGS_SCREENSHOT_URL_1" />|<img width="200" alt="SETTINGS_2" src="YOUR_SETTINGS_SCREENSHOT_URL_2" />|
+|<img width="200" alt="IMG_3899" src="https://github.com/user-attachments/assets/b9eb1d69-2490-49bb-b488-8cf3e6e8017a" />|<img width="200" alt="IMG_3992" src="https://github.com/user-attachments/assets/6d16dd7d-9e91-4c5a-82fe-bc4fb65e84d6" />|
 |:-:|:-:|
 
 - 알림 권한 확인 및 설정 화면 연동
