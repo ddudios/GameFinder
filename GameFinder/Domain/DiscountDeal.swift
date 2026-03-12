@@ -16,6 +16,7 @@ struct DiscountDeal: Hashable {
     let normalPrice: Double
     let savingsPercent: Double
     let thumbURL: String?
+    let lastChangeDate: Date?
 
     private static let discountEpsilon: Double = 0.0001
 
@@ -63,5 +64,11 @@ struct DiscountDeal: Hashable {
         self.normalPrice = Double(dto.normalPrice) ?? 0
         self.savingsPercent = max(0, Double(dto.savings) ?? 0)
         self.thumbURL = dto.thumb
+
+        if let timestamp = dto.lastChange {
+            self.lastChangeDate = Date(timeIntervalSince1970: TimeInterval(timestamp))
+        } else {
+            self.lastChangeDate = nil
+        }
     }
 }

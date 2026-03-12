@@ -15,6 +15,7 @@ struct CheapSharkDealDTO: Decodable {
     let normalPrice: String
     let savings: String
     let thumb: String?
+    let lastChange: Int?
 }
 
 struct CheapSharkStoreDTO: Decodable {

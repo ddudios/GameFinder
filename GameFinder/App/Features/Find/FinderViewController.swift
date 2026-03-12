@@ -69,6 +69,9 @@ final class FinderViewController: BaseViewController {
     private var isLoadingFree = true
     private var isLoadingDiscountDeals = true
 
+    // Deal page validator
+    private var dealValidator: DealPageValidator?
+
     // Auto scroll for upcomingGames
     private var autoScrollTimer: Timer?
     private var currentUpcomingIndex = 0
@@ -449,8 +452,33 @@ final class FinderViewController: BaseViewController {
 
     private func presentDiscountDeal(_ deal: DiscountDeal) {
         guard let url = deal.redirectURL else { return }
-        let safariVC = SFSafariViewController(url: url)
-        present(safariVC, animated: true)
+
+        let indicator = UIActivityIndicatorView(style: .large)
+        indicator.center = view.center
+        indicator.color = .Signature
+        indicator.startAnimating()
+        view.addSubview(indicator)
+        view.isUserInteractionEnabled = false
+
+        let validator = DealPageValidator()
+        self.dealValidator = validator
+
+        validator.validate(url: url, in: view) { [weak self] isAvailable in
+            indicator.removeFromSuperview()
+            self?.view.isUserInteractionEnabled = true
+            self?.dealValidator = nil
+            guard let self else { return }
+
+            if isAvailable {
+                let safariVC = SFSafariViewController(url: url)
+                self.present(safariVC, animated: true)
+            } else {
+                self.showAlert(
+                    title: L10n.error,
+                    message: "이 할인 딜은 현재 지역 또는 플랫폼에서 이용할 수 없습니다."
+                )
+            }
+        }
     }
 
     override func configureHierarchy() {
