@@ -9,6 +9,74 @@ import UIKit
 import SnapKit
 import Kingfisher
 
+// MARK: - TrapezoidBadgeLabel
+private final class TrapezoidBadgeLabel: UIView {
+
+    private let label: UILabel = {
+        let label = UILabel()
+        label.font = .NanumBarunGothic.bold12
+        label.textColor = .systemBackground
+        label.textAlignment = .center
+        return label
+    }()
+
+    private let shapeLayer = CAShapeLayer()
+
+    /// 오른쪽 사선 기울기 (포인트)
+    private let slantOffset: CGFloat = 8
+
+    var text: String? {
+        get { label.text }
+        set {
+            label.text = newValue
+            invalidateIntrinsicContentSize()
+            setNeedsLayout()
+        }
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .clear
+        layer.insertSublayer(shapeLayer, at: 0)
+        shapeLayer.fillColor = UIColor.systemRed.cgColor
+        addSubview(label)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var intrinsicContentSize: CGSize {
+        let labelSize = label.intrinsicContentSize
+        let width = labelSize.width + 8 + slantOffset
+        let height = max(labelSize.height + 4, 18)
+        return CGSize(width: width, height: height)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        let w = bounds.width
+        let h = bounds.height
+        guard w > 0, h > 0 else { return }
+
+        // 사다리꼴: 왼쪽은 직각, 오른쪽은 사선
+        let path = UIBezierPath()
+        path.move(to: CGPoint(x: 0, y: 0))
+        path.addLine(to: CGPoint(x: w, y: 0))
+        path.addLine(to: CGPoint(x: w - slantOffset, y: h))
+        path.addLine(to: CGPoint(x: 0, y: h))
+        path.close()
+
+        shapeLayer.path = path.cgPath
+
+        let labelInset = (slantOffset / 2) - 2
+        label.frame = CGRect(x: labelInset, y: 0,
+                             width: w - slantOffset, height: h)
+    }
+}
+
+// MARK: - DiscountDealCollectionViewCell
 final class DiscountDealCollectionViewCell: BaseCollectionViewCell {
 
     private let thumbnailImageView = {
@@ -38,7 +106,7 @@ final class DiscountDealCollectionViewCell: BaseCollectionViewCell {
 
     private let salePriceLabel = {
         let label = UILabel()
-        label.font = .Title.bold16
+        label.font = .Title.bold14
         label.textColor = .systemRed
         label.numberOfLines = 1
         return label
@@ -52,22 +120,14 @@ final class DiscountDealCollectionViewCell: BaseCollectionViewCell {
         return label
     }()
 
-    private let savingsBadge = {
-        let label = UILabel()
-        label.font = .NanumBarunGothic.bold12
-        label.textColor = .systemBackground
-        label.textAlignment = .center
-        label.backgroundColor = .systemRed
-        label.layer.cornerRadius = 10
-        label.clipsToBounds = true
-        return label
-    }()
+    private let savingsBadge = TrapezoidBadgeLabel()
 
     private lazy var bottomStack = {
-        let stackView = UIStackView(arrangedSubviews: [salePriceLabel, normalPriceLabel])
+        let stackView = UIStackView(arrangedSubviews: [savingsBadge, salePriceLabel, normalPriceLabel])
         stackView.axis = .horizontal
         stackView.alignment = .center
-        stackView.spacing = 8
+        stackView.spacing = 5
+        stackView.setCustomSpacing(3, after: savingsBadge)
         return stackView
     }()
 
@@ -93,7 +153,6 @@ final class DiscountDealCollectionViewCell: BaseCollectionViewCell {
     override func configureHierarchy() {
         contentView.addSubview(thumbnailImageView)
         contentView.addSubview(textStack)
-        contentView.addSubview(savingsBadge)
     }
 
     override func configureLayout() {
@@ -106,15 +165,12 @@ final class DiscountDealCollectionViewCell: BaseCollectionViewCell {
         textStack.snp.makeConstraints { make in
             make.leading.equalTo(thumbnailImageView.snp.trailing).offset(12)
             make.top.equalToSuperview().offset(12)
-            make.trailing.lessThanOrEqualTo(savingsBadge.snp.leading).offset(-8)
+            make.trailing.lessThanOrEqualToSuperview().offset(-16)
             make.bottom.lessThanOrEqualToSuperview().offset(-12)
         }
 
         savingsBadge.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().inset(16)
-            make.centerY.equalToSuperview()
-            make.width.greaterThanOrEqualTo(56)
-            make.height.equalTo(24)
+            make.height.equalTo(18)
         }
     }
 
@@ -138,7 +194,7 @@ final class DiscountDealCollectionViewCell: BaseCollectionViewCell {
         )
         normalPriceLabel.attributedText = attributed
 
-        savingsBadge.text = "  -\(deal.displaySavingsPercent)%  "
+        savingsBadge.text = "\(deal.displaySavingsPercent)%"
 
         if let thumbURL = deal.thumbURL,
            let url = URL(string: thumbURL) {
